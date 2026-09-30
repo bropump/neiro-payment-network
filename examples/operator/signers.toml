@@ -1,0 +1,9 @@
+[signer_pool]
+strategy = "round_robin"
+
+[[signers]]
+name = "neiro-provider"
+type = "memory"
+# The memory signer reads key material from this environment variable, not a file path.
+# Load the JSON keypair through your secret manager; never commit the value.
+private_key_env = "KORA_PRIVATE_KEY"

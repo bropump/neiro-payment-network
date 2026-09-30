@@ -1,0 +1,35 @@
+name: NEIRO operator preset
+
+on:
+  pull_request:
+    paths:
+      - 'examples/operator/**'
+      - 'scripts/check-operator-preset.py'
+      - 'scripts/verify-stock-kora.mjs'
+      - '.github/workflows/operator-preset.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'examples/operator/**'
+      - 'scripts/check-operator-preset.py'
+      - 'scripts/verify-stock-kora.mjs'
+      - '.github/workflows/operator-preset.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configuration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check the documented NEIRO payment preset
+        run: python3 scripts/check-operator-preset.py
+      - name: Validate with the pinned official Kora image
+        run: node scripts/verify-stock-kora.mjs
+
+# This is a proposed config check, not a payment or production readiness gate.
+# Keep private-ledger payment acceptance in the release review until that test
+# has a reviewed CI harness. This job never uses real keys or credentials.

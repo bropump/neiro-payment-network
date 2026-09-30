@@ -1,0 +1,11 @@
+work/
+.env
+.env.*
+!.env.example
+secrets/
+*keypair*.json
+payer.json
+node_modules/
+target/
+.DS_Store
+.codex/

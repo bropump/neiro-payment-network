@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "profile": "neiro-basic-payments",
+  "upstream": "https://github.com/solana-foundation/kora",
+  "tag": "v2.2.0-beta.8",
+  "version": "2.2.0-beta.8",
+  "upstream_commit": "7aea236d9d24f579e21c578ccf69707246968b23",
+  "image": "ghcr.io/solana-foundation/kora@sha256:1b929cd9b32e6a3dddb646669fbe0d30651e07377b2bface044cd84289df59bf",
+  "published_image_platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "config_sha256": {
+    "kora.toml": "19621fb914bba2bcf21c65880dfb81bfa5f3c99a815d290e5d3c91bae7b3ec19",
+    "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
+  },
+  "verification_scope": "Native upstream config validation plus two private-ledger basic NEIRO payment tests with Mock pricing. Official image digest/platforms resolved from registry; Docker execution and proposed GitHub Actions workflow not run in this preview.",
+  "update_policy": "Advance version, image digest and canonical config hashes through a reviewed compatibility update. User configuration changes belong in a private copy.",
+  "operator_settings": "Fee mode/price and per-transaction allowance are operator choices. CI checks the canonical example template, not customized operator files.",
+  "planned_program_policy": {
+    "status": "pending_upstream_release_and_validation",
+    "upstream_pr": "https://github.com/solana-foundation/kora/pull/692",
+    "sponsor_only_programs": "All",
+    "allowed_programs": "Explicit sponsor-participation list; never All for this policy",
+    "activation_requirements": [
+      "Pin an official release supporting the setting and update canonical config hashes",
+      "Verify router admission and health policy support",
+      "Validate representative payments, swaps, launches and prohibited sponsor participation"
+    ],
+    "enabled_in_current_template": false
+  }
+}

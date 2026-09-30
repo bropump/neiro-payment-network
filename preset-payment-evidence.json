@@ -1,0 +1,289 @@
+{
+  "at": "2026-09-30T10:25:58.530Z",
+  "scope": "Two benign basic payments through unchanged stock Kora on a disposable Surfpool private fork, zero-SOL disposable customer, exact published NEIRO mint and token permissions, no guard, live operator or mainnet signing/submission",
+  "source_preset": "examples/operator/kora.toml",
+  "source_config_sha256": "19621fb914bba2bcf21c65880dfb81bfa5f3c99a815d290e5d3c91bae7b3ec19",
+  "config_changes": [
+    "price_source: Jupiter -> Mock; every other config byte preserved"
+  ],
+  "limitation": "Private fork balances and token accounts are synthetic; Mock pricing validates cost-margin mechanics, not live Jupiter NEIRO pricing, public registration, router forwarding, HTTPS, uptime or an operator deployment.",
+  "kora_provenance": {
+    "upstream": "https://github.com/solana-foundation/kora",
+    "tag": "v2.2.0-beta.8",
+    "commit": "7aea236d9d24f579e21c578ccf69707246968b23",
+    "target": "aarch64-apple-darwin",
+    "profile": "dev, debug=0, incremental=false",
+    "testedOS": "macOS 15.6.1",
+    "sourceModified": false
+  },
+  "kora_binary_sha256": "779e9e17513182a9710c3d8a6de28bf4e2fe48b01182ebc5ead086aa80616461",
+  "setup": {
+    "rpc": "http://127.0.0.1:39909",
+    "kora": "http://127.0.0.1:39891",
+    "max_allowed_lamports": 10000000,
+    "fee_mode": "margin",
+    "margin": 0.5,
+    "reimbursement_mint": "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+    "mint": {
+      "decimals": 6,
+      "address": "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+      "provenance": "Public existing NEIRO mint read from fork datasource; not replaced or edited"
+    },
+    "sponsor": "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5",
+    "user": "4JbPbsDkFRZz7esjBxQY1NZBuKBmcXAXwVjDfR5k5fyT",
+    "sponsor_token_account": "B2soBuACTiXKZWWozkCXPUnaHJi34uF6BPHFon5oXJNK",
+    "user_token_account": "78kxFUfet2eNpW2eKq8hCyDaxkaXkJAafHGK7KskNS6f",
+    "version": {
+      "version": "2.2.0-beta.8"
+    }
+  },
+  "tests": [
+    {
+      "name": "NEIRO payment to existing recipient ATA",
+      "status": "SETTLED",
+      "starting_customer_sol_lamports": 0,
+      "program_ids": [
+        "ComputeBudget111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "quote": {
+        "fee_in_lamports": 15000,
+        "fee_in_token": 15000,
+        "signer_pubkey": "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5",
+        "payment_address": "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5"
+      },
+      "quote_ms": 8.100124999999935,
+      "transaction_bytes": 466,
+      "submission_ms": 515.757584,
+      "signature": "53xhmSCK5EffsRSKB4F5krvZwDti3bxdZHACyy9ZaopTpxouqQ2A6YN7sghPzDaX4biA3xqUD4xPrrhfHt9yvjVy",
+      "sponsor_sol_cost_lamports": 10000,
+      "reimbursement_received_base_units": "15150",
+      "customer_sol_after_lamports": 0,
+      "receipt": {
+        "err": null,
+        "network_fee_lamports": 10000,
+        "message": {
+          "header": {
+            "numRequiredSignatures": 2,
+            "numReadonlySignedAccounts": 1,
+            "numReadonlyUnsignedAccounts": 3
+          },
+          "staticAccountKeys": [
+            "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5",
+            "4JbPbsDkFRZz7esjBxQY1NZBuKBmcXAXwVjDfR5k5fyT",
+            "78kxFUfet2eNpW2eKq8hCyDaxkaXkJAafHGK7KskNS6f",
+            "DJhSdu2mEEWCf5DGjNMr7e13kni5XGxYt5BqCVRQSwZH",
+            "B2soBuACTiXKZWWozkCXPUnaHJi34uF6BPHFon5oXJNK",
+            "ComputeBudget111111111111111111111111111111",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"
+          ],
+          "recentBlockhash": "SURFNETxSAFEHASHxxxxxxxxxxxxxxxxxxxxxxxxxx5",
+          "compiledInstructions": [
+            {
+              "programIdIndex": 5,
+              "accountKeyIndexes": [],
+              "data": {
+                "type": "Buffer",
+                "data": [
+                  2,
+                  64,
+                  13,
+                  3,
+                  0
+                ]
+              }
+            },
+            {
+              "programIdIndex": 6,
+              "accountKeyIndexes": [
+                2,
+                7,
+                3,
+                1
+              ],
+              "data": {
+                "type": "Buffer",
+                "data": [
+                  12,
+                  64,
+                  66,
+                  15,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  6
+                ]
+              }
+            },
+            {
+              "programIdIndex": 6,
+              "accountKeyIndexes": [
+                2,
+                7,
+                4,
+                1
+              ],
+              "data": {
+                "type": "Buffer",
+                "data": [
+                  12,
+                  46,
+                  59,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  6
+                ]
+              }
+            }
+          ],
+          "addressTableLookups": []
+        }
+      }
+    },
+    {
+      "name": "NEIRO payment with sponsor-funded new recipient ATA",
+      "status": "SETTLED",
+      "starting_customer_sol_lamports": 0,
+      "program_ids": [
+        "ComputeBudget111111111111111111111111111111",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "quote": {
+        "fee_in_lamports": 3073920,
+        "fee_in_token": 3073920,
+        "signer_pubkey": "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5",
+        "payment_address": "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5"
+      },
+      "quote_ms": 8.433165999999801,
+      "transaction_bytes": 571,
+      "submission_ms": 513.2970829999999,
+      "signature": "3NnJADvYGbpmT8HW2WZKWjv5gm362dVAMH2qnSKbsEo3LQGAZDZwswwbZJXjWhTM9U3YVj3ienADHg7Mnzh6DWcU",
+      "sponsor_sol_cost_lamports": 2049280,
+      "reimbursement_received_base_units": "3104660",
+      "customer_sol_after_lamports": 0,
+      "receipt": {
+        "err": null,
+        "network_fee_lamports": 10000,
+        "message": {
+          "header": {
+            "numRequiredSignatures": 2,
+            "numReadonlySignedAccounts": 1,
+            "numReadonlyUnsignedAccounts": 6
+          },
+          "staticAccountKeys": [
+            "HTXcDByfnmcNLzJPD7VYYKqtWyTW6V1UgPGgPRNcZqg5",
+            "4JbPbsDkFRZz7esjBxQY1NZBuKBmcXAXwVjDfR5k5fyT",
+            "BMQR1fQLpV6d6wLWHosmkiTNQZ2nVWHXdLcco9yYw4bo",
+            "78kxFUfet2eNpW2eKq8hCyDaxkaXkJAafHGK7KskNS6f",
+            "B2soBuACTiXKZWWozkCXPUnaHJi34uF6BPHFon5oXJNK",
+            "ComputeBudget111111111111111111111111111111",
+            "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+            "jUBZtZRCMhdZFLvQAo59VHU1uP4PdmtRaRtLcm4qPT5",
+            "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+            "11111111111111111111111111111111",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          ],
+          "recentBlockhash": "SURFNETxSAFEHASHxxxxxxxxxxxxxxxxxxxxxxxxxx6",
+          "compiledInstructions": [
+            {
+              "programIdIndex": 5,
+              "accountKeyIndexes": [],
+              "data": {
+                "type": "Buffer",
+                "data": [
+                  2,
+                  64,
+                  13,
+                  3,
+                  0
+                ]
+              }
+            },
+            {
+              "programIdIndex": 6,
+              "accountKeyIndexes": [
+                0,
+                2,
+                7,
+                8,
+                9,
+                10
+              ],
+              "data": {
+                "type": "Buffer",
+                "data": []
+              }
+            },
+            {
+              "programIdIndex": 10,
+              "accountKeyIndexes": [
+                3,
+                8,
+                2,
+                1
+              ],
+              "data": {
+                "type": "Buffer",
+                "data": [
+                  12,
+                  64,
+                  66,
+                  15,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  6
+                ]
+              }
+            },
+            {
+              "programIdIndex": 10,
+              "accountKeyIndexes": [
+                3,
+                8,
+                4,
+                1
+              ],
+              "data": {
+                "type": "Buffer",
+                "data": [
+                  12,
+                  148,
+                  95,
+                  47,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  6
+                ]
+              }
+            }
+          ],
+          "addressTableLookups": []
+        }
+      }
+    }
+  ],
+  "finished_at": "2026-09-30T10:26:01.997Z",
+  "cleanup": {
+    "services_stopped": true,
+    "checked_no_listeners": [
+      39891,
+      39909,
+      39910
+    ],
+    "disposable_faucet_file_removed": true
+  }
+}
