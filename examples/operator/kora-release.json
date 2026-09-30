@@ -14,7 +14,7 @@
     "kora.toml": "19621fb914bba2bcf21c65880dfb81bfa5f3c99a815d290e5d3c91bae7b3ec19",
     "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
   },
-  "verification_scope": "Native upstream config validation plus two private-ledger basic NEIRO payment tests with Mock pricing. Official image digest/platforms resolved from registry; Docker execution and proposed GitHub Actions workflow not run in this preview.",
+  "verification_scope": "Native and official Docker image config/signers validation passed; GitHub Actions run 36742479969. Two historical private-ledger basic NEIRO payment tests used Mock pricing. New Rust registration instructions were checked against source and CLI help, not exercised live in this update.",
   "update_policy": "Advance version, image digest and canonical config hashes through a reviewed compatibility update. User configuration changes belong in a private copy.",
   "operator_settings": "Fee mode/price and per-transaction allowance are operator choices. CI checks the canonical example template, not customized operator files.",
   "planned_program_policy": {

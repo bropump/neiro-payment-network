@@ -24,14 +24,15 @@
       "details": "OCI registry metadata via docker buildx imagetools inspect; linux/amd64 and linux/arm64 published"
     },
     {
-      "name": "Official Docker image execution",
-      "status": "not_run",
-      "reason": "Local Docker daemon image content store returned an I/O error. Native unchanged source build was used for config and payment checks."
+      "name": "Official Docker image config/signers validation",
+      "status": "passed",
+      "details": "GitHub Actions validated the public-profile templates with the pinned official image and ephemeral key; offline, no registry writes or payments.",
+      "run": "https://github.com/bropump/neiro-payment-network-core/actions/runs/36742479969"
     },
     {
       "name": "GitHub Actions",
-      "status": "proposed_not_activated",
-      "details": "Workflow validates configuration/signers; payment release acceptance is explicitly separate."
+      "status": "passed",
+      "details": "Published private repository workflow passed configuration/signers validation. Payment acceptance remains separate."
     },
     {
       "name": "Incomplete release lock hash set",
@@ -78,5 +79,11 @@
     "status": "not_enabled_or_tested_in_current_beta8_template",
     "upstream_pr": "https://github.com/solana-foundation/kora/pull/692",
     "note": "Documentation intent only. Existing payment results and independent review cover the current beta.8 template, not the future policy."
+  },
+  "publication": {
+    "repository": "https://github.com/bropump/neiro-payment-network-core",
+    "visibility": "private",
+    "initial_commit": "af01956",
+    "registration_guide": "docs/REGISTRATION.md"
   }
 }
