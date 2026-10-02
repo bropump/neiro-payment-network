@@ -4,9 +4,15 @@
 
 # NEIRO GAS Network
 
-Run [Kora](https://github.com/solana-foundation/kora), accept NEIRO for transaction fees, and connect your operator to the NEIRO router. You choose your host and fees and keep control of your wallet.
+## Solana transactions. Gas paid in NEIRO.
 
-This repository provides the NEIRO configuration and setup guidance. Kora is the software you run; we do not distribute a separate NEIRO Kora build.
+The NEIRO GAS Network is an open network of payment sponsor operators running [Kora](https://github.com/solana-foundation/kora). Operators pay transaction fees in SOL and receive payment in NEIRO. You choose your fees, host and wallet; the router selects eligible operators by regional response time or estimated fee.
+
+Integrated clients and apps can let users pay transaction fees in NEIRO without maintaining a separate SOL balance for sponsored transactions. Transactions still run and settle on Solana. Users still need the assets they want to transfer or trade, and apps need a compatible Kora payment flow.
+
+Our testing has included x402, MPP, Jupiter swaps, transfers and trades. These are tested integration paths, not a guarantee that every Solana app or transaction works without integration. The [recorded test results](PLATFORM-TESTS.md) describe the evidence and scope documented in this repository.
+
+Run Kora, accept NEIRO for transaction fees, and connect your operator to the NEIRO router. This repository provides the NEIRO configuration and setup guidance. Kora is the software you run; we do not distribute a separate NEIRO Kora build.
 
 ## Ask your agent to set it up
 
