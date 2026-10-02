@@ -77,7 +77,7 @@ For stronger key isolation, we recommend a supported remote signer through Kora�
 
 Use `https://api.mainnet-beta.neiropay.app/rpc` as your Kora client endpoint. Choose `?selection=fastest` or `?selection=cheapest`, obtain a payer and quote, approve the fee, and keep the same provider through signing and submission. Clients do not register as operators.
 
-[Client and router documentation](https://github.com/bropump/neiro-kora-router-cloudflare#use-it) · [Operator status](https://api.mainnet-beta.neiropay.app/operators)
+[Client and router documentation](https://github.com/bropump/neiro-kora-router-cloudflare#use-it) · [Live network dashboard](https://api.mainnet-beta.neiropay.app/dashboard) · [Operator status API](https://api.mainnet-beta.neiropay.app/operators)
 
 ## Configuration and updates
 
