@@ -46,7 +46,7 @@ jq '.verification' registration.json > "$NEIRO_OPERATOR_DIR/public/.well-known/n
 curl --fail --silent --show-error "$(jq -r '.verificationUrl' registration.json)"
 ```
 
-Expect the same token and `enabled: true`, not a redirect or HTML. Then call verify and run the routed quote check. Keep Kora, Caddy and the tunnel running. In the unattended stage, arrange restart for all three, preserve the proof and use a stable URL.
+Expect the same token and `enabled: true`, not a redirect or HTML. Then call verify and ask Kora for an unsigned quote through your pinned router URL. Keep Kora, Caddy and the tunnel running. In the unattended stage, arrange restart for all three, preserve the proof and use a stable URL.
 
 ## Cloud backend or direct public host
 

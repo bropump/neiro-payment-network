@@ -19,10 +19,15 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: main
+          ref: operator-maintenance
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
+      - name: Read the current public config templates
+        run: |
+          git fetch origin main --depth=1
+          git show FETCH_HEAD:examples/operator/kora.toml > examples/operator/kora.toml
+          git show FETCH_HEAD:examples/operator/signers.toml > examples/operator/signers.toml
       - name: Resolve the latest successfully published upstream main image
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -33,12 +38,12 @@ jobs:
         run: node scripts/verify-stock-kora.mjs
       - name: Save the validated main snapshot
         run: |
-          if ! git diff --quiet -- examples/operator/kora-release.json; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add examples/operator/kora-release.json
+          if ! git diff --quiet -- examples/operator; then
+            git config user.name 'bropump'
+            git config user.email '203769166+bropump@users.noreply.github.com'
+            git add examples/operator
             git commit -m 'Track latest buildable official Kora main'
-            git push origin HEAD:main
+            git push origin HEAD:operator-maintenance
           fi
       - name: Update our Bunny operator to the validated main image
         if: ${{ vars.BUNNY_KORA_APP_ID != '' }}

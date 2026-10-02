@@ -92,17 +92,6 @@ This is **not a daily budget**. Many transactions can each consume up to the con
 
 The current template uses `allowed_programs = "All"` for broad program compatibility. Arbitrary programs are admitted, and the existing fee-payer policies do not establish a general sponsor-safety boundary. The prepared upstream #683 migration uses a restricted `allowed_programs` list with `sponsor_only_programs = "All"`; it awaits a merge into official main and validation. See [configuration and upgrade status](CONFIGURATION.md).
 
-## What we have tested
-
-| Environment | Completed tests |
-| --- | --- |
-| Bunny.net | Stock Kora deployment, network registration and quotes; two mainnet Jupiter swaps through the Bunny setup |
-| Apple Silicon Mac | Stock Kora configuration checks and two local payments, including a new recipient account |
-
-These payment and swap results predate the current All/0.25 SOL template. The updated template has separate offline configuration checks; every swap or launch and 90% transaction acceptance have not been established. [Read the test results](PLATFORM-TESTS.md).
-
-**Ready to start? Give your agent the [setup prompt](README.md#ask-your-agent-to-set-it-up) and tell it where to run your operator.**
-
 ## Register and verify
 
 Follow the [registration guide](docs/REGISTRATION.md): submit your Kora URL, serve the returned verification JSON, then call verify. Keep that file available. After upgrading Kora or changing fees, verify again and obtain a new quote. There is no registration transaction or renewal schedule.

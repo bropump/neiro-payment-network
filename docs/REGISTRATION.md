@@ -40,15 +40,18 @@ Look for `status: "active"` in the verify response and `eligible: true` in the o
 
 The router allows one verification attempt per registration per 60 seconds. Cached routing views can take up to approximately 120 seconds to reflect changes. Obtain a quote for your intended transaction through `/rpc?operator=YOUR_OPERATOR_ID` and keep that operator pinned through signing and submission.
 
-## Check a routed quote
+## Check through the router
 
-From this repository, with Node.js 20+ and the variables above:
+With the registration variables above, check your pinned Kora identity:
 
 ```sh
-node scripts/check-routed-quote.mjs "$NEIRO_ROUTER_URL" "$OPERATOR_ID"
+curl --fail-with-body --silent --show-error \
+  "$NEIRO_ROUTER_URL/rpc?operator=$OPERATOR_ID" \
+  -H 'content-type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"getPayerSigner","params":{}}'
 ```
 
-Expect `"ok": true`, your payer and quoted fees. The helper gets the payer and blockhash, builds an unsigned transaction with no instructions, and requests a NEIRO quote. It never loads a key, signs, submits or spends funds. This checks the quote path only; it does not prove transfers, swaps or account creation will succeed. Before a real payment, quote the actual intended transaction and approve its fee separately.
+Expect your operator's public payer in `result.signer_address`. Have your agent use [Kora's API/SDK](https://solana.com/docs/tools/kora) to prepare an unsigned transaction with that payer and request `estimateTransactionFee` through the same pinned URL. Check the returned payer, payment address and NEIRO fee. Quoting does not sign, submit or spend funds; a successful quote is not a settled payment.
 
 ## After an upgrade or config change
 

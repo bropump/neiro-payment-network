@@ -49,7 +49,7 @@ You do not need to choose a host or understand Kora before starting. Your agent 
 
 ## What you need
 
-Run wherever official Kora runs; Mac, Docker and Bunny are examples, not requirements. Your agent adapts the setup using [upstream deployment guidance](https://solana.com/docs/tools/kora/operators#deployment) and our [host reference](docs/HOSTING.md).
+Run wherever official Kora runs; Mac, Docker and Bunny are examples, not requirements. Your agent adapts the setup using [upstream deployment guidance](https://solana.com/docs/tools/kora/operators#deployment) and the chosen host’s instructions.
 
 You need a host that can run Kora, a dedicated operator wallet funded with SOL, a NEIRO token account for reimbursement, Solana RPC access, a Jupiter pricing key and public HTTPS hosting. Your HTTPS host must also serve the router's verification file. Follow upstream Kora's installation requirements for your chosen host; Docker is optional.
 
@@ -67,6 +67,6 @@ Use `https://neiro-cf-router-demo.optical.workers.dev/rpc` as your Kora client e
 
 ## Configuration and updates
 
-Keep your settings in a private copy of the templates. Operators follow the latest successfully built official Kora main revision and pin each running deployment. Our optional [Docker helpers](docs/DOCKER.md) resolve upstream's image and support validation and rollback; they do not build a NEIRO image. Kora and its SDK remain unchanged.
+Keep your settings in a private copy of the templates. Operators follow the latest successfully built official Kora main revision and pin each running deployment. Your agent handles updates and rollback with your host’s normal tools. Kora and its SDK remain unchanged.
 
-The current recommendation uses `allowed_programs = "All"`. Read the [configuration notes](CONFIGURATION.md) for its sponsor exposure and the pending upstream protection. [Recorded tests](PLATFORM-TESTS.md) describe what has been checked.
+The current recommendation uses `allowed_programs = "All"`. Read the [configuration notes](CONFIGURATION.md) for its sponsor exposure and the pending upstream protection.

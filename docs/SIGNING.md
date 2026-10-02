@@ -22,5 +22,3 @@ provider credentials out of chat, Git and router requests.
 ```
 
 The agent should use [Kora's signer examples](https://github.com/solana-foundation/kora/blob/main/signers.example.toml) for the deployed revision. Backend availability in solana-keychain alone does not establish support in that Kora build. Replace the example memory entry with the chosen backend; do not accidentally leave an extra signer active. Remote signing adds provider setup, network dependency and potentially fees. Do not import or move an existing wallet unless the operator requests it.
-
-We tested Para signing through unchanged Kora for legacy, v0 and v1 on a private ledger. That establishes compatibility for the tested build, not a security audit or a test of every provider. [Test evidence](../main-upgrade-verification.json).

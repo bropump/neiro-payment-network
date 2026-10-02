@@ -30,9 +30,9 @@ This recommendation does not claim measured 90% signing success, compatibility w
 | Current program policy | `allowed_programs = "All"` |
 | Sponsor permissions | Account creation enabled; direct SOL transfers and sponsor token spending disabled |
 
-[Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml) · [Upstream main image snapshot](examples/operator/kora-release.json)
+[Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml)
 
-Operators follow official main, not the latest tagged release. `scripts/resolve-kora-main.mjs` resolves the latest published `edge` image, checks its official source label and that its revision belongs to upstream main, then records its immutable digest. Fresh installs and update checks resolve it directly. The repository refresh workflow records the validated snapshot every five minutes; Docker operators use the update helper on the same interval. See [setup and updates](docs/JOIN.md). Kora and the TypeScript SDK remain unmodified. A main binary can retain an older version string, so identify deployments by commit and digest. Main can include unaudited commits.
+Operators follow the latest successfully built official upstream main revision and pin each deployment. Use upstream Kora and your host's update tools; there is no NEIRO software package to install. Retain the previous build for rollback. Kora and its SDK remain unchanged. See [setup and updates](docs/JOIN.md).
 
 Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
 
@@ -74,16 +74,6 @@ Token-2022 metadata reconstruction is separately tracked in [upstream #681](http
 ## What you supply
 
 Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTTPS endpoint and the router URL. The Cloudflare router uses public providers without a credential store. See [registration](docs/REGISTRATION.md) for joining, verifying after upgrades and checking eligibility.
-
-## Validation and historical evidence
-
-The October 2 main upgrade uses official upstream commit `afe5e6b297c33b71293eb57da80bd8de8b40709a`. Both our Mac and Bunny deployments were replaced with its pinned official image and retained their signer identities and operator fees. Both live endpoints successfully simulated genuine transaction-format v1 fee estimates and NEIRO reimbursement quotes with `All`/0.25 SOL settings. On a disposable Agave 4.2.2 ledger, the same image signed and confirmed legacy, v0 and v1 transactions with both Para and memory backends, with independent signature verification. V1 `signTransaction` was also verified with both backends. Test pricing was Mock/free on the private ledger; no public-chain transaction was submitted. See [main upgrade evidence](main-upgrade-verification.json).
-
-The image snapshot pins the official main Docker image by digest. The compatibility workflow checks its source/revision labels and canonical template and validates it offline with a disposable key. It checks the example, not customized operator files. Fresh installs resolve the latest published main image rather than relying on a stale snapshot. Historical tests retain their original configuration and image scope. The October 2 All/0.25 SOL update has [separate config validation evidence](config-update-verification.json); no new payment or registration was submitted for that update.
-
-Two recorded basic NEIRO payments settled on a private ledger with unchanged Kora before this update: an existing recipient token account and a newly created recipient account. They used the earlier six-program template, a 0.01 SOL allowance and 50% margin; only Jupiter pricing changed to Mock. The original hash and receipts remain in [payment evidence](preset-payment-evidence.json), with the September 30 [verification record](verification.json). They do not prove payment acceptance for the new preset. Live pricing, funding, hosting, HTTPS and eligibility remain deployment checks.
-
-Kora's validator reports policy warnings, including account-creation sponsorship and absence of authentication in this public-endpoint profile. Explain warnings for the operator's chosen configuration. Passing validation is not a security certification. Availability still depends on the host, RPC, pricing service and wallet funding.
 
 ## Pricing service
 

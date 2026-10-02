@@ -1,55 +1,13 @@
-# Set up and run the operator
+# Guide the user from setup to running
 
-You are setting up a working service for the user. Run the steps you can complete; do not hand back commands for the user to execute when you have the required access. Use [JOIN.md](JOIN.md) for Kora setup and [REGISTRATION.md](REGISTRATION.md) for the exact router calls. Do not patch Kora or its SDK.
+Use [official Kora's installation and deployment instructions](https://solana.com/docs/tools/kora/operators). It can run locally or on compatible server/container hosts; Mac, Docker and Bunny are examples, not restrictions. Adapt to the chosen host rather than asking the user to choose from many technical paths.
 
-## Help the user choose where and how to run it
+1. **Choose a host together.** Ask where they want to run it. If unsure, explain cost, keeping a personal computer online and host maintenance. Inspect existing software and reuse it.
+2. **Gather the essentials.** Dedicated signer, mainnet Solana RPC, Jupiter pricing key and public HTTPS hosting. Help the user obtain missing access and store credentials privately. A [remote signer](SIGNING.md) is optional; the local keypair template works too.
+3. **Explain money and fees.** The operator supplies SOL and receives NEIRO. Help prepare the NEIRO receipt account and show the correct public payer/network/mint before any authorized funding. No fixed NEIRO deposit is required by the router. Explain [margin, fixed and free pricing](../TUTORIAL.md#3-set-your-fees); the config's 50% margin is an example, 0.25 SOL is the recommended transaction allowance and the signature limit is 10.
+4. **Install and start stock Kora.** Use the latest successfully built official main revision, pinned for this deployment. Copy the two [config files](../examples/operator) into one private folder and apply the user's choices. Validate and start them as described in [JOIN.md](JOIN.md). Do not introduce repository-specific scripts or require Docker when the host can run Kora directly.
+5. **Connect to the network.** Set up HTTPS and the static verification-file route on the same hostname. Kora does not serve that file itself; use the host's routing or the [small proxy example](HTTPS.md). Follow [register → host proof → verify](REGISTRATION.md), check the expected payer and eligibility, and obtain an unsigned quote using Kora's normal API/SDK. Do not call a quote a settled payment.
+6. **Teach the user to run it.** Demonstrate status, logs, stop/start/restart, SOL/NEIRO balance checks and fee changes. Keep instructions specific to their host and explain successful output.
+7. **Keep it running.** After the first working result, arrange automatic restart and check official main for updates every five minutes using the host's normal service/deployment tools. Validate before switching builds, preserve private config/keys and retain the previous build for rollback. Check health and payer, then call router verify again after upgrades or config changes. Run the update job once and confirm restart/proof persistence. Help choose notifications for failures and low SOL; state if they remain unconfigured.
 
-Start with their experience and preferred host. If they are unsure, explain a personal computer, a server and a managed cloud host in plain language: their computer must stay awake and online; a server needs maintenance; a managed host handles some infrastructure but has its own costs and limits. Help choose based on budget, uptime needs and comfort with maintenance. Do not assume they already have hosting, a domain or credentials.
-
-Choose one [host path](HOSTING.md). Use [FUNDING.md](FUNDING.md) for funding/account checks and fee examples, and [HTTPS.md](HTTPS.md) for concrete proof routing. Do not make the novice discover these missing pieces themselves.
-
-Explain each stage briefly before doing it and why it is needed. Guide user-only steps such as account creation and secret entry. Perform authorized work when access is available, without making the user approve every routine command.
-
-## Get the few inputs you need
-
-Inspect the host and existing operator first. Reuse prior choices and permissions. Bundle missing questions instead of asking at every step:
-
-- Host access and intended public HTTPS hostname, including the ability to serve the verification file.
-- Private references to the signer, Solana RPC and Jupiter credentials. Never request their values in chat.
-- Fee choice: margin, fixed or free. Explain that 50% is the template example; 0.25 SOL is the recommended per-transaction allowance and 10 is the signature limit.
-- Wallet funding and any authorized spending scope. Explain SOL goes out and NEIRO comes in; reimbursement does not automatically replenish SOL.
-
-Offer [remote signing](SIGNING.md) as an optional way to isolate the key from the host. Preserve an existing signer choice. A new remote provider account may require the user's action; do not block local-keypair setup when that is their choice. If an input is missing, finish independent preparation and name the exact remaining step.
-
-## Stage 1: get a working operator
-
-Use one host, one private config folder and one signer. Choose the simplest supported installation for that host. Do not require Docker, a service manager, a scheduler or a remote signer before the first working quote. Explain funding, RPC access, Jupiter credentials and public HTTPS/proof hosting up front; these are the real prerequisites.
-
-1. Install unchanged official Kora at the latest successfully built upstream main revision, recording the revision and pinning the deployment. Follow upstream requirements for the host; [Docker helpers](DOCKER.md) are optional. Do not invent a CPU/RAM minimum or claim measured capacity.
-2. Copy the NEIRO config into private storage and apply the selected fee and allowance. Configure the chosen signer using the exact Kora build's supported settings. Prepare the funded SOL payer and NEIRO reimbursement account within the user's spending authorization.
-3. Validate the private config and start Kora in the foreground for the initial check. Set up HTTPS and its static verification-file route. Keep transaction policies and request limits; do not weaken an existing private deployment automatically.
-4. Register the endpoint, host the returned verification JSON and call verify. Save the registration ID and keep the proof available. Confirm the expected payer and `eligible: true` in `/operators`, allowing for cache refresh. No registration payment or renewal job is needed.
-5. Run the [unsigned routed quote check](REGISTRATION.md#check-a-routed-quote) for the first milestone. Then obtain a quote for the intended transaction through `/rpc?operator=ID` before any actual payment. Keep the provider pinned. A quote is not a payment test. Use a private ledger for payment tests unless real spending is authorized; reconcile submitted signatures before any retry.
-
-## Stage 2: make it suitable to leave running
-
-After the routed quote succeeds, show the user the working result. Then complete service restart, update scheduling and the operating guide. Do not describe the foreground-only setup as ready for unattended operation.
-
-1. Install a host service manager for Kora and the HTTPS/proof service. Keep the same private config folder and signer.
-2. Install update checks every five minutes with absolute paths and private logs/state. Prevent overlapping updates. Validate before replacement, preserve settings and keys, retain rollback and check local health. Then call router verification with the saved ID, respecting its 60-second cooldown. The Docker updater does not make this router call itself: include it after successful replacement in the host workflow.
-3. Run the installed update job once and confirm it exits successfully. Make failures visible in the host’s service logs and help the user select an available notification destination for update failures and low SOL. Report clearly if notifications remain unconfigured. Confirm service restart works and the proof survives a restart/update. Do not report a scheduler as working merely because its file exists.
-
-## Leave a short operating summary
-
-Show the user how to check the service, read a useful log entry and recognize a successful router verification. Explain when to replenish SOL and how to change fees. Do not merely hand over a list of unexplained commands.
-
-Save a short private operating guide on the host and give the user its path. For each command, explain what it does and what a successful result looks like. Include:
-
-- Service name, public Kora URL, router URL and registration ID.
-- Payer public key, chosen signer backend, fees, allowance and signature limit.
-- Deployed upstream revision/digest and private config/secret-reference locations, never secret values.
-- Exact status, logs, stop, restart, update and router-verification commands for this host.
-- Update schedule, rollback instructions and where to see failures.
-- How to check SOL liquidity and RPC/Jupiter quotas, change fees and remove registration.
-
-Report what was actually verified: config validation, running Kora, expected payer, router eligibility, routed quote, service restart and scheduled update execution. List payment settlement separately if tested. If anything is incomplete, say so instead of calling the operator ready. The router checks compatibility and health; it does not enforce the latest upstream revision.
+Save one short private operating guide: config locations, public payer, endpoint, registration ID, deployed revision/digest, exact operating/update/rollback commands and how to remove registration. Never include secret values. Report verified results and remaining steps separately. No package in this repository needs to be installed.
