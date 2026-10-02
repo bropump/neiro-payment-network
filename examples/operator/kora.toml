@@ -1,4 +1,9 @@
 # NEIRO configuration for official Kora. Choose your fee below.
+# Most operators change pricing and max_allowed_lamports; keep other defaults
+# unless your host or application needs them. Your signer goes in signers.toml.
+# Lines starting with # are comments/examples, not active settings.
+# true enables a setting; false disables it; [] is an empty list.
+# Amounts named lamports use 1 SOL = 1,000,000,000 lamports.
 # Keep one pricing option active. To switch, replace the active settings
 # under [validation.price] with the settings from the chosen example.
 
@@ -34,9 +39,14 @@ margin = 0.5 # Editable example: sponsored cost plus 50%, paid in NEIRO.
 # and check a fresh quote. More examples: TUTORIAL.md, section 3.
 
 [kora]
+# Kora request-rate limit (requests per second), separate from router limits.
+# Raising it allows more load; it does not increase your RPC provider quota.
 rate_limit = 100
 
 [kora.auth]
+# Access controls for private deployments. The public NEIRO router does not
+# supply API keys, HMAC signatures or CAPTCHA tokens to operators. Enabling
+# these requirements can prevent router access; keep secrets out of this file.
 # Optional: API key for simple authentication
 # api_key = "your-api-key"
 
@@ -63,68 +73,89 @@ rate_limit = 100
 enabled = false
 fail_if_transaction_size_overflow = true  # Reject transaction if adding assertion exceeds size limit
 
-# Cache configuration for Redis-based caching
+# Optional performance cache: reuses fetched account data/prices to reduce
+# repeated work. Requires your own reachable Redis service when enabled.
+# Leave disabled for a basic setup; cached data can be older than live data.
 [kora.cache]
 enabled = false                    # Enable/disable caching (set to true with url to enable)
-url = "redis://localhost:6379"    # Redis connection URL (uncomment and set when enabling cache)
+url = "redis://localhost:6379"    # Redis address; used when caching is enabled
 default_ttl = 300                  # Default TTL in seconds (5 minutes)
 account_ttl = 60                   # Account data TTL in seconds (1 minute)
 price_ttl = 0                     # Token price TTL in seconds (set to 0 to disable price caching while keeping account caching on)
 
-# Enable/disable specific RPC methods
+# Which Kora API operations callers can use. Keep the discovery and quote
+# methods enabled for router access. These switches do not grant permissions
+# to spend the payer wallet; transaction policy checks still apply.
 [kora.enabled_methods]
-liveness = true
-estimate_transaction_fee = true
-get_supported_tokens = true
-sign_transaction = false
-sign_and_send_transaction = true
-transfer_transaction = false
-get_blockhash = true
-get_config = true
-get_payer_signer = true
-get_version = true
+liveness = true # Health check for the Kora service.
+estimate_transaction_fee = true # Quote the transaction cost and reimbursement before signing.
+get_supported_tokens = true # List tokens advertised by this Kora service.
+sign_transaction = false # Sign and return a transaction without submitting it; disabled here.
+sign_and_send_transaction = true # Validate, sign and submit an approved transaction.
+transfer_transaction = false # Convenience API for building a transfer; disabled here.
+get_blockhash = true # Fetch a recent blockhash needed to prepare a transaction.
+get_config = true # Expose supported methods and policy settings for clients/router.
+get_payer_signer = true # Return the sponsor and payment identities used in preparation.
+get_version = true # Return the Kora version string; not proof of the exact main commit.
 
 [validation]
+# Limits checked before Kora sponsors a transaction. These are separate
+# from what you charge. The SOL allowance is per transaction, not per day,
+# and is not a guarantee that every possible loss is capped at that amount.
 max_allowed_lamports = 250000000 # 0.25 SOL per transaction; operator may choose another allowance
-max_signatures = 10
-price_source = "Jupiter"
-allow_durable_transactions = false
-cross_cluster_check = false
+max_signatures = 10 # Maximum transaction signatures, including the sponsor.
+price_source = "Jupiter" # Converts sponsored costs to token prices; needs your Jupiter key.
+allow_durable_transactions = false # Reject durable-nonce transactions (which can remain valid longer).
+cross_cluster_check = false # Optional cross-network check; adds RPC calls when enabled.
+# Other Solana cluster RPCs used by the cross-cluster check; this list does
+# not select the network Kora runs on. Your RPC_URL selects that network.
 cross_cluster_endpoints = [
     "https://api.mainnet-beta.solana.com",
     "https://api.devnet.solana.com",
     "https://api.testnet.solana.com",
 ]
 
-# Broad program compatibility. Review sponsor exposure and the pending #683 migration in CONFIGURATION.md.
+# Programs are Solana applications/contracts. "All" admits any program ID;
+# it is not a list of audited or trusted programs and does not guarantee
+# arbitrary-program sponsor safety. See CONFIGURATION.md for the pending fix.
 allowed_programs = "All"
+# Kora token allowlist, using mint addresses (not ticker names).
 allowed_tokens = [
     "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump", # NEIRO
 ]
+# Tokens accepted to reimburse the operator: NEIRO for this network.
 allowed_spl_paid_tokens = ["CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"]
 #allowed_spl_paid_tokens = "All"  # Allow any token to be used for payment,
-disallowed_accounts = []
+disallowed_accounts = [] # Explicitly blocked account addresses; none listed here.
 # require_one_of_programs = []  # At least one of these programs must be called. Each must also appear in allowed_programs.
 
-# Fee payer policy controls what actions the fee payer can perform
-#
-# A lot of actions on Solana require System Program and/or SPL Token Programs,
-# but those programs have a lot of instructions that can be used to perform actions that could be problematic
-# for the fee payer, therefore we allow more granular control over what the fee payer can do with those programs.
+# Permissions over YOUR sponsor wallet, not general user-wallet permissions.
+# false means Kora must not allow the payer to perform that action.
+# Keep these defaults unless you understand the additional payer authority.
+# "authority" means an account allowed to control a token/account; "mint"
+# means a token's definition, while a token account holds someone's balance.
 [validation.fee_payer_policy]
 
+# System Program: native SOL and basic account operations. Account creation
+# is enabled so Kora can sponsor required setup/rent. Direct SOL transfers
+# from the sponsor and changes to its account ownership/allocation are disabled.
 [validation.fee_payer_policy.system]
 allow_transfer = false           # Allow fee payer to be sender in System Transfer/TransferWithSeed
 allow_assign = false             # Allow fee payer to be authority in System Assign/AssignWithSeed
 allow_create_account = true     # Allow fee payer to be payer in System CreateAccount/CreateAccountWithSeed
 allow_allocate = false           # Allow fee payer to be account in System Allocate/AllocateWithSeed
 
+# Durable nonce accounts extend transaction validity. These switches prevent
+# the payer from managing nonce accounts or withdrawing their SOL.
 [validation.fee_payer_policy.system.nonce]
 allow_initialize = false         # Allow fee payer to initialize nonce accounts
 allow_advance = false            # Allow fee payer to advance nonce accounts
 allow_authorize = false          # Allow fee payer to authorize nonce accounts
 allow_withdraw = false           # Allow fee payer to withdraw from nonce accounts
 
+# Standard SPL tokens: protect the sponsor against moving/burning its tokens,
+# granting delegates (approval to spend), changing authorities, minting tokens,
+# closing token accounts or freezing/thawing balances.
 [validation.fee_payer_policy.spl_token]
 allow_transfer = false           # Allow fee payer to be source in SPL token transfers
 allow_burn = false               # Allow fee payer to burn SPL tokens
@@ -141,6 +172,7 @@ allow_thaw_account = false       # Allow fee payer to thaw SPL token accounts
 allow_withdraw_excess_lamports = false # Allow fee payer to be authority in SPL WithdrawExcessLamports
 allow_unwrap_lamports = false    # Allow fee payer to be authority in SPL UnwrapLamports
 
+# The same payer restrictions for Token-2022, Solana's extended token program.
 [validation.fee_payer_policy.token_2022]
 allow_transfer = false           # Allow fee payer to be source in Token2022 transfers
 allow_burn = false               # Allow fee payer to burn Token2022 tokens
@@ -157,6 +189,9 @@ allow_thaw_account = false       # Allow fee payer to thaw Token2022 accounts
 allow_withdraw_excess_lamports = false # Allow fee payer to be authority in Token2022 WithdrawExcessLamports
 allow_unwrap_lamports = false    # Allow fee payer to be authority in Token2022 UnwrapLamports
 
+# Address lookup tables (ALTs) compress account references in transactions.
+# These switches govern payer participation in managing those tables; they
+# do not simply ban transactions that use an existing lookup table.
 [validation.fee_payer_policy.alt]
 allow_create = false            # Allow fee payer to be authority/payer in ALT CreateLookupTable
 allow_extend = false            # Allow fee payer to be authority/payer in ALT ExtendLookupTable
@@ -165,7 +200,12 @@ allow_deactivate = false        # Allow fee payer to be authority in ALT Deactiv
 allow_close = false             # Allow fee payer to be authority in ALT CloseLookupTable
 
 [validation.token_2022]
+# Transfer hooks let a token invoke extra program logic during transfers.
+# This preset rejects transfer hooks; changing it changes accepted token behavior.
 transfer_hook_policy = "deny_all"
+# Optional blocks for features attached to a token mint. Uncomment entries
+# to block them. Every entry below is commented out, so this list is empty;
+# the separate transfer-hook policy above still applies.
 blocked_mint_extensions = [
     # "confidential_transfer_mint",     # Confidential transfer configuration for the mint
     # "confidential_mint_burn",         # Confidential mint and burn configuration
@@ -177,6 +217,8 @@ blocked_mint_extensions = [
     # "transfer_hook",                  # Block tokens with transfer hooks
     # "pausable",                       # Block pausable tokens
 ]
+# Optional blocks for features on individual token accounts. Again, commented
+# entries are examples, not active blocks. Blocking features reduces compatibility.
 blocked_account_extensions = [
     # "confidential_transfer_account", # Confidential transfer state for the account
     # "non_transferable_account",      # Non-transferable token account
@@ -189,29 +231,38 @@ blocked_account_extensions = [
 ]
 
 [metrics]
+# Monitoring for tools such as Prometheus: request/service statistics.
+# This does not send alerts by itself; configure your monitoring separately.
 enabled = true
-endpoint = "/metrics"
+endpoint = "/metrics" # HTTP path used by your monitoring collector.
 port = 8080  # Same port as main server, or separate port like 9090
-scrape_interval = 60
+scrape_interval = 60 # Metrics interval in seconds.
 
 [metrics.fee_payer_balance]
+# Include sponsor SOL balance in monitoring; does not refill the wallet.
 enabled = true
-expiry_seconds = 30
+expiry_seconds = 30 # Balance metric cache lifetime in seconds.
 
 [kora.usage_limit]
+# Optional transaction/instruction usage quotas, separate from requests/second.
+# Requires configured rules and shared storage; disabled in this basic preset.
 enabled = false
-cache_url = "redis://redis:6379"
-fallback_if_unavailable = false
-rules = []
+cache_url = "redis://redis:6379" # Redis for usage accounting when enabled.
+fallback_if_unavailable = false # Reject rather than bypass limits if storage fails.
+rules = [] # No usage rules configured; this does not impose a daily SOL budget.
 
 [kora.plugins]
+# Optional extra transaction-processing features; none enabled here.
+# Adding a plugin can change the supported payment flow; consult upstream first.
 # Enabled transaction plugins for sign/signAndSend flows.
 # Available values: "gas_swap"
 enabled = []
 
 [kora.bundle]
+# Optional multi-transaction bundle flow. Ordinary sign-and-send works without it.
 enabled = false
 
 [kora.bundle.jito]
+# Jito submission/simulation services used if bundle support is enabled.
 block_engine_url = "https://mainnet.block-engine.jito.wtf"
 # simulate_bundle_url = "https://mainnet.rpc.jito.wtf"  # Required when bundle.enabled = true
