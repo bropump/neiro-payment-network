@@ -24,8 +24,9 @@ Explain what I need and guide me through getting anything missing.
 Walk me through the setup in plain language. Explain the fee options,
 wallet funding and optional remote signer, and help me choose settings.
 Use official Kora with the NEIRO configuration. Handle the installation,
-HTTPS, router registration, verification and automatic updates wherever
-you have access; explain any steps I need to do myself.
+HTTPS, router registration and verification wherever you have access.
+First get one operator working and show me a routed quote. Then set up
+automatic restart and updates. Explain any steps I need to do myself.
 
 Teach me how to check that it is working, view logs, monitor my SOL
 balance, change fees, update, stop and restart it. Leave a short guide

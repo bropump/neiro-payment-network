@@ -40,6 +40,16 @@ Look for `status: "active"` in the verify response and `eligible: true` in the o
 
 The router allows one verification attempt per registration per 60 seconds. Cached routing views can take up to approximately 120 seconds to reflect changes. Obtain a quote for your intended transaction through `/rpc?operator=YOUR_OPERATOR_ID` and keep that operator pinned through signing and submission.
 
+## Check a routed quote
+
+From this repository, with Node.js 20+ and the variables above:
+
+```sh
+node scripts/check-routed-quote.mjs "$NEIRO_ROUTER_URL" "$OPERATOR_ID"
+```
+
+Expect `"ok": true`, your payer and quoted fees. The helper gets the payer and blockhash, builds an unsigned transaction with no instructions, and requests a NEIRO quote. It never loads a key, signs, submits or spends funds. This checks the quote path only; it does not prove transfers, swaps or account creation will succeed. Before a real payment, quote the actual intended transaction and approve its fee separately.
+
 ## After an upgrade or config change
 
 Validate your config, restart Kora, then repeat the verify and listing commands with your saved `OPERATOR_ID`. No new registration is needed while the endpoint and payer/payment identity stay the same. The router does not install or upgrade Kora for you, and currently does not reject operators merely for running an older version.

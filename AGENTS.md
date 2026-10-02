@@ -2,6 +2,8 @@
 
 This repository supplies configuration and guidance for unchanged upstream Kora. Read docs/AGENT-SETUP.md, docs/JOIN.md and docs/REGISTRATION.md. Operators run Kora and register their HTTPS endpoint with the Cloudflare router.
 
+Work in two stages: first get Kora running, registered and returning a routed quote; then add automatic restart, updates and monitoring. Do not make Docker, LaunchAgents or schedulers a prerequisite for the first working result. Complete the second stage before claiming unattended operation is ready.
+
 Use the latest successfully built official upstream main revision. Pin each running deployment and arrange update checks every five minutes. Optional Docker helpers resolve upstream's image directly; NEIRO does not distribute a separate Kora build. Validate private config before replacement, preserve operator fees/allowances and signer identity, keep rollback available, check local health and call router verification after an upgrade. Do not patch Kora or its SDK.
 
 Registration uses POST /operators/register, a hosted HTTPS verification JSON file and POST /operators/verify. Save the registration ID and keep the proof available. No wallet key goes to the router, and no registration payment or renewal job is needed. Follow docs/REGISTRATION.md for removal and identity changes.

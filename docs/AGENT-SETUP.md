@@ -19,15 +19,23 @@ Inspect the host and existing operator first. Reuse prior choices and permission
 
 Offer [remote signing](SIGNING.md) as an optional way to isolate the key from the host. Preserve an existing signer choice. A new remote provider account may require the user's action; do not block local-keypair setup when that is their choice. If an input is missing, finish independent preparation and name the exact remaining step.
 
-## Complete setup
+## Stage 1: get a working operator
+
+Use one host, one private config folder and one signer. Choose the simplest supported installation for that host. Do not require Docker, a service manager, a scheduler or a remote signer before the first working quote. Explain funding, RPC access, Jupiter credentials and public HTTPS/proof hosting up front; these are the real prerequisites.
 
 1. Install unchanged official Kora at the latest successfully built upstream main revision, recording the revision and pinning the deployment. Follow upstream requirements for the host; [Docker helpers](DOCKER.md) are optional. Do not invent a CPU/RAM minimum or claim measured capacity.
 2. Copy the NEIRO config into private storage and apply the selected fee and allowance. Configure the chosen signer using the exact Kora build's supported settings. Prepare the funded SOL payer and NEIRO reimbursement account within the user's spending authorization.
-3. Validate the private config and start Kora under a service manager. Set up HTTPS and its static verification-file route. Keep transaction policies and request limits; do not weaken an existing private deployment automatically.
+3. Validate the private config and start Kora in the foreground for the initial check. Set up HTTPS and its static verification-file route. Keep transaction policies and request limits; do not weaken an existing private deployment automatically.
 4. Register the endpoint, host the returned verification JSON and call verify. Save the registration ID and keep the proof available. Confirm the expected payer and `eligible: true` in `/operators`, allowing for cache refresh. No registration payment or renewal job is needed.
-5. Obtain a quote for a valid intended transaction through `/rpc?operator=ID`. Keep the provider pinned. A quote is not a payment test. Use a private ledger for payment tests unless real spending is authorized; reconcile submitted signatures before any retry.
-6. Install update checks every five minutes with absolute paths and private logs/state. Prevent overlapping updates. Validate before replacement, preserve settings and keys, retain rollback and check local health. Then call router verification with the saved ID, respecting its 60-second cooldown. The Docker updater does not make this router call itself: include it after successful replacement in the host workflow.
-7. Run the installed update job once and confirm it exits successfully. Make failures visible in the host's service logs or existing monitoring. Confirm service restart works and the proof survives a restart/update. Do not report a scheduler as working merely because its file exists.
+5. Run the [unsigned routed quote check](REGISTRATION.md#check-a-routed-quote) for the first milestone. Then obtain a quote for the intended transaction through `/rpc?operator=ID` before any actual payment. Keep the provider pinned. A quote is not a payment test. Use a private ledger for payment tests unless real spending is authorized; reconcile submitted signatures before any retry.
+
+## Stage 2: make it suitable to leave running
+
+After the routed quote succeeds, show the user the working result. Then complete service restart, update scheduling and the operating guide. Do not describe the foreground-only setup as ready for unattended operation.
+
+1. Install a host service manager for Kora and the HTTPS/proof service. Keep the same private config folder and signer.
+2. Install update checks every five minutes with absolute paths and private logs/state. Prevent overlapping updates. Validate before replacement, preserve settings and keys, retain rollback and check local health. Then call router verification with the saved ID, respecting its 60-second cooldown. The Docker updater does not make this router call itself: include it after successful replacement in the host workflow.
+3. Run the installed update job once and confirm it exits successfully. Make failures visible in the host's service logs or existing monitoring. Confirm service restart works and the proof survives a restart/update. Do not report a scheduler as working merely because its file exists.
 
 ## Leave a short operating summary
 
