@@ -8,36 +8,36 @@ Run [Kora](https://github.com/solana-foundation/kora), accept NEIRO for transact
 
 This repository provides the NEIRO configuration and setup guidance. Kora is the software you run; we do not distribute a separate NEIRO Kora build.
 
-## Run an operator
+## Ask your agent to set it up
 
-1. Install and run official Kora using the latest successfully built upstream main revision.
-2. Copy our [Kora config](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml) into private storage. Set your fee, wallet and credentials.
-3. Validate the config and expose Kora over HTTPS.
-4. [Register your URL, host the verification JSON and call verify](docs/REGISTRATION.md).
-5. Keep Kora updated. After an upgrade or config change, call verify again and check a routed quote.
-
-[Setup guide](docs/JOIN.md) · [Fees and basics](TUTORIAL.md) · [Configuration details](CONFIGURATION.md)
-
-## Ask an agent to help
+Give your coding agent this repository and paste:
 
 ```text
-Set up a NEIRO operator on [my machine or hosting provider].
-Read AGENTS.md and docs/JOIN.md. Run official Kora with the NEIRO config.
-Help me choose my fee and spending allowance, supply the required
-credentials privately, fund the operator and set up HTTPS.
-Register the Kora URL with the Cloudflare router, host its verification
-JSON, call verify and confirm eligibility and a routed quote.
-Arrange Kora update checks every five minutes. Validate before replacing
-it, keep rollback available, and verify with the router after an upgrade.
-Keep wallet keys private and do not modify Kora or its SDK.
-Leave clear status, update, stop and restart instructions.
+Set up and run a NEIRO payment operator on [my machine or hosting provider].
+Follow AGENTS.md and docs/AGENT-SETUP.md in this repository.
+Use official Kora with the NEIRO configuration. Help me choose fees and
+supply missing credentials through private storage. Explain the optional
+remote signer; a local dedicated keypair is also supported.
+Handle installation, HTTPS, router registration and verification, service
+restart and automatic update checks. Verify the running result and leave
+simple status, stop, restart and update commands.
+Reuse choices and permissions I have already supplied. Ask only for
+missing access, decisions or spending approval, never for secrets in chat.
 ```
+
+Your agent handles **install → configure → start → register → verify → maintain**. You supply host access, private credential references and your operating choices. If you need help choosing them, the agent should guide you through them together.
+
+[Agent instructions](docs/AGENT-SETUP.md) · [Manual setup](docs/JOIN.md) · [Fees and basics](TUTORIAL.md)
 
 ## What you need
 
 A host that can run Kora, a dedicated operator wallet funded with SOL, a NEIRO token account for reimbursement, Solana RPC access, a Jupiter pricing key and public HTTPS hosting. Your HTTPS host must also serve the router's verification file. Follow upstream Kora's installation requirements for your chosen host; Docker is optional.
 
 The template recommends a **0.25 SOL per-transaction allowance** and includes an editable **50% markup example**. Choose margin, fixed or free pricing. SOL pays transaction costs; NEIRO reimbursement does not automatically refill SOL. See [fees and operating basics](TUTORIAL.md).
+
+## Optional remote signing
+
+For stronger key isolation, we recommend a supported remote signer through Kora’s existing **solana-keychain** integration. There is nothing extra to install in Kora. Your agent can configure the chosen backend; the local keypair template remains supported. [Signer choices](docs/SIGNING.md).
 
 ## Clients
 

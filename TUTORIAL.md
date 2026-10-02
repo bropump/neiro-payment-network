@@ -31,29 +31,9 @@ The agent also guides you through RPC access, the Jupiter pricing key required b
 
 ## 2. Ask your AI to set it up
 
-Give your coding agent this repository and paste:
+Give your coding agent this repository and the [setup prompt](README.md#ask-your-agent-to-set-it-up). The agent follows our [setup checklist](docs/AGENT-SETUP.md), handles installation and registration, verifies the result and leaves commands for running it.
 
-```text
-Set up a NEIRO payment operator on [my machine or host].
-
-Read the repository's agent and operator setup instructions.
-Resolve and run the latest successfully published official Kora main
-build, pin its image digest and arrange an update check every five
-minutes. Do not wait for a tagged release or patch Kora/the TypeScript
-SDK. Use the core NEIRO configuration.
-
-Help me choose my fees and per-transaction spending limit.
-Guide me through the credentials and wallet funding needed.
-Handle the required account setup and keep all keys private.
-
-Validate the configuration, start the operator, register it with the
-NEIRO network and check its eligibility and a routed quote.
-Test locally first; ask before spending real funds on a payment test.
-Tell me exactly what passed and leave start, stop, restart and status
-instructions for my host.
-```
-
-The agent should follow the [setup guide](docs/JOIN.md), resolve the latest published upstream main build and record its exact commit and digest. Use a private copy of the [NEIRO configuration](examples/operator/kora.toml) for your settings.
+You choose the host, fee and funding. Supply credentials through private storage. [Remote signing](docs/SIGNING.md) through Kora's solana-keychain integration is an optional recommendation for stronger key isolation; a dedicated local keypair also works.
 
 ## 3. Set your fees
 
@@ -121,7 +101,7 @@ The current template uses `allowed_programs = "All"` for broad program compatibi
 
 These payment and swap results predate the current All/0.25 SOL template. The updated template has separate offline configuration checks; every swap or launch and 90% transaction acceptance have not been established. [Read the test results](PLATFORM-TESTS.md).
 
-**Ready to start? Copy the prompt above and tell your agent where to run your operator.**
+**Ready to start? Give your agent the [setup prompt](README.md#ask-your-agent-to-set-it-up) and tell it where to run your operator.**
 
 ## Register and verify
 
