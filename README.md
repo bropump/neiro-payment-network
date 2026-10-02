@@ -47,6 +47,16 @@ You do not need to choose a host or understand Kora before starting. Your agent 
 
 [Agent instructions](docs/AGENT-SETUP.md) · [Manual setup](docs/JOIN.md) · [Fees and basics](TUTORIAL.md)
 
+## Connect your operator in 3 steps
+
+Once Kora is running at your public HTTPS URL:
+
+1. **Register:** send your Kora URL to `POST https://api.mainnet-beta.neiropay.app/operators/register`.
+2. **Host the proof:** serve the returned verification JSON at the specified path on your operator’s domain.
+3. **Verify:** send the returned operator ID to `POST https://api.mainnet-beta.neiropay.app/operators/verify`. Once verification passes and your operator is eligible, the router can send it requests.
+
+Your agent can handle these steps. [Copy-paste API commands](docs/REGISTRATION.md) cover registration, checking eligibility and verifying again after upgrades or config changes.
+
 ## What you need
 
 Run wherever official Kora runs; Mac, Docker and Bunny are examples, not requirements. Your agent adapts the setup using [upstream deployment guidance](https://solana.com/docs/tools/kora/operators#deployment) and the chosen host’s instructions.
