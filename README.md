@@ -55,6 +55,10 @@ Once Kora is running at your public HTTPS URL:
 2. **Host the proof:** serve the returned verification JSON at the specified path on your operator’s domain.
 3. **Verify:** send the returned operator ID to `POST https://api.mainnet-beta.neiropay.app/operators/verify`. Once verification passes and your operator is eligible, the router can send it requests.
 
+**The router brings the requests to you.** Once your operator is verified and eligible, the router automatically includes it when choosing an operator for clients using the network. You do not need to find users, connect to each app or route requests yourself. Keep Kora online and your SOL balance funded; you receive NEIRO for the transactions you sponsor, according to your fee settings.
+
+Clients connect to one NEIRO router endpoint. The router helps them select an eligible operator by speed or price, so they do not need to discover operators themselves. Apps use the Kora payment flow described in the [client guide](https://github.com/bropump/neiro-kora-router-cloudflare#use-it).
+
 Your agent can handle these steps. [Copy-paste API commands](docs/REGISTRATION.md) cover registration, checking eligibility and verifying again after upgrades or config changes.
 
 ## What you need
