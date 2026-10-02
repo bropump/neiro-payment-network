@@ -7,7 +7,7 @@ You need a running public HTTPS Kora endpoint and control of that hostname's web
 Set `KORA_ENDPOINT` to your real Kora HTTPS URL. The commands below use `curl` and `jq`:
 
 ```sh
-export NEIRO_ROUTER_URL='https://neiro-cf-router-demo.optical.workers.dev'
+export NEIRO_ROUTER_URL='https://api.mainnet-beta.neiropay.app'
 export KORA_ENDPOINT='https://kora.your-domain.com'
 
 jq -n --arg url "$KORA_ENDPOINT" '{url:$url}' |

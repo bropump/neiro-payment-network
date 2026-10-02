@@ -4,7 +4,7 @@ Operators run Kora and [register their endpoint](REGISTRATION.md). Clients use t
 
 The router is a separate [Cloudflare Workers project](https://github.com/bropump/neiro-kora-router-cloudflare). Its repository contains deployment requirements, client usage and operating limits. It forwards requests to eligible Kora operators; Kora holds the signer and validates sponsorship.
 
-Current router: `https://neiro-cf-router-demo.optical.workers.dev`
+Current router: `https://api.mainnet-beta.neiropay.app`
 
 - `/rpc?selection=fastest` or `/rpc?selection=cheapest`: Kora client endpoint.
 - `/operators`: eligibility, pricing and timing information.
