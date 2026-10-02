@@ -10,7 +10,7 @@ Start with one operator and one signer. Leave service managers and update schedu
 
 ### 1. Install Kora
 
-Install [official Kora](https://github.com/solana-foundation/kora) on your chosen machine or host. Use the latest successfully built upstream main revision and record the revision you deploy. Use upstream's installation requirements for that host. [Docker setup](DOCKER.md) is an optional example.
+Install [official Kora](https://github.com/solana-foundation/kora) on your chosen machine or host. Use the latest successfully built upstream main revision and record the revision you deploy. Choose the matching [host path](HOSTING.md): native Mac/Linux, Docker, Bunny or another compatible host. Follow that host’s upstream requirements.
 
 You need a dedicated operator wallet with SOL for sponsorship, a NEIRO token account for reimbursement, Solana RPC access, a Jupiter pricing key and a public HTTPS endpoint. Keep the host online. We have not published measured CPU/RAM minimums; capacity depends on traffic and RPC performance.
 
@@ -20,6 +20,8 @@ The live router uses **Solana mainnet**. Your agent should help you obtain:
 - A Jupiter API key from [Jupiter's developer portal](https://portal.jup.ag), entered into private storage.
 - A dedicated payer funded with mainnet SOL, plus its NEIRO token account for receiving reimbursement. The router requires no positive NEIRO balance or fixed dollar deposit. Account creation can itself cost SOL; agree the funding scope before doing it.
 - An HTTPS hostname whose routing you control. Your agent configures both Kora and the proof-file route.
+
+Use the [funding and fee checklist](FUNDING.md) to distinguish operator SOL liquidity from customer NEIRO payments and check public wallet/account details before funding.
 
 ### 2. Put two config files in one private folder
 
@@ -41,6 +43,8 @@ kora --config /path/to/kora.toml rpc start --signers-config /path/to/signers.tom
 For the first check, run Kora in the foreground and keep the terminal open. Confirm it starts and responds before adding automation. Keep the supplied transaction policies and request limits. The router accesses public Kora endpoints without provider API credentials; do not remove authentication from an existing private service just to join.
 
 ### 3. Connect to the router
+
+Follow the [concrete HTTPS/proof example](HTTPS.md), or use your host’s equivalent routing.
 
 Use your host’s HTTPS ingress, or a tunnel/reverse proxy for a local machine. It needs two routes: Kora requests go to the running Kora process; `/.well-known/neiro-router/ID` returns the verification JSON. A tunnel pointed only at Kora is not sufficient to serve the file.
 

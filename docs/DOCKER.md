@@ -47,9 +47,19 @@ Keep the foreground terminal open. Use a second terminal for registration and qu
 
 Then follow [router registration](REGISTRATION.md). Your HTTPS host must serve the verification JSON as well as forwarding Kora requests.
 
+For a working reverse proxy and proof-file example, follow [HTTPS.md](HTTPS.md).
+
 ## After the first quote: run in the background
 
-After registration and the quote check work, stop the foreground container with Ctrl-C. Reload the same private environment, including `KORA_PRIVATE_KEY`, then repeat the start command with `-d --restart unless-stopped` in place of `--rm`. Unset the key variable after startup. Docker must stay running. Confirm Kora and the HTTPS/proof service return after restart before setting up updates.
+After registration and the quote check work, stop the foreground container with Ctrl-C. Reload the same private environment and run:
+
+```sh
+export KORA_PRIVATE_KEY="$(cat "$NEIRO_OPERATOR_DIR/payer.json")"
+docker run -d --platform linux/amd64 --name neiro-provider --restart unless-stopped -p 127.0.0.1:8080:8080 -v "$NEIRO_OPERATOR_DIR:/config:ro" -e RPC_URL -e JUPITER_API_KEY -e KORA_PRIVATE_KEY --entrypoint kora "$KORA_IMAGE" --config /config/kora.toml rpc start --signers-config /config/signers.toml
+unset KORA_PRIVATE_KEY
+```
+
+Docker must stay running. Confirm Kora and the HTTPS/proof service return after restart before setting up updates. Loopback port 8080 is intentionally reached through your front proxy; publishing that port alone does not provide HTTPS or the proof file.
 
 ## Updates
 
@@ -67,8 +77,10 @@ Main is upstream's integration branch and can include unaudited commits. A merge
 
 ```sh
 docker ps --filter name=neiro-provider
-docker restart neiro-provider
-docker stop neiro-provider
+docker logs --tail 50 neiro-provider # Recent startup/errors; avoid sharing secrets from logs
+docker restart neiro-provider # Restart the existing container/config
+docker stop neiro-provider # Stop serving
+docker start neiro-provider # Start that stopped container
 ```
 
 After a successful upgrade, call [router verification](REGISTRATION.md#after-an-upgrade-or-config-change). The Docker updater checks local Kora health but does not call router verification itself.

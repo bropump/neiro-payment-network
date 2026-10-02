@@ -6,6 +6,8 @@ You are setting up a working service for the user. Run the steps you can complet
 
 Start with their experience and preferred host. If they are unsure, explain a personal computer, a server and a managed cloud host in plain language: their computer must stay awake and online; a server needs maintenance; a managed host handles some infrastructure but has its own costs and limits. Help choose based on budget, uptime needs and comfort with maintenance. Do not assume they already have hosting, a domain or credentials.
 
+Choose one [host path](HOSTING.md). Use [FUNDING.md](FUNDING.md) for funding/account checks and fee examples, and [HTTPS.md](HTTPS.md) for concrete proof routing. Do not make the novice discover these missing pieces themselves.
+
 Explain each stage briefly before doing it and why it is needed. Guide user-only steps such as account creation and secret entry. Perform authorized work when access is available, without making the user approve every routine command.
 
 ## Get the few inputs you need
@@ -35,7 +37,7 @@ After the routed quote succeeds, show the user the working result. Then complete
 
 1. Install a host service manager for Kora and the HTTPS/proof service. Keep the same private config folder and signer.
 2. Install update checks every five minutes with absolute paths and private logs/state. Prevent overlapping updates. Validate before replacement, preserve settings and keys, retain rollback and check local health. Then call router verification with the saved ID, respecting its 60-second cooldown. The Docker updater does not make this router call itself: include it after successful replacement in the host workflow.
-3. Run the installed update job once and confirm it exits successfully. Make failures visible in the host's service logs or existing monitoring. Confirm service restart works and the proof survives a restart/update. Do not report a scheduler as working merely because its file exists.
+3. Run the installed update job once and confirm it exits successfully. Make failures visible in the host’s service logs and help the user select an available notification destination for update failures and low SOL. Report clearly if notifications remain unconfigured. Confirm service restart works and the proof survives a restart/update. Do not report a scheduler as working merely because its file exists.
 
 ## Leave a short operating summary
 
