@@ -13,19 +13,30 @@ This repository provides the NEIRO configuration and setup guidance. Kora is the
 Give your coding agent this repository and paste:
 
 ```text
-Set up and run a NEIRO payment operator on [my machine or hosting provider].
+Help me set up and learn to run a NEIRO payment operator.
 Follow AGENTS.md and docs/AGENT-SETUP.md in this repository.
-Use official Kora with the NEIRO configuration. Help me choose fees and
-supply missing credentials through private storage. Explain the optional
-remote signer; a local dedicated keypair is also supported.
-Handle installation, HTTPS, router registration and verification, service
-restart and automatic update checks. Verify the running result and leave
-simple status, stop, restart and update commands.
+
+Start by asking where I want to run it. If I am unsure, explain the
+simple options—my own computer, a server or a cloud host—and help me
+choose based on cost, availability and how much maintenance I want.
+Explain what I need and guide me through getting anything missing.
+
+Walk me through the setup in plain language. Explain the fee options,
+wallet funding and optional remote signer, and help me choose settings.
+Use official Kora with the NEIRO configuration. Handle the installation,
+HTTPS, router registration, verification and automatic updates wherever
+you have access; explain any steps I need to do myself.
+
+Teach me how to check that it is working, view logs, monitor my SOL
+balance, change fees, update, stop and restart it. Leave a short guide
+with the exact commands for my setup and what their results mean.
+
 Reuse choices and permissions I have already supplied. Ask only for
-missing access, decisions or spending approval, never for secrets in chat.
+missing information or required approval. Help me store credentials
+privately; never ask me to paste secrets into chat.
 ```
 
-Your agent handles **install → configure → start → register → verify → maintain**. You supply host access, private credential references and your operating choices. If you need help choosing them, the agent should guide you through them together.
+You do not need to choose a host or understand Kora before starting. Your agent helps you choose, explains each stage and handles the setup where it has access. It then shows you how to operate the service day to day.
 
 [Agent instructions](docs/AGENT-SETUP.md) · [Manual setup](docs/JOIN.md) · [Fees and basics](TUTORIAL.md)
 

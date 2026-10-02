@@ -2,6 +2,12 @@
 
 You are setting up a working service for the user. Run the steps you can complete; do not hand back commands for the user to execute when you have the required access. Use [JOIN.md](JOIN.md) for Kora setup and [REGISTRATION.md](REGISTRATION.md) for the exact router calls. Do not patch Kora or its SDK.
 
+## Help the user choose where and how to run it
+
+Start with their experience and preferred host. If they are unsure, explain a personal computer, a server and a managed cloud host in plain language: their computer must stay awake and online; a server needs maintenance; a managed host handles some infrastructure but has its own costs and limits. Help choose based on budget, uptime needs and comfort with maintenance. Do not assume they already have hosting, a domain or credentials.
+
+Explain each stage briefly before doing it and why it is needed. Guide user-only steps such as account creation and secret entry. Perform authorized work when access is available, without making the user approve every routine command.
+
 ## Get the few inputs you need
 
 Inspect the host and existing operator first. Reuse prior choices and permissions. Bundle missing questions instead of asking at every step:
@@ -25,7 +31,9 @@ Offer [remote signing](SIGNING.md) as an optional way to isolate the key from th
 
 ## Leave a short operating summary
 
-Save a private runbook on the operator host and give the user its path. Include:
+Show the user how to check the service, read a useful log entry and recognize a successful router verification. Explain when to replenish SOL and how to change fees. Do not merely hand over a list of unexplained commands.
+
+Save a short private operating guide on the host and give the user its path. For each command, explain what it does and what a successful result looks like. Include:
 
 - Service name, public Kora URL, router URL and registration ID.
 - Payer public key, chosen signer backend, fees, allowance and signature limit.
