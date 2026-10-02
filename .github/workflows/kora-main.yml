@@ -1,0 +1,49 @@
+name: Latest official Kora main
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: latest-official-kora-main
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: main
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Resolve the latest successfully published upstream main image
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-kora-main.mjs --update-lock
+      - name: Check the canonical NEIRO configuration
+        run: python3 scripts/check-operator-preset.py
+      - name: Validate the official main image and canonical signer/config files
+        run: node scripts/verify-stock-kora.mjs
+      - name: Save the validated main snapshot
+        run: |
+          if ! git diff --quiet -- examples/operator/kora-release.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add examples/operator/kora-release.json
+            git commit -m 'Track latest buildable official Kora main'
+            git push origin HEAD:main
+          fi
+      - name: Update our Bunny operator to the validated main image
+        if: ${{ vars.BUNNY_KORA_APP_ID != '' }}
+        env:
+          BUNNY_KORA_APP_ID: ${{ vars.BUNNY_KORA_APP_ID }}
+          BUNNY_KORA_CONTAINER_NAME: ${{ vars.BUNNY_KORA_CONTAINER_NAME }}
+          BUNNY_KORA_API_KEY: ${{ secrets.BUNNY_KORA_API_KEY }}
+        run: node scripts/update-bunny-kora.mjs

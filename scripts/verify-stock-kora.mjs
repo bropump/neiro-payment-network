@@ -10,6 +10,7 @@ const configDir = resolve(root, 'examples/operator');
 const lock = JSON.parse(readFileSync(resolve(configDir, 'kora-release.json'), 'utf8'));
 if (!/^ghcr\.io\/solana-foundation\/kora@sha256:[a-f0-9]{64}$/.test(lock.image) ||
     !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.]+)?$/.test(lock.version)) throw Error('Invalid upstream lock');
+if(lock.channel!=='main' || !/^[a-f0-9]{40}$/.test(lock.upstream_commit)) throw Error('Official main pin required');
 const args = process.argv.slice(2);
 if (args.length && (args.length !== 2 || args[0] !== '--binary')) throw Error('Usage: verify-stock-kora.mjs [--binary /path/to/stock/kora]');
 const native = args.length ? resolve(args[1]) : undefined;
@@ -26,11 +27,17 @@ delete env.KORA_RECAPTCHA_SECRET;
 function invoke(commandArgs) {
   if (native) return execFileSync(native, commandArgs, {env, encoding:'utf8', timeout:30000});
   if (configDir.includes(',')) throw Error('Docker bind mount path contains a comma');
-  return execFileSync('docker', ['run', '--rm', '--network', 'none', '--read-only',
+  return execFileSync('docker', ['run', '--rm', '--platform', 'linux/amd64', '--network', 'none', '--read-only',
     '--tmpfs', '/tmp', '-e', 'RPC_URL', '-e', 'JUPITER_API_KEY',
     '-e', 'KORA_PRIVATE_KEY', '--mount', `type=bind,src=${configDir},dst=/config,readonly`,
     '--entrypoint', 'kora', lock.image, ...commandArgs], {env, encoding:'utf8', timeout:180000});
 }
+const metadata=JSON.parse(execFileSync('docker',['buildx','imagetools','inspect','--format','{{json .Image}}',lock.image],
+  {encoding:'utf8',timeout:120000}));
+if(metadata.config?.Labels?.['org.opencontainers.image.revision']!==lock.upstream_commit ||
+   metadata.config?.Labels?.['org.opencontainers.image.source']!=='https://github.com/solana-foundation/kora')
+  throw Error('Pinned official image revision/source does not match the main pin');
+console.log('Official upstream main commit: '+lock.upstream_commit);
 const actual = invoke(['--version']).trim();
 if (!["kora " + lock.version, "kora-cli " + lock.version].includes(actual)) throw Error('Unexpected stock Kora version: ' + actual);
 console.log(actual);

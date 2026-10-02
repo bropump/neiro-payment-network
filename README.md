@@ -16,8 +16,11 @@ You can run an operator on your own machine, a Linux server or a cloud container
 Set up a NEIRO payment operator on [my machine or hosting provider].
 
 Read AGENTS.md, docs/AGENT-SETUP.md and docs/JOIN.md. Get and build the
-supported official Kora release in examples/operator/kora-release.json,
-or use its official container image. Use examples/operator/kora.toml
+latest successfully published official upstream Kora main build using
+scripts/resolve-kora-main.mjs. Pin that image digest for this deployment;
+do not wait for a tagged release or use an older snapshot. Arrange an
+operator update check every five minutes. Do not patch Kora or the
+TypeScript SDK. Use examples/operator/kora.toml
 and the signer template as the starting configuration.
 
 Help me choose my fee: cost plus a percentage, a fixed NEIRO amount,
@@ -76,6 +79,8 @@ The spending limit applies per transaction, not per day. Failed on-chain transac
 
 We have deployed stock Kora on Bunny.net, registered an operator and completed two mainnet Jupiter swaps through the earlier Bunny router setup. Those tests predate the Rust on-chain registration workflow documented here. On an Apple Silicon Mac, configuration validation and local payment tests passed, including payment to a new recipient account. The [test record](PLATFORM-TESTS.md) describes the configurations and results.
 
-The [release file](examples/operator/kora-release.json) pins the supported Kora version. The current template uses `allowed_programs = "All"` for broad program compatibility. This admits arbitrary program IDs and leaves sponsor exposure described in upstream #683; it does not establish measured 90% transaction acceptance or arbitrary-program safety. The prepared migration to `sponsor_only_programs = "All"` with restricted sponsor participation awaits an official upstream release and compatibility checks. See the [configuration and upgrade notes](CONFIGURATION.md).
+**Operators track the latest successfully published official upstream Kora main build.** Install/update resolves upstream's `edge` image and pins its digest for that deployment. The [image snapshot](examples/operator/kora-release.json) is refreshed by CI; fresh installs resolve directly so a stale snapshot never selects an older release. Running operators check every five minutes and validate before replacement. Follow the [setup and update instructions](docs/JOIN.md). We do not modify Kora or the TypeScript SDK.
+
+The current template uses `allowed_programs = "All"` for broad program compatibility. This admits arbitrary program IDs and leaves sponsor exposure described in upstream #683; it does not establish measured 90% transaction acceptance or arbitrary-program safety. The prepared migration to `sponsor_only_programs = "All"` with restricted sponsor participation awaits its merge into official main and compatibility checks. See the [configuration and upgrade notes](CONFIGURATION.md).
 
 Registration uses a separate CLI on the operator host. You do not need to host a router to run Kora. [Registration and renewal](docs/REGISTRATION.md) · [Run a router separately](docs/ROUTER.md)

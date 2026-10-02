@@ -1,33 +1,35 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "profile": "neiro-broad-programs",
   "upstream": "https://github.com/solana-foundation/kora",
-  "tag": "v2.2.0-beta.8",
+  "tag": "edge",
   "version": "2.2.0-beta.8",
-  "upstream_commit": "7aea236d9d24f579e21c578ccf69707246968b23",
-  "image": "ghcr.io/solana-foundation/kora@sha256:1b929cd9b32e6a3dddb646669fbe0d30651e07377b2bface044cd84289df59bf",
+  "upstream_commit": "afe5e6b297c33b71293eb57da80bd8de8b40709a",
+  "image": "ghcr.io/solana-foundation/kora@sha256:be48de8d77cb1e2f8206b582aee10790c6ce77b557e79e4a16775a3c1c9d24a8",
   "published_image_platforms": [
-    "linux/amd64",
-    "linux/arm64"
+    "linux/amd64"
   ],
   "config_sha256": {
     "kora.toml": "9d93d262bf9da0d07ccc3ffdd8c44e652c5deda257cb27fb78a891eb9891a138",
     "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
   },
-  "verification_scope": "October 2 All/0.25 SOL preset: canonical config and pinned official Docker image config/signers validation; see config-update-verification.json. Historical private-ledger payments and GitHub Actions run 36742479969 used the earlier six-program/0.01 SOL preset and do not validate this updated configuration. No new payment or registry publication for this update.",
-  "update_policy": "Advance version, image digest and canonical config hashes through a reviewed compatibility update. User configuration changes belong in a private copy.",
+  "verification_scope": "Official main image startup and canonical config/signers validation. Historical payment results retain their original image/config scope.",
+  "update_policy": "Track the latest successfully published upstream main image. Resolve edge at every installation/update, verify its merged revision, and pin that digest for the running process. Check for updates every five minutes; validate before replacement and retain rollback on failure.",
   "operator_settings": "Fee mode/price and per-transaction allowance are operator choices. CI checks the canonical example template, not customized operator files.",
   "planned_program_policy": {
-    "status": "pending_upstream_release_and_validation",
+    "status": "pending_upstream_main_merge_and_validation",
     "upstream_pr": "https://github.com/solana-foundation/kora/pull/692",
     "sponsor_only_programs": "All",
     "allowed_programs": "Explicit sponsor-participation list; never All for this policy",
     "activation_requirements": [
-      "Pin an official release supporting the setting and update canonical config hashes",
+      "Resolve an official merged main image supporting the setting and update canonical config hashes",
       "Verify router admission and health policy support",
       "Validate representative payments, swaps, launches and prohibited sponsor participation"
     ],
     "enabled_in_current_template": false,
     "upstream_issue": "https://github.com/solana-foundation/kora/issues/683"
-  }
+  },
+  "channel": "main",
+  "upstream_main_head": "afe5e6b297c33b71293eb57da80bd8de8b40709a",
+  "image_tag": "afe5e6b"
 }

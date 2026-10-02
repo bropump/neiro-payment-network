@@ -9,7 +9,10 @@ root = Path(__file__).resolve().parent.parent
 base = root / "examples" / "operator"
 lock = json.loads((base / "kora-release.json").read_text())
 assert re.fullmatch(r"\d+\.\d+\.\d+(?:-[A-Za-z0-9.]+)?", lock["version"])
-assert lock["tag"] == "v" + lock["version"]
+assert lock["schema_version"] == 2
+assert lock["channel"] == "main" and lock["tag"] == "edge"
+assert re.fullmatch(r"[0-9a-f]{40}", lock["upstream_commit"])
+assert lock["image_tag"] == lock["upstream_commit"][:7]
 assert re.fullmatch(r"ghcr\.io/solana-foundation/kora@sha256:[0-9a-f]{64}", lock["image"])
 assert set(lock["config_sha256"]) == {"kora.toml", "signers.toml"}, "Both reviewed TOML hashes are required"
 for name, expected in lock["config_sha256"].items():
@@ -40,4 +43,4 @@ for method in ["estimate_transaction_fee", "sign_and_send_transaction", "get_con
 assert methods["sign_transaction"] is False
 assert signers["signers"] == [{"name": "neiro-provider", "type": "memory", "private_key_env": "KORA_PRIVATE_KEY"}]
 assert signers["signer_pool"]["strategy"] == "round_robin"
-print("PASS: reviewed NEIRO payment defaults, signer template and official release lock")
+print("PASS: NEIRO payment defaults, signer template and official main image pin")

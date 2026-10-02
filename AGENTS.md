@@ -1,6 +1,6 @@
 # Set up a NEIRO operator
 
-This repository supplies configuration and instructions for unchanged upstream Kora. Read docs/AGENT-SETUP.md and docs/JOIN.md. Use the release pin and operator-chosen fees and spending limits. Kora and the Rust router are separate services; an operator does not need to host a router.
+This repository supplies configuration and instructions for unchanged upstream Kora. Read docs/AGENT-SETUP.md and docs/JOIN.md. Operators track the latest successfully published official upstream main build, not the latest tagged release. Resolve it with scripts/resolve-kora-main.mjs at every install/update and pin its digest for that deployment. The checked-in image pin is a recorded snapshot, not a reason to install an older image. Arrange an update check every five minutes; validate the private config, retain rollback and check health before completing replacement. Do not patch Kora or the TypeScript SDK. Retain operator-chosen fees and spending limits. Kora and the Rust router are separate services; an operator does not need to host a router.
 
 Registration uses the Rust CLI to publish an operator-signed record on Solana. Read docs/REGISTRATION.md before using it. Do not use the old HTTP registration helper or invent network settings. Source access to the reviewed Rust CLI and the chosen network's genesis hash, namespace, anchor policy and router URL are required inputs. The example network file is deliberately unconfigured.
 

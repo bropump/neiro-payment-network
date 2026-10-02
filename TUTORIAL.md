@@ -37,8 +37,10 @@ Give your coding agent this repository and paste:
 Set up a NEIRO payment operator on [my machine or host].
 
 Read the repository's agent and operator setup instructions.
-Get and build the supported official Kora version, or use its official
-container image where appropriate. Use the core NEIRO configuration.
+Resolve and run the latest successfully published official Kora main
+build, pin its image digest and arrange an update check every five
+minutes. Do not wait for a tagged release or patch Kora/the TypeScript
+SDK. Use the core NEIRO configuration.
 
 Help me choose my fees and per-transaction spending limit.
 Guide me through the credentials and wallet funding needed.
@@ -51,7 +53,7 @@ Tell me exactly what passed and leave start, stop, restart and status
 instructions for my host.
 ```
 
-The agent should follow the [setup guide](docs/JOIN.md) and use the version in the [release file](examples/operator/kora-release.json). Use a private copy of the [NEIRO configuration](examples/operator/kora.toml) for your settings.
+The agent should follow the [setup guide](docs/JOIN.md), resolve the latest published upstream main build and record its exact commit and digest. The [image file](examples/operator/kora-release.json) is a recorded snapshot, not an instruction to install an older build. Use a private copy of the [NEIRO configuration](examples/operator/kora.toml) for your settings.
 
 ## 3. Set your fees
 
@@ -106,9 +108,9 @@ This is **not a daily budget**. Many transactions can each consume up to the con
 - **SOL goes out; NEIRO comes in.** Reimbursement does not automatically refill your SOL balance. You must manage that balance yourself.
 - **Failed transactions can cost money.** If an on-chain transaction fails, network fees can still be charged while its NEIRO payment is rolled back.
 - **Keep the supplied protections.** Use HTTPS and request limits, and retain Kora's transaction and sponsor permissions. The current Rust router requires public Kora endpoints; API-key-protected providers are not supported by its public profile. Spending limits reduce exposure but do not prevent every loss or software bug.
-- **Update deliberately.** We use upstream Kora rather than a custom fork. Follow reviewed release updates, check your configuration and test before returning to service.
+- **Track official main.** Check for the latest successfully published upstream main image every five minutes. Pin each deployment, validate your private config and retain rollback if an update fails. Main can contain unaudited changes; a successful build is not an audit. We do not patch Kora or the TypeScript SDK.
 
-The current template uses `allowed_programs = "All"` for broad program compatibility. Arbitrary programs are admitted, and the existing fee-payer policies do not establish a general sponsor-safety boundary. The prepared upstream #683 migration uses a restricted `allowed_programs` list with `sponsor_only_programs = "All"`; it awaits an official release and validation. See [configuration and upgrade status](CONFIGURATION.md).
+The current template uses `allowed_programs = "All"` for broad program compatibility. Arbitrary programs are admitted, and the existing fee-payer policies do not establish a general sponsor-safety boundary. The prepared upstream #683 migration uses a restricted `allowed_programs` list with `sponsor_only_programs = "All"`; it awaits a merge into official main and validation. See [configuration and upgrade status](CONFIGURATION.md).
 
 ## What we have tested
 

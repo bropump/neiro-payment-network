@@ -1,0 +1,128 @@
+{
+  "tested_at": "2026-10-02T11:32:52.816Z",
+  "upstream_commit": "afe5e6b297c33b71293eb57da80bd8de8b40709a",
+  "image": "ghcr.io/solana-foundation/kora@sha256:be48de8d77cb1e2f8206b582aee10790c6ce77b557e79e4a16775a3c1c9d24a8",
+  "binary_version": "2.2.0-beta.8",
+  "keychain_version": "2.0.0",
+  "canonical_config_validation": "passed",
+  "public_chain_submission": false,
+  "private_ledger": {
+    "version": {
+      "feature-set": 565236538,
+      "solana-core": "4.2.2"
+    },
+    "genesis_hash": "4P1qxoGU9PdogSFx6XVRevAo681BxN9SHJEE5p7XWy6T",
+    "scope": "Signing compatibility using Mock pricing/free sponsorship; not an exact-preset NEIRO settlement test.",
+    "transactions": [
+      {
+        "signer": "para",
+        "format": "legacy",
+        "signature": "kzp4xEdVxCsLvsGhopf6aTtmjitNopY7G3tbZ7Qmc5oYFzteAModHjKRqdU8v4p7pqLaRNfidSNHzfLu9vn8M68",
+        "signatures_verified": true,
+        "original_message_preserved": true,
+        "confirmed": true
+      },
+      {
+        "signer": "para",
+        "format": "v0",
+        "signature": "2uVJsTjJRueYUEnXcQyMThYiKzsuF4WxPmEnLt5SGRNk8K4Vq6Rjp5zGQYJWRGQYdm5yz9M7Dy7oBnjA8VSEFQHK",
+        "signatures_verified": true,
+        "original_message_preserved": true,
+        "confirmed": true
+      },
+      {
+        "signer": "para",
+        "format": "v1",
+        "signature": "5Ya2JggVUcSkbVoaThaHAtnbCLgBuWtbim4YMpqs9Un4VTu9rc4djeFpEZH515pmmcKfAQ2owHoW7f5Tm49VTvv2",
+        "signatures_verified": true,
+        "original_message_preserved": true,
+        "confirmed": true
+      },
+      {
+        "signer": "memory",
+        "format": "legacy",
+        "signature": "4LdhwgvqazsKHEu885mA2zSSRmQAQR64MG8KG7HpHBEv81SGZGycKogMMVioDEdNpA7JziZk3VjEtthUBQVFcBEH",
+        "signatures_verified": true,
+        "original_message_preserved": true,
+        "confirmed": true
+      },
+      {
+        "signer": "memory",
+        "format": "v0",
+        "signature": "4aPCroCbLBze9zUbLHVDnWCh8b36bnV3Ah8A2c9ng8KJ1WWFMJtutzvcMEnFQ5cukdfbPRmYQ7yc6r5xpTn9yuwT",
+        "signatures_verified": true,
+        "original_message_preserved": true,
+        "confirmed": true
+      },
+      {
+        "signer": "memory",
+        "format": "v1",
+        "signature": "2xM3roFHbkJ8Gxq1XxZJxLvttG9TXcW3ZgZ88GAqVi9K7w8FqPEcwZXYRFYSUAoFJ7oUWEBAEXe1DQDpoBsP5ecf",
+        "signatures_verified": true,
+        "original_message_preserved": true,
+        "confirmed": true
+      }
+    ],
+    "v1_sign_transaction_verified": [
+      "para",
+      "memory"
+    ]
+  },
+  "live_operators": [
+    {
+      "name": "mac",
+      "signer": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N",
+      "allowed_programs": "All",
+      "max_allowed_lamports": 250000000,
+      "price": {
+        "type": "margin",
+        "margin": 0.01
+      },
+      "v1_fee_estimate": {
+        "fee_in_lamports": 5101,
+        "fee_in_token": null,
+        "signer_pubkey": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N",
+        "payment_address": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N"
+      },
+      "v1_neiro_fee_estimate": {
+        "fee_in_lamports": 5101,
+        "fee_in_token": 1217998,
+        "signer_pubkey": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N",
+        "payment_address": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N"
+      }
+    },
+    {
+      "name": "bunny",
+      "signer": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg",
+      "allowed_programs": "All",
+      "max_allowed_lamports": 250000000,
+      "price": {
+        "type": "margin",
+        "margin": 0.05
+      },
+      "v1_fee_estimate": {
+        "fee_in_lamports": 5303,
+        "fee_in_token": null,
+        "signer_pubkey": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg",
+        "payment_address": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg"
+      },
+      "v1_neiro_fee_estimate": {
+        "fee_in_lamports": 5303,
+        "fee_in_token": 1266386,
+        "signer_pubkey": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg",
+        "payment_address": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg"
+      }
+    }
+  ],
+  "limitations": [
+    "Live endpoints were tested with read/simulation fee estimates only; no public-chain signing or submission was performed.",
+    "The published official main image is AMD64; the Mac deployment uses Docker emulation.",
+    "Main contains changes newer than the audited baseline; successful tests are not an audit.",
+    "Sponsor protection PR #692 remains unmerged and disabled."
+  ],
+  "operator_updater_tests": {
+    "replacement_preserves_environment_ports_and_restart_policy": "passed",
+    "forced_health_failure_restores_original_container": "passed",
+    "restored_original_getVersion": "passed"
+  }
+}

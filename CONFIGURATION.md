@@ -23,20 +23,22 @@ This recommendation does not claim measured 90% signing success, compatibility w
 
 | Setting | Included template |
 | --- | --- |
-| Kora | Official `v2.2.0-beta.8`, with an immutable image reference |
+| Kora | Latest successfully published official upstream main build; resolve on install/update and pin its digest |
 | Operator reimbursement token | NEIRO, six decimals; application transactions can involve other tokens |
 | Operator fee | Operator chooses margin, fixed or free; template example is cost plus 50% |
 | Sponsor allowance | Recommended 0.25 SOL per transaction; operator may choose another allowance |
 | Current program policy | `allowed_programs = "All"` |
 | Sponsor permissions | Account creation enabled; direct SOL transfers and sponsor token spending disabled |
 
-[Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml) · [Upstream release lock](examples/operator/kora-release.json)
+[Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml) · [Upstream main image snapshot](examples/operator/kora-release.json)
+
+Operators follow official main, not the latest tagged release. `scripts/resolve-kora-main.mjs` resolves the latest published `edge` image, checks its official source label and that its revision belongs to upstream main, then records its immutable digest. Fresh installs and update checks resolve it directly. The repository refresh workflow records the validated snapshot every five minutes; Docker operators use the update helper on the same interval. See [setup and updates](docs/JOIN.md). Kora and the TypeScript SDK remain unmodified. A main binary can retain an older version string, so identify deployments by commit and digest. Main can include unaudited commits.
 
 Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
 
 ## Prepared recommendation after #683 ships
 
-As checked on 2 October 2026, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not part of a released stock Kora build. Keep the current configuration until an upstream release includes this feature. Do not install a custom fork or assume an unknown TOML field activates the proposed protection.
+As checked on 2 October 2026, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not merged into official main. Keep the current configuration until it merges and passes compatibility checks in a published main image. A tagged release is not required. Do not patch Kora or assume an unknown TOML field activates the proposed protection.
 
 After the feature ships, replace the current program setting with the following fragment and retain the 0.25 SOL allowance:
 
@@ -59,7 +61,7 @@ Under the proposal, arbitrary outer and inner program IDs can run, but an unappr
 
 Do not leave `allowed_programs = "All"` in the migrated configuration: the proposal explicitly leaves the sponsor-participation gate disabled in that mode. Sponsor-funded app-owned account creation or other sponsor participation can require additional reviewed programs. Trust in an approved outer program includes its handling of downstream calls; this is not an audit of every routed venue.
 
-Before activation, pin an official release supporting the setting, confirm its final semantics, update the canonical config hashes, verify router admission, and test representative payments, swaps and launches plus refusal of prohibited sponsor participation. Publish the verified release version with the updated recommendation. No future version number is assumed here.
+Before activation, resolve and pin an official merged main image supporting the setting, confirm its final semantics, update the canonical config hashes, verify router admission, and test representative payments, swaps and launches plus refusal of prohibited sponsor participation. Publish the verified upstream commit and image digest with the updated recommendation.
 
 ## Checked application paths
 
@@ -75,7 +77,9 @@ Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTT
 
 ## Validation and historical evidence
 
-The release file locks the official Docker image by digest. The compatibility workflow checks the canonical template and validates it offline with that image and a disposable key. It checks the example, not customized operator files. The October 2 All/0.25 SOL update has [separate config validation evidence](config-update-verification.json); no new payment or registration was submitted for that update.
+The October 2 main upgrade uses official upstream commit `afe5e6b297c33b71293eb57da80bd8de8b40709a`. Both our Mac and Bunny deployments were replaced with its pinned official image and retained their signer identities and operator fees. Both live endpoints successfully simulated genuine transaction-format v1 fee estimates and NEIRO reimbursement quotes with `All`/0.25 SOL settings. On a disposable Agave 4.2.2 ledger, the same image signed and confirmed legacy, v0 and v1 transactions with both Para and memory backends, with independent signature verification. V1 `signTransaction` was also verified with both backends. Test pricing was Mock/free on the private ledger; no public-chain transaction was submitted. See [main upgrade evidence](main-upgrade-verification.json).
+
+The image snapshot pins the official main Docker image by digest. The compatibility workflow checks its source/revision labels and canonical template and validates it offline with a disposable key. It checks the example, not customized operator files. Fresh installs resolve the latest published main image rather than relying on a stale snapshot. Historical tests retain their original configuration and image scope. The October 2 All/0.25 SOL update has [separate config validation evidence](config-update-verification.json); no new payment or registration was submitted for that update.
 
 Two recorded basic NEIRO payments settled on a private ledger with unchanged Kora before this update: an existing recipient token account and a newly created recipient account. They used the earlier six-program template, a 0.01 SOL allowance and 50% margin; only Jupiter pricing changed to Mock. The original hash and receipts remain in [payment evidence](preset-payment-evidence.json), with the September 30 [verification record](verification.json). They do not prove payment acceptance for the new preset. Live pricing, funding, hosting, HTTPS and eligibility remain deployment checks.
 
