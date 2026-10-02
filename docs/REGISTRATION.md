@@ -1,67 +1,60 @@
-# Register with the Rust router
+# Connect Kora to the router
 
-Kora serves transactions. The separate `neiro-router` CLI publishes your registration to Solana. You run the CLI on your own host; you do not need to start its gateway service.
+You need a running public HTTPS Kora endpoint and control of that hostname's web routing. Your wallet key stays with Kora. Registration uses HTTP; there is no registration transaction or periodic renewal.
 
-## What you need
+## Register
 
-- A working public HTTPS Kora endpoint and its matching sponsor keypair, held locally.
-- The reviewed Rust CLI source or a trusted build supplied by the network maintainer. This repository does not yet publish a router-source URL or downloadable CLI release. Do not substitute the older JavaScript router helper.
-- A Solana RPC, the agreed genesis hash, registry namespace and anchor policy, plus a router URL for checking admission. Match the router you intend to join. The CLI default `neiro-kora-v1` is not proof of the deployed network's namespace.
-- At least $1 each of SOL and NEIRO in the required payer accounts, supported Kora settings, and permission to spend the registration and renewal transaction fees.
-
-`examples/operator/network.example.json` lists the inputs. Its null values must be supplied; it is not a working network profile. The anchor is normally derived from the namespace. If the network uses an explicit anchor, set that same value for publish, discover and gateway.
-
-## Get the CLI
-
-Inside the reviewed Rust router source checkout:
+Set `KORA_ENDPOINT` to your real Kora HTTPS URL. The commands below use `curl` and `jq`:
 
 ```sh
-cargo build --locked --release --bin neiro-router
-./target/release/neiro-router publish --help
-./target/release/neiro-router discover --help
+export NEIRO_ROUTER_URL='https://neiro-cf-router-demo.optical.workers.dev'
+export KORA_ENDPOINT='https://kora.your-domain.com'
+
+jq -n --arg url "$KORA_ENDPOINT" '{url:$url}' |
+  curl --fail-with-body --silent --show-error \
+    "$NEIRO_ROUTER_URL/operators/register" \
+    -H 'content-type: application/json' --data-binary @- > registration.json
+
+jq '{id, status, verificationUrl, verification}' registration.json
+jq '.verification' registration.json > verification.json
+export OPERATOR_ID="$(jq -r '.id' registration.json)"
 ```
 
-Install that binary on your PATH as `neiro-router`, or use its absolute path. CLI options were checked against the current Rust source and its local binary; see [router alignment](ROUTER-ALIGNMENT.md).
+Serve `verification.json` at the exact `verificationUrl` returned, such as `https://kora.your-domain.com/.well-known/neiro-router/ID`. Configure your HTTPS host to serve that path as JSON while sending Kora requests to Kora. This is a static file, not a Kora config field. It contains a token and `enabled: true`; it contains no wallet key.
 
-## Publish your registration
+Keep the file available. Complete initial verification within 15 minutes; if the pending record expires, register again and use the newly returned proof. The Kora endpoint must use HTTPS without URL credentials, an explicit port, query, fragment or redirects.
 
-Load `NEIRO_RPC_URL`, `NEIRO_GENESIS_HASH`, `NEIRO_NAMESPACE`, `KORA_ENDPOINT`, `OPERATOR_KEYPAIR` and `REGISTRY_REVISION` in your private environment. Use `NEIRO_ANCHOR` only if the network specifies an override; otherwise leave it unset. Set the revision to a value greater than your previous publications. For a new payer with no prior record, start at 1.
+## Verify and check
 
 ```sh
-: "${NEIRO_RPC_URL:?Set RPC}"
-: "${NEIRO_GENESIS_HASH:?Set verified network genesis hash}"
-: "${NEIRO_NAMESPACE:?Set the shared registry namespace}"
-: "${KORA_ENDPOINT:?Set your intended public HTTPS Kora endpoint}"
-: "${OPERATOR_KEYPAIR:?Set your local payer keypair path}"
-: "${REGISTRY_REVISION:?Set a new increasing revision}"
+jq -n --arg id "$OPERATOR_ID" '{id:$id}' |
+  curl --fail-with-body --silent --show-error \
+    "$NEIRO_ROUTER_URL/operators/verify" \
+    -H 'content-type: application/json' --data-binary @-
 
-neiro-router publish   --rpc-url "$NEIRO_RPC_URL"   --genesis-hash "$NEIRO_GENESIS_HASH"   --namespace "$NEIRO_NAMESPACE"   --keypair "$OPERATOR_KEYPAIR"   --endpoint "$KORA_ENDPOINT"   --revision "$REGISTRY_REVISION"   --ttl-seconds 86400
+curl --fail --silent --show-error "$NEIRO_ROUTER_URL/operators" |
+  jq --arg id "$OPERATOR_ID" '.operators[] | select(.id == $id)'
 ```
 
-This submits a real Solana transaction and waits for finalization. Save its signature, revision and expiry privately. The record contains your payer, endpoint, network, namespace and validity period. Your endpoint and payer become public, including in permanent transaction history. Private keys and API credentials are never part of the record.
+Look for `status: "active"` in the verify response and `eligible: true` in the operator listing. Verification checks the hosted proof, Kora payer identity, required methods and NEIRO payment support. Background checks also sample unsigned quotes. This does not certify every transaction or the provider's exact software build. There is no dollar-denominated wallet-balance admission check; you still need enough SOL to sponsor your workload.
 
-If the command times out after submission, keep the reported signature and reconcile its chain status before publishing another record.
+The router allows one verification attempt per registration per 60 seconds. Cached routing views can take up to approximately 120 seconds to reflect changes. Obtain a quote for your intended transaction through `/rpc?operator=YOUR_OPERATOR_ID` and keep that operator pinned through signing and submission.
 
-## Check discovery and admission
+## After an upgrade or config change
+
+Validate your config, restart Kora, then repeat the verify and listing commands with your saved `OPERATOR_ID`. No new registration is needed while the endpoint and payer/payment identity stay the same. The router does not install or upgrade Kora for you, and currently does not reject operators merely for running an older version.
+
+If verification fails, check that the proof URL returns the unchanged token with `enabled: true`, that Kora is reachable publicly, and that its config supports NEIRO. A 429 may indicate the verification cooldown or a request limit. Background checks continue, but successful verification does not instantly invalidate every routing cache.
+
+## Change identity or leave
+
+For a new endpoint or payer/payment identity, remove the old registration and register the new endpoint. To remove your registration, first serve the same proof token with `enabled: false`, then call:
 
 ```sh
-neiro-router discover   --rpc-url "$NEIRO_RPC_URL"   --genesis-hash "$NEIRO_GENESIS_HASH"   --namespace "$NEIRO_NAMESPACE"
-
-: "${NEIRO_ROUTER_URL:?Set a confirmed router base URL}"
-curl --fail --silent --show-error "${NEIRO_ROUTER_URL%/}/readyz"
-curl --fail --silent --show-error "${NEIRO_ROUTER_URL%/}/operators"
+jq -n --arg id "$OPERATOR_ID" '{id:$id}' |
+  curl --fail-with-body --silent --show-error \
+    "$NEIRO_ROUTER_URL/operators/remove" \
+    -H 'content-type: application/json' --data-binary @-
 ```
 
-Find your payer in discovery, then in the router's admitted operator list. `/readyz` describes the router as a whole, not your individual admission. `/healthz` only reports process liveness. Background checks take time; fresh registration alone does not mean the operator can serve payments.
-
-The router checks payer identity, funding, pricing, required methods and an unsigned account-creation quote. It uses public Kora endpoints without provider credentials. A protected endpoint that rejects its probes will not be admitted. No secret is distributed through the registry.
-
-Use the Kora client with `${NEIRO_ROUTER_URL}/rpc?provider=YOUR_PAYER` to obtain an unsigned quote for a valid payment. Keep that same payer when preparing and submitting the final approved transaction. Test payments on a private ledger first; live execution needs an approved spending scope.
-
-## Renew, change or leave
-
-Records last at most 24 hours. Have your setup agent arrange one publisher to renew comfortably before expiry, for example every 12 hours with a 24-hour TTL. Persist a strictly increasing revision, prevent overlapping jobs, budget transaction fees and alert on failure. The CLI does not install a scheduler or manage revisions for you. Renewal needs access to the operator key on its own host, never inside a router.
-
-To change your endpoint, publish the new endpoint at a higher revision. To revoke, use the same publish command with a higher revision and add `--disabled`. Wait for finalization and verify the record is no longer active. Publishing a replacement does not erase earlier public records.
-
-Registration establishes the signing identity, not honesty or guaranteed availability. Routers independently check eligibility. Registry scans depend on Solana RPC history and can fail if spam exhausts their scan budget; see ROUTER-ALIGNMENT.md for the current prototype's scope.
+Check `/operators` after cache refresh. Operators configured directly in a router deployment must be removed from that deployment's settings instead.

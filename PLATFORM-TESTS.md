@@ -14,7 +14,7 @@ Fresh operator installs resolve the latest successfully published official main 
 
 ## Bunny.net
 
-Recorded September 29, 2026 using the earlier router and registration service. These results are not an end-to-end test of the Rust on-chain registration instructions added to this package. Stock Kora `v2.2.0-beta.8` ran on Bunny Magic Containers. Initial deployment evidence records one France instance, successful registry admission, eligibility, direct quotes and routed quotes. A later live test records two finalized Jupiter swaps through the Bunny router/operator setup, with NEIRO reimbursement and account-creation cost recovery:
+Recorded September 29, 2026 using the earlier router and registration service. Stock Kora `v2.2.0-beta.8` ran on Bunny Magic Containers. Initial deployment evidence records one France instance, successful operator admission, eligibility, direct quotes and routed quotes. A later live test records two finalized Jupiter swaps through the Bunny router/operator setup, with NEIRO reimbursement and account-creation cost recovery:
 
 Mainnet transaction identifiers are retained in private test records. They are omitted here because publishing them links the test wallets and their on-chain activity. This public summary is therefore a reported result, not independently checkable mainnet proof.
 

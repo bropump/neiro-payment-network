@@ -1,14 +1,12 @@
 # Agent setup
 
-Ask where the user wants to host, what fee to charge and the maximum SOL to sponsor per transaction. Reuse answers already supplied. Explain margin, fixed and free pricing briefly; template values are examples.
+1. Read [JOIN.md](JOIN.md) and [REGISTRATION.md](REGISTRATION.md). Reuse the user's chosen host, fee and allowance; ask only for missing inputs.
+2. Install unchanged official Kora at the latest successfully built upstream main revision. Use the NEIRO config and signer templates in private storage. Use upstream's host requirements; our [Docker helpers](DOCKER.md) are optional.
+3. Obtain private references to the signer, RPC and Jupiter credentials. Prepare the funded SOL payer and NEIRO reimbursement account. Keep keys out of chat, Git and router requests.
+4. Validate the config and start Kora. Arrange HTTPS, service restart and the static verification-file path on the operator's hostname. Keep transaction policies and request limits; do not weaken an existing private deployment automatically.
+5. POST the endpoint to `/operators/register`, host the returned verification JSON, then POST its ID to `/operators/verify`. Save the ID. Check eligibility and an operator-pinned quote. Registration has no Solana fee or renewal job.
+6. Arrange upstream main update checks every five minutes. Pin each deployment, validate before replacement, preserve settings and keys, retain rollback, and check local Kora health. After an upgrade, call router verification again, respecting its 60-second cooldown. The Docker updater does not make that router call itself; arrange it in the host workflow.
+7. Test payments on a private ledger unless real spending is authorized. Report startup, router eligibility, quote and settlement results separately.
+8. Leave the private config location, deployed upstream revision/digest, chosen fees/allowance, registration ID, update schedule and host-specific status/stop/restart commands. Explain how to remove the registration.
 
-1. Read JOIN.md and REGISTRATION.md. Obtain the private signer reference, RPC and Jupiter credential references, intended public operator hostname and chosen network settings. Obtain access to the reviewed Rust CLI source separately; no download URL is published here yet.
-2. Resolve the latest successfully published official upstream main build with `node scripts/resolve-kora-main.mjs`. Use its immutable image reference, or build unchanged upstream source at exactly its `upstream_commit` for a native host. Do not wait for a tagged release, use an old checked-in snapshot without resolving, or patch Kora/the TypeScript SDK. Copy the templates to private storage. Set the chosen pricing and allowance without relaxing sponsor permissions. The current official main image is AMD64; Apple Silicon needs Docker emulation or an unchanged native source build.
-3. Prepare the payer's SOL and canonical NEIRO token account. Admission requires at least $1 of each, even for free sponsors. Keep enough additional SOL for the intended workload and registry fees.
-4. Validate Kora and arrange HTTPS plus service restart/monitoring. The public router does not send a provider API key. Before exposing a fresh public endpoint, verify Kora policy and request limits. Do not weaken an existing authenticated deployment automatically.
-5. Use the Rust CLI locally on the operator-owned host to publish the registration within the user's spending authorization. Record the transaction signature, expiry and revision. No sponsor key goes to a router.
-6. Confirm finalized publication and CLI discovery. Check the selected router's /readyz and /operators, then get an unsigned quote pinned to the payer at /rpc?provider=PAYER. Discovery alone does not mean admitted or payment-tested.
-7. Arrange a single renewal job before expiry, with a persisted increasing revision, bounded fees and failure alerts. Reconcile timeouts rather than blindly publishing again. Test a full payment on a private ledger, or live only within authorized spending.
-8. Arrange an operator update check every five minutes. Docker operators use `scripts/update-kora-operator.mjs`; other hosts need the equivalent host-native deployment job. Resolve the latest published main image on each check, validate before replacement, preserve keys/settings and keep the previous deployment on failure. Leave the scheduler, private config locations, current commit/digest, chosen settings, start/stop/restart commands, renewal status and outstanding inputs. A missing CLI source or network setting is an explicit setup dependency, not a reason to invent one.
-
-Hosting a router is optional and separate. See ROUTER.md.
+Operators run Kora. They do not need to host a router. Do not patch Kora or its SDK.

@@ -73,7 +73,7 @@ Token-2022 metadata reconstruction is separately tracked in [upstream #681](http
 
 ## What you supply
 
-Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTTPS endpoint and agreed registry settings. The documented Rust router uses public providers without a credential store. See [registration](docs/REGISTRATION.md) for publication, renewal and eligibility checks.
+Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTTPS endpoint and the router URL. The Cloudflare router uses public providers without a credential store. See [registration](docs/REGISTRATION.md) for joining, verifying after upgrades and checking eligibility.
 
 ## Validation and historical evidence
 
@@ -87,4 +87,4 @@ Kora's validator reports policy warnings, including account-creation sponsorship
 
 ## Pricing service
 
-The router uses `price.neiropay.app` for operator holding valuation. It returns NEIRO and SOL prices, but pinned Kora beta.8 supports only Jupiter and Mock pricing and fixes the Jupiter API URL in its code. A custom price URL cannot replace Jupiter through configuration in this version. Keep Jupiter credentials for stock Kora; using the NEIRO service inside Kora requires upstream integration or a code change.
+Stock Kora uses Jupiter for the supplied NEIRO pricing configuration. Keep the Jupiter credential available to Kora; the router does not supply a replacement price feed.
