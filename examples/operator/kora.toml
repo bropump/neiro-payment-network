@@ -52,7 +52,7 @@ get_version = true
 
 [validation]
 max_allowed_lamports = 250000000 # 0.25 SOL per transaction; operator may choose another allowance
-max_signatures = 4
+max_signatures = 10
 price_source = "Jupiter"
 allow_durable_transactions = false
 cross_cluster_check = false

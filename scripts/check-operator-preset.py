@@ -29,7 +29,7 @@ assert v["allowed_spl_paid_tokens"] == [neiro]
 assert v["price_source"] == "Jupiter"
 assert v["price"] == {"type": "margin", "margin": 0.5}
 assert v["max_allowed_lamports"] == 250_000_000
-assert v["max_signatures"] == 4
+assert v["max_signatures"] == 10
 assert v["allowed_programs"] == "All"
 policy = v["fee_payer_policy"]
 assert policy["system"]["allow_create_account"] is True
