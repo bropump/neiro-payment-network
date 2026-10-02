@@ -1,4 +1,38 @@
-# NEIRO provider starter for stock Kora v2.2.0-beta.8. Review spending limits before use.
+# NEIRO configuration for official Kora. Choose your fee below.
+# Keep one pricing option active. To switch, replace the active settings
+# under [validation.price] with the settings from the chosen example.
+
+[validation.price]
+# OPTION 1 — margin: charge the sponsored cost plus your percentage.
+# The percentage applies to the cost you cover, NOT the amount the user sends.
+# margin = 0.0 means cost only; 0.10 = +10%; 0.20 = +20%; 0.50 = +50%.
+# Example: a sponsored cost worth 10 NEIRO with margin = 0.5 costs the user 15 NEIRO.
+type = "margin"
+margin = 0.5 # Editable example: sponsored cost plus 50%, paid in NEIRO.
+
+# OPTION 2 — fixed: charge the same total NEIRO fee per transaction.
+# Replace the active type/margin lines above with these four lines:
+# type = "fixed"
+# amount = 10000000
+# token = "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"
+# strict = true
+# NEIRO has 6 decimals: 1000000 = 1 NEIRO; 10000000 = 10 NEIRO.
+# Set amount to your desired total fee in those smallest units.
+# strict = true rejects transactions whose estimated cost exceeds your fee.
+# strict = false allows you to cover that shortfall from your own SOL.
+
+# OPTION 3 — free: sponsor the transaction without charging the user.
+# Replace the active type/margin lines above with this single line:
+# type = "free"
+# You cover the SOL cost yourself and receive no NEIRO reimbursement.
+
+# Sponsored cost includes required token-account creation (ATA rent) when
+# included in the transaction quoted/signed by Kora. Separate setup payments
+# made outside Kora are not reimbursed retroactively.
+# Your fee is separate from the SOL spending allowance in [validation].
+# After editing: validate the config, restart Kora, verify with the router
+# and check a fresh quote. More examples: TUTORIAL.md, section 3.
+
 [kora]
 rate_limit = 100
 
@@ -129,14 +163,6 @@ allow_extend = false            # Allow fee payer to be authority/payer in ALT E
 allow_freeze = false            # Allow fee payer to be authority in ALT FreezeLookupTable
 allow_deactivate = false        # Allow fee payer to be authority in ALT DeactivateLookupTable
 allow_close = false             # Allow fee payer to be authority in ALT CloseLookupTable
-
-[validation.price]
-type = "margin" # free / margin / fixed
-margin = 0.5  # Transaction cost including operator-funded ATA rent, plus 50%.
-# Include ATA creation in the transaction quoted/signed by Kora; direct setup
-# transactions signed outside Kora are not reimbursed retroactively.
-# Fixed pricing: strict=true rejects costs above the fee; strict=false can subsidise.
-# Free pricing intentionally waives reimbursement. See docs/JOIN.md.
 
 [validation.token_2022]
 transfer_hook_policy = "deny_all"
