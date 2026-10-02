@@ -14,13 +14,18 @@ Our testing has included x402, MPP, Jupiter swaps, transfers and trades.
 
 Run Kora, accept NEIRO for transaction fees, and connect your operator to the NEIRO router. This repository provides the NEIRO configuration and setup guidance. Kora is the software you run; we do not distribute a separate NEIRO Kora build.
 
+**Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then [connect to the router](#connect-your-operator-in-3-steps). Your agent can guide you through the whole setup.
+
 ## Ask your agent to set it up
 
 Give your coding agent this repository and paste:
 
 ```text
 Help me set up and learn to run a NEIRO payment operator.
-Follow AGENTS.md and docs/AGENT-SETUP.md in this repository.
+Follow the official Kora deployment guide for installation and hosting:
+https://solana.com/docs/tools/kora/operators#deployment
+Use AGENTS.md and docs/AGENT-SETUP.md for the NEIRO configuration
+and router connection steps.
 
 Start by asking where I want to run it. If I am unsure, explain the
 simple options—my own computer, a server or a cloud host—and help me
