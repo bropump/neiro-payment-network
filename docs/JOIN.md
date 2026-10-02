@@ -60,6 +60,8 @@ node scripts/update-kora-operator.mjs --container neiro-provider --state-dir wor
 
 The updater resolves the official main image afresh, pins its digest, validates the operator's own config offline and replaces the container only when the image changes. It preserves the private environment, mounted config, startup arguments and ports. It checks local `getVersion` after startup, restores the original container if replacement fails and records a stopped rollback container on success. A stopped operator stays stopped. Keep the scheduler output for update failures; `docker restart` alone does not upgrade an image. Native/cloud deployments need the equivalent platform update job. Our Bunny deployment follows the repository's main-image refresh workflow.
 
+For a macOS LaunchAgent, put private copies of `resolve-kora-main.mjs` and `update-kora-operator.mjs` together with its state/logs under `~/Library/Application Support/NEIRO-Kora`, rather than a protected Documents workspace. Use an absolute Node path, an explicit PATH containing Docker, `StartInterval = 300` and `RunAtLoad = true`. Keep directories private and verify an actual scheduled run exits successfully. Pause automatic checks before a deliberate rollback, otherwise the next check will select the latest main image again.
+
 Main is upstream's integration branch and can include unaudited commits. A merged/buildable image is not a security certification. Pinning prevents changes during a running deployment; regular resolution keeps the deployment current. The Kora binary's version string can remain unchanged between main builds, so record the image digest and upstream commit as well.
 
 ```sh
