@@ -1,11 +1,9 @@
 # Set up a NEIRO operator
 
-This repository supplies configuration and instructions for unchanged upstream Kora. Read docs/AGENT-SETUP.md and docs/JOIN.md. Use the release pin and operator-chosen fees and spending limits. Kora and the Rust router are separate services; an operator does not need to host a router.
+Use unchanged official Kora pinned in `examples/operator/kora-release.json`. Follow `docs/JOIN.md`, review `CONFIGURATION.md`, and let the operator choose fees and spending limits in a private configuration copy.
 
-Registration uses the Rust CLI to publish an operator-signed record on Solana. Read docs/REGISTRATION.md before using it. Do not use the old HTTP registration helper or invent network settings. Source access to the reviewed Rust CLI and the chosen network's genesis hash, namespace, anchor policy and router URL are required inputs. The example network file is deliberately unconfigured.
+The current network entry point is the Cloudflare router. Register the public HTTPS endpoint through the HTTP ownership-proof flow in `docs/REGISTRATION.md`. No on-chain registration, wallet signature, daily renewal or Rust router is required for this network. Legacy registry examples/scripts are not part of this setup.
 
-Keep keys and credentials in private storage and outside chat, Git and router processes. Registry publication makes the operator payer and endpoint public permanently and spends a Solana transaction fee. Obtain an explicit registration/renewal spending scope before publication. Use a private ledger for tests unless real spending is authorized.
+Keep keys and API credentials on the operator's host, outside chat and Git. Do not remove authentication from an existing service silently: prepare an intentional public Kora endpoint with the operator's chosen policy and request limits.
 
-The current Rust router uses publicly callable Kora endpoints and has no provider credential store. Do not pass a Kora API key to a registry helper or put it on-chain. Do not remove authentication from a running operator merely to pass discovery. Prepare and verify the intended public deployment, Kora policy and rate limits first. The router does not replace Kora's transaction checks.
-
-Finish with startup, registration finality, discovery, admission and payment results separately. Arrange renewal before record expiry, with increasing revisions and no concurrent publishers. Reconcile unknown publication outcomes before retrying. Leave host-specific status, stop/restart, renewal and revocation instructions.
+Validate configuration, verify startup and public access, register, and obtain a routed quote. A quote is not proof a payment will be accepted. Spend real funds only within the operator's explicit scope, reconcile uncertain submissions before retrying, and report any unrecovered funds or rent. Provide status, restart, shutdown and removal instructions.
