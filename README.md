@@ -2,7 +2,7 @@
   <a href="https://bropump.com"><img src="https://images.bropump.com/neiro_logo_small.png" alt="NEIRO" width="120"></a>
 </p>
 
-# NEIRO Payment Network Core
+# NEIRO GAS Network
 
 Run [Kora](https://github.com/solana-foundation/kora), accept NEIRO for transaction fees, and connect your operator to the NEIRO router. You choose your host and fees and keep control of your wallet.
 
