@@ -71,7 +71,6 @@
   "live_operators": [
     {
       "name": "mac",
-      "signer": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N",
       "allowed_programs": "All",
       "max_allowed_lamports": 250000000,
       "price": {
@@ -80,20 +79,16 @@
       },
       "v1_fee_estimate": {
         "fee_in_lamports": 5101,
-        "fee_in_token": null,
-        "signer_pubkey": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N",
-        "payment_address": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N"
+        "fee_in_token": null
       },
       "v1_neiro_fee_estimate": {
         "fee_in_lamports": 5101,
-        "fee_in_token": 1217998,
-        "signer_pubkey": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N",
-        "payment_address": "ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N"
-      }
+        "fee_in_token": 1217998
+      },
+      "signer_identity_preserved": true
     },
     {
       "name": "bunny",
-      "signer": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg",
       "allowed_programs": "All",
       "max_allowed_lamports": 250000000,
       "price": {
@@ -102,16 +97,13 @@
       },
       "v1_fee_estimate": {
         "fee_in_lamports": 5303,
-        "fee_in_token": null,
-        "signer_pubkey": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg",
-        "payment_address": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg"
+        "fee_in_token": null
       },
       "v1_neiro_fee_estimate": {
         "fee_in_lamports": 5303,
-        "fee_in_token": 1266386,
-        "signer_pubkey": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg",
-        "payment_address": "S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg"
-      }
+        "fee_in_token": 1266386
+      },
+      "signer_identity_preserved": true
     }
   ],
   "limitations": [
