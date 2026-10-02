@@ -22,6 +22,8 @@ export OPERATOR_ID="$(jq -r '.id' registration.json)"
 
 Serve `verification.json` at the exact `verificationUrl` returned, such as `https://kora.your-domain.com/.well-known/neiro-router/ID`. Configure your HTTPS host to serve that path as JSON while sending Kora requests to Kora. This is a static file, not a Kora config field. It contains a token and `enabled: true`; it contains no wallet key.
 
+To show hosting locations on the dashboard, optionally add `"hostingRegions": ["Germany", "Singapore"]` to the verification JSON, using your actual locations. Multiple locations can share one endpoint. These are operator-reported labels, separate from Cloudflare's measurement locations. Keep them updated and repeat verification after changing them; they do not change routing or Kora settings.
+
 Keep the file available. Complete initial verification within 15 minutes; if the pending record expires, register again and use the newly returned proof. The Kora endpoint must use HTTPS without URL credentials, an explicit port, query, fragment or redirects.
 
 ## Verify and check
