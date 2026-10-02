@@ -51,7 +51,7 @@ get_payer_signer = true
 get_version = true
 
 [validation]
-max_allowed_lamports = 10000000
+max_allowed_lamports = 250000000 # 0.25 SOL per transaction; operator may choose another allowance
 max_signatures = 4
 price_source = "Jupiter"
 allow_durable_transactions = false
@@ -62,15 +62,8 @@ cross_cluster_endpoints = [
     "https://api.testnet.solana.com",
 ]
 
-allowed_programs = [
-    "11111111111111111111111111111111",              # System Program
-    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # Token Program
-    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Program
-    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table Program
-    "ComputeBudget111111111111111111111111111111",   # Compute Budget Program
-    # "L2TExMFKdjpN9kozasaurPirfHy9P8sbXoAN1qA3S95", # Lighthouse Program (uncomment when lighthouse enabled)
-    "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", # Memo v2
-]
+# Broad program compatibility. Review sponsor exposure and the pending #683 migration in CONFIGURATION.md.
+allowed_programs = "All"
 allowed_tokens = [
     "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump", # NEIRO
 ]

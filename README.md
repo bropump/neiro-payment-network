@@ -56,7 +56,7 @@ margin = 0.20
 
 Validate the file and restart Kora after changing it. The tutorial includes [fixed and free pricing examples](TUTORIAL.md#3-set-your-fees).
 
-Your spending limit is separate from your fee. It sets how much SOL the operator can cover in one transaction. The template's 0.01 SOL limit and 50% markup are editable examples, not network requirements. See [setting your spending limit](TUTORIAL.md#4-set-your-spending-limit).
+Your spending limit is separate from your fee. The recommended template uses a 0.25 SOL per-transaction allowance and an editable 50% markup example; operators choose their own allowance and fee. See [setting your spending limit](TUTORIAL.md#4-set-your-spending-limit).
 
 ## Using the network
 
@@ -76,6 +76,6 @@ The spending limit applies per transaction, not per day. Failed on-chain transac
 
 We have deployed stock Kora on Bunny.net, registered an operator and completed two mainnet Jupiter swaps through the earlier Bunny router setup. Those tests predate the Rust on-chain registration workflow documented here. On an Apple Silicon Mac, configuration validation and local payment tests passed, including payment to a new recipient account. The [test record](PLATFORM-TESTS.md) describes the configurations and results.
 
-The [release file](examples/operator/kora-release.json) pins the supported Kora version. The starter currently covers basic payments. Broader program support through `sponsor_only_programs = "All"` awaits an official upstream release and compatibility checks. See the [configuration and upgrade notes](CONFIGURATION.md) when updating your operator.
+The [release file](examples/operator/kora-release.json) pins the supported Kora version. The current template uses `allowed_programs = "All"` for broad program compatibility. This admits arbitrary program IDs and leaves sponsor exposure described in upstream #683; it does not establish measured 90% transaction acceptance or arbitrary-program safety. The prepared migration to `sponsor_only_programs = "All"` with restricted sponsor participation awaits an official upstream release and compatibility checks. See the [configuration and upgrade notes](CONFIGURATION.md).
 
 Registration uses a separate CLI on the operator host. You do not need to host a router to run Kora. [Registration and renewal](docs/REGISTRATION.md) · [Run a router separately](docs/ROUTER.md)

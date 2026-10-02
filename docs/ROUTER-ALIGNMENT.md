@@ -15,9 +15,9 @@ Reviewed September 30, 2026 against the user-supplied Rust source. [Source hashe
 | Payments | `/rpc`, payer pinning; Kora validates sponsorship; router does not simulate payments |
 | Limits | Legacy and v0 without lookup tables; no sign-only, bundles or transfer convenience API |
 
-The six-program basic-payment template includes the Rust admission check's required System, Token and Associated Token programs, at least two signatures, a positive allowance, account creation and the required RPC methods. It uses supported margin pricing and permits NEIRO reimbursement. This is a source-level compatibility check, not a new registered deployment test.
+The reviewed source's admission requirements are covered by the current All/0.25 SOL template: System, Token and Associated Token programs, at least two signatures, a positive allowance, account creation and the required RPC methods. The template uses supported margin pricing and permits NEIRO reimbursement. This is a source-level compatibility check, not a new registered deployment test.
 
-The source accepts both explicit program lists and `allowed_programs = "All"`. This package keeps the reviewed explicit basic-payment permissions. The planned `sponsor_only_programs` policy is a separate upstream update, not a current default.
+The source accepts both explicit program lists and `allowed_programs = "All"`. On October 2, 2026, this package changed its recommendation from the six-program basic-payment list to `All` and raised the allowance to 0.25 SOL. The planned `sponsor_only_programs` policy still requires a separate upstream release and compatibility check. See [configuration and upgrade status](../CONFIGURATION.md).
 
 No existing endpoint was opened, no registration or renewal was published and no real payment was sent during this documentation update. Public registry discovery relies on RPC history and its configured scan bound. Spam can exhaust that bound; the implementation does not claim permissionless spam resistance.
 

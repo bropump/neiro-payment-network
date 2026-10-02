@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "profile": "neiro-basic-payments",
+  "profile": "neiro-broad-programs",
   "upstream": "https://github.com/solana-foundation/kora",
   "tag": "v2.2.0-beta.8",
   "version": "2.2.0-beta.8",
@@ -11,10 +11,10 @@
     "linux/arm64"
   ],
   "config_sha256": {
-    "kora.toml": "19621fb914bba2bcf21c65880dfb81bfa5f3c99a815d290e5d3c91bae7b3ec19",
+    "kora.toml": "9d93d262bf9da0d07ccc3ffdd8c44e652c5deda257cb27fb78a891eb9891a138",
     "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
   },
-  "verification_scope": "Native and official Docker image config/signers validation passed; GitHub Actions run 36742479969. Two historical private-ledger basic NEIRO payment tests used Mock pricing. New Rust registration instructions were checked against source and CLI help, not exercised live in this update.",
+  "verification_scope": "October 2 All/0.25 SOL preset: canonical config and pinned official Docker image config/signers validation; see config-update-verification.json. Historical private-ledger payments and GitHub Actions run 36742479969 used the earlier six-program/0.01 SOL preset and do not validate this updated configuration. No new payment or registry publication for this update.",
   "update_policy": "Advance version, image digest and canonical config hashes through a reviewed compatibility update. User configuration changes belong in a private copy.",
   "operator_settings": "Fee mode/price and per-transaction allowance are operator choices. CI checks the canonical example template, not customized operator files.",
   "planned_program_policy": {
@@ -27,6 +27,7 @@
       "Verify router admission and health policy support",
       "Validate representative payments, swaps, launches and prohibited sponsor participation"
     ],
-    "enabled_in_current_template": false
+    "enabled_in_current_template": false,
+    "upstream_issue": "https://github.com/solana-foundation/kora/issues/683"
   }
 }

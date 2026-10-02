@@ -25,16 +25,9 @@ assert v["allowed_tokens"] == [neiro]
 assert v["allowed_spl_paid_tokens"] == [neiro]
 assert v["price_source"] == "Jupiter"
 assert v["price"] == {"type": "margin", "margin": 0.5}
-assert v["max_allowed_lamports"] == 10_000_000
+assert v["max_allowed_lamports"] == 250_000_000
 assert v["max_signatures"] == 4
-assert set(v["allowed_programs"]) == {
-    "11111111111111111111111111111111",
-    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
-    "AddressLookupTab1e1111111111111111111111111",
-    "ComputeBudget111111111111111111111111111111",
-    "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
-}
+assert v["allowed_programs"] == "All"
 policy = v["fee_payer_policy"]
 assert policy["system"]["allow_create_account"] is True
 assert all(value is False for name, value in policy["system"].items() if name not in {"allow_create_account", "nonce"})

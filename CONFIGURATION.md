@@ -1,53 +1,86 @@
 # NEIRO configuration
 
-Use a private copy of the templates and the [Rust registration guide](docs/REGISTRATION.md). Kora runs separately from the router.
+This repository owns the Kora operator template and recommendation. Use a private copy of the templates and the [registration guide](docs/REGISTRATION.md). Kora runs separately from the router.
 
-## Intended program default
+## Current recommendation
 
-Once an official Kora release includes [upstream #692](https://github.com/solana-foundation/kora/pull/692), the NEIRO preset should use:
+For broad program compatibility, the [stock Kora template](examples/operator/kora.toml) uses these settings in its existing `[validation]` section:
 
 ```toml
-sponsor_only_programs = "All"
+[validation]
+allowed_programs = "All"
+max_allowed_lamports = 250000000 # 0.25 SOL
 ```
 
-This allows application programs without listing each one, provided they do not receive the sponsor account. Keep `allowed_programs` as an explicit list of programs permitted to receive that account; setting that field to `"All"` would disable this participation restriction. Operator fees and spending allowances remain operator choices. Broad program permission does not guarantee every application transaction will pass Kora validation or fit the chosen allowance.
+These are configuration fragments, not complete startup files. Retain the required methods, NEIRO reimbursement mint, chosen pricing, signer configuration and fee-payer policies. The template uses a 50% margin example; each operator chooses its fee. This recommendation does not change an existing operator’s markup. Validate the complete file with `kora --config kora.toml config validate` before restarting.
 
-This is the intended next default, pending upstream release and validation. As of September 30, 2026, the PR is open and the pinned beta.8 template below does not support this setting. Before enabling it, update the release pin and template together, verify router admission accepts the new policy, and test representative payments, swaps and launches plus rejection of prohibited sponsor participation.
+`All` removes the program-ID allowlist, including for unknown programs and routed venues. It does not make arbitrary programs safe for the sponsor. Stock Kora still applies its other validation and payment checks, but its existing fee-payer permissions do not establish a general arbitrary-program safety boundary. This gap is tracked in [upstream #683](https://github.com/solana-foundation/kora/issues/683).
 
-## Currently verified template
+0.25 SOL is the selected per-transaction lamport allowance, not a daily budget, a universal cost requirement or a guarantee of total loss being capped at that amount. Kora validates estimated network fees separately from modeled fee-payer outflow. Applications must quote the complete transaction, including sponsored rent, and obtain approval for the final payment. See [upstream fee calculation](https://github.com/solana-foundation/kora/blob/v2.2.0-beta.8/crates/lib/src/transaction/versioned_transaction.rs).
+
+This recommendation does not claim measured 90% signing success, compatibility with every transaction, or protection against users signing wallet-draining transactions. Application preparation, payer funding, parsers, token policies, signatures and other Kora limits still affect acceptance.
+
 
 | Setting | Included template |
 | --- | --- |
 | Kora | Official `v2.2.0-beta.8`, with an immutable image reference |
 | Operator reimbursement token | NEIRO, six decimals; application transactions can involve other tokens |
 | Operator fee | Operator chooses margin, fixed or free; template example is cost plus 50% |
-| Sponsor allowance | Operator chooses the limit; template example is 0.01 SOL per transaction |
-| Sponsorship | Transaction fees and new token-account rent |
-| Current beta.8 programs | System, classic Token, ATA, Compute Budget, lookup tables and Memo; intended next default is sponsor-only `All` above |
+| Sponsor allowance | Recommended 0.25 SOL per transaction; operator may choose another allowance |
+| Current program policy | `allowed_programs = "All"` |
 | Sponsor permissions | Account creation enabled; direct SOL transfers and sponsor token spending disabled |
 
 [Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml) · [Upstream release lock](examples/operator/kora-release.json)
 
-Fees and spending allowances belong to the operator. The example 50% and 0.01 SOL are not network requirements. Your chosen configuration must still pass Kora validation and the network's admission checks. Edit a private copy of the template for your settings. The allowance determines which transaction costs your operator can sponsor; it is not a daily budget.
+Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
 
-The included program list covers basic payments. Token launches can require a larger operator-chosen allowance, additional program permissions and support in Kora. Raising the allowance alone does not enable launches.
+## Prepared recommendation after #683 ships
+
+As checked on 2 October 2026, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not part of a released stock Kora build. Keep the current configuration until an upstream release includes this feature. Do not install a custom fork or assume an unknown TOML field activates the proposed protection.
+
+After the feature ships, replace the current program setting with the following fragment and retain the 0.25 SOL allowance:
+
+```toml
+[validation]
+allowed_programs = [
+    "11111111111111111111111111111111",             # System
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",  # SPL Token
+    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",  # Token-2022
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL", # Associated Token
+    "ComputeBudget111111111111111111111111111111",  # Compute Budget
+    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table
+    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",  # Jupiter v6
+]
+sponsor_only_programs = "All"
+max_allowed_lamports = 250000000 # 0.25 SOL
+```
+
+Under the proposal, arbitrary outer and inner program IDs can run, but an unapproved program's top-level instruction cannot include Kora's fee-payer account. Jupiter stays in the trusted list because an observed sponsored Jupiter build includes the sponsor in the Jupiter instruction. The trusted list is therefore a list of programs allowed to receive the sponsor account, rather than an inventory of every routed venue. Keep the existing role-specific fee-payer policies as well.
+
+Do not leave `allowed_programs = "All"` in the migrated configuration: the proposal explicitly leaves the sponsor-participation gate disabled in that mode. Sponsor-funded app-owned account creation or other sponsor participation can require additional reviewed programs. Trust in an approved outer program includes its handling of downstream calls; this is not an audit of every routed venue.
+
+Before activation, pin an official release supporting the setting, confirm its final semantics, update the canonical config hashes, verify router admission, and test representative payments, swaps and launches plus refusal of prohibited sponsor participation. Publish the verified release version with the updated recommendation. No future version number is assumed here.
+
+## Checked application paths
+
+Five unsigned Jupiter builds passed the proposed static participation check with the six core programs plus Jupiter trusted. The returned routes included Meteora DLMM, GoonFi V2, Raydium, Manifest, Raydium CLMM, Whirlpool, JupLend AMM and Kipseli. These checks examined returned instruction accounts; they were not signed, submitted or tested for complete Kora acceptance. Jupiter supports an integrator payer, and its sponsored `/order` flow routes through Metis. [Jupiter gasless documentation](https://developers.jup.ag/docs/swap/advanced/gasless).
+
+GUM Universal Deposit's ordinary sender transaction uses core SOL/SPL transfer and token-account instructions. Its current hosted widget requires the connected user to be the transaction fee payer, so changing Kora config alone does not make that widget gasless. GUM's separate bank, inbox and outbox processing is not part of the ordinary sender deposit. [GUM wallet-deposit documentation](https://docs.gum.ag/universal-deposit/embed).
+
+Token-2022 metadata reconstruction is separately tracked in [upstream #681](https://github.com/solana-foundation/kora/issues/681). #683 should not be described as fixing that issue or every launch, account-creation or application-integration limitation.
 
 ## What you supply
 
-Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTTPS endpoint and agreed Rust registry settings. The current router uses public providers without a credential store. See [registration](docs/REGISTRATION.md) for publication, renewal and eligibility checks.
+Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTTPS endpoint and agreed registry settings. The documented Rust router uses public providers without a credential store. See [registration](docs/REGISTRATION.md) for publication, renewal and eligibility checks.
 
-## How we keep this reproducible
+## Validation and historical evidence
 
-The preset names one tested Kora version and locks the official Docker image by digest. Agents use that version. A new upstream release becomes the recommended version after a reviewed update to the lock and compatibility checks.
+The release file locks the official Docker image by digest. The compatibility workflow checks the canonical template and validates it offline with that image and a disposable key. It checks the example, not customized operator files. The October 2 All/0.25 SOL update has [separate config validation evidence](config-update-verification.json); no new payment or registration was submitted for that update.
 
-The compatibility workflow checks the canonical template and validates it with the official image, offline, using a disposable test key. It does not enforce the template's example fee or allowance on operators. Release acceptance also requires private-ledger payments using the template permissions and recorded test settings. Each deployment must separately verify its chosen settings, live pricing, credentials, funding, HTTPS and eligibility.
+Two recorded basic NEIRO payments settled on a private ledger with unchanged Kora before this update: an existing recipient token account and a newly created recipient account. They used the earlier six-program template, a 0.01 SOL allowance and 50% margin; only Jupiter pricing changed to Mock. The original hash and receipts remain in [payment evidence](preset-payment-evidence.json), with the September 30 [verification record](verification.json). They do not prove payment acceptance for the new preset. Live pricing, funding, hosting, HTTPS and eligibility remain deployment checks.
 
-Kora's validator also reports policy warnings, including account-creation sponsorship, Memo parser coverage and the absence of authentication in this public-endpoint profile. The agent should explain the upstream warnings for the operator's chosen configuration. Passing validation is not a security certification.
-
-Two recorded basic NEIRO payments settled on a private ledger with unchanged Kora: an existing recipient token account and a newly created recipient account. These tests used the template's example 0.01 SOL allowance and 50% margin; only Jupiter pricing changed to Mock pricing for the local test. These numbers describe the test configuration, not required operator settings. Live Jupiter pricing and a public operator deployment remain separate checks.
-
-We can make installation repeatable and failures diagnosable. Availability still depends on your host, RPC, pricing service and wallet funding.
+Kora's validator reports policy warnings, including account-creation sponsorship and absence of authentication in this public-endpoint profile. Explain warnings for the operator's chosen configuration. Passing validation is not a security certification. Availability still depends on the host, RPC, pricing service and wallet funding.
 
 ## Pricing service
 
-The router already uses `price.neiropay.app` for operator holding valuation. The service returns NEIRO and SOL prices, but the pinned Kora beta.8 supports only Jupiter and Mock pricing and fixes the Jupiter API URL in its code. A custom price URL cannot replace Jupiter through configuration in this version. Keep Jupiter credentials for the current stock-Kora setup; using the NEIRO service inside Kora requires upstream integration or a code change.
+The router uses `price.neiropay.app` for operator holding valuation. It returns NEIRO and SOL prices, but pinned Kora beta.8 supports only Jupiter and Mock pricing and fixes the Jupiter API URL in its code. A custom price URL cannot replace Jupiter through configuration in this version. Keep Jupiter credentials for stock Kora; using the NEIRO service inside Kora requires upstream integration or a code change.

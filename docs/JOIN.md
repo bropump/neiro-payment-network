@@ -15,7 +15,7 @@ export KORA_IMAGE="$(node -p "JSON.parse(require('node:fs').readFileSync('exampl
 docker pull "$KORA_IMAGE"
 ```
 
-Edit `work/my-provider/kora.toml` to set your fee and transaction allowance. Keep the supplied basic-payment permissions. The 50% markup and 0.01 SOL allowance are examples.
+Edit `work/my-provider/kora.toml` to set your fee and transaction allowance. The template recommends `allowed_programs = "All"` and a 0.25 SOL allowance; the 50% markup is an editable example. Retain the supplied fee-payer policies and read the current sponsor exposure and pending migration in [CONFIGURATION.md](../CONFIGURATION.md).
 
 Use a dedicated payer keypair stored privately as `work/my-provider/payer.json`. Fund it with SOL and put NEIRO in its canonical token account. The router requires at least $1 of SOL and $1 of NEIRO at its latest check, plus enough SOL to execute the intended transactions. Funds remain in your custody.
 
