@@ -74,6 +74,8 @@ You need a host that can run Kora, a dedicated operator wallet funded with SOL, 
 
 The template recommends a **0.25 SOL per-transaction allowance** and includes an editable **50% markup example**. Choose margin, fixed or free pricing. SOL pays transaction costs; NEIRO reimbursement does not automatically refill SOL. See [fees and operating basics](TUTORIAL.md).
 
+**Both `signTransaction` and `signAndSendTransaction` are enabled by default.** Clients can receive a signed transaction to submit themselves or ask Kora to sign and submit it. Both methods enforce the operator's configured transaction and payment policies.
+
 ## Optional remote signing
 
 For stronger key isolation, we recommend a supported remote signer through Kora’s existing **solana-keychain** integration. There is nothing extra to install in Kora. Your agent can configure the chosen backend; the local keypair template remains supported. [Signer choices](docs/SIGNING.md).

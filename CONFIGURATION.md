@@ -26,11 +26,14 @@ This recommendation does not claim measured 90% signing success, compatibility w
 | Kora | Latest successfully published official upstream main build; resolve on install/update and pin its digest |
 | Operator reimbursement token | NEIRO, six decimals; application transactions can involve other tokens |
 | Operator fee | Operator chooses margin, fixed or free; template example is cost plus 50% |
+| Signing methods | `sign_transaction = true` and `sign_and_send_transaction = true` by default |
 | Sponsor allowance | Recommended 0.25 SOL per transaction; operator may choose another allowance |
 | Current program policy | `allowed_programs = "All"` |
 | Sponsor permissions | Account creation enabled; direct SOL transfers and sponsor token spending disabled |
 
 [Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml)
+
+`signTransaction` returns a signed transaction for the client to submit; `signAndSendTransaction` signs and submits through Kora. Both are part of the NEIRO default and apply the configured validation and payment policies. Existing deployments using the older `sign_transaction = false` preset should set it to `true`, validate their configuration, restart Kora, and check that `getConfig.result.enabled_methods.sign_transaction` is `true`.
 
 Operators follow the latest successfully built official upstream main revision and pin each deployment. Use upstream Kora and your host's update tools; there is no NEIRO software package to install. Retain the previous build for rollback. Kora and its SDK remain unchanged. See [setup and updates](docs/JOIN.md).
 
