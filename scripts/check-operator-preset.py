@@ -40,7 +40,7 @@ for kind in ["spl_token", "token_2022", "alt"]:
 methods = config["kora"]["enabled_methods"]
 for method in ["estimate_transaction_fee", "sign_and_send_transaction", "get_config", "get_payer_signer", "get_blockhash"]:
     assert methods[method] is True
-assert methods["sign_transaction"] is False
+assert methods["sign_transaction"] is True
 assert signers["signers"] == [{"name": "neiro-provider", "type": "memory", "private_key_env": "KORA_PRIVATE_KEY"}]
 assert signers["signer_pool"]["strategy"] == "round_robin"
 print("PASS: NEIRO payment defaults, signer template and official main image pin")

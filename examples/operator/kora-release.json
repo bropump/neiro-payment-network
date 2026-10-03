@@ -10,7 +10,7 @@
     "linux/amd64"
   ],
   "config_sha256": {
-    "kora.toml": "132289e0fcc10a28dced41544fa6d8c8e7149278e8fa59928c949ac8094f4df5",
+    "kora.toml": "647a70acbc291a8e834a8a50e779e5850cdf6aa9a1b4f7b477a35b3ebffba5d2",
     "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
   },
   "verification_scope": "Official main image startup and canonical config/signers validation. Historical payment results retain their original image/config scope.",
