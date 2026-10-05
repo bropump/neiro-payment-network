@@ -78,7 +78,11 @@ The template recommends a **0.25 SOL per-transaction allowance** and includes an
 
 ## Optional remote signing
 
-For stronger key isolation, we recommend a supported remote signer through Kora’s existing **solana-keychain** integration. There is nothing extra to install in Kora. Your agent can configure the chosen backend; the local keypair template remains supported. [Signer choices](docs/SIGNING.md).
+**Solana Keychain is already built into Kora.** It is the signing interface Kora uses to connect to your operator wallet. There is no separate Keychain service or package to install.
+
+Choose a local keypair or a remote signing backend supported by your Kora build in the standard `signers.toml`. The local option holds the key in Kora’s process; a remote signer keeps it outside the Kora host. Both use the same Kora payment flow.
+
+Remote signing is optional and recommended for stronger key isolation. Its signing credentials still need protection and appropriate permissions. Your agent can help choose and configure the backend. [How Keychain and signer choices work](docs/SIGNING.md).
 
 ## Clients
 

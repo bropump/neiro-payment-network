@@ -1,6 +1,14 @@
-# Optional remote signing
+# Signing with Solana Keychain
 
-Kora already uses [solana-keychain](https://github.com/solana-foundation/solana-keychain). You select a backend in your private `signers.toml`; there is no separate keychain installation.
+**Kora already uses [Solana Keychain](https://solana.com/docs/tools/keychain) for signing.** It is a library inside Kora that connects its transaction-signing flow to your chosen wallet backend. Operators do not need to install or run a separate Keychain service.
+
+## What this means for an operator
+
+Your operator validates a transaction using Kora’s policies, then asks its configured signer to provide the fee-payer signature. Solana Keychain is the interface used for that signing step.
+
+Choose the backend in Kora’s standard, private `signers.toml`. The included local memory signer already uses this interface; using Keychain does not by itself mean the key is held remotely. A supported remote backend changes where signing happens without changing the NEIRO reimbursement flow or requiring a NEIRO-specific signing wrapper.
+
+## Local or remote signing
 
 **For production, prefer a supported remote signer for stronger key isolation.** This is optional. The included memory signer works with a dedicated local keypair.
 
