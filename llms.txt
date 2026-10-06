@@ -1,0 +1,31 @@
+# NEIRO Payment Network
+
+> Solana transactions with gas paid in NEIRO. Independent operators run official Kora, sponsor SOL costs and receive NEIRO reimbursement including their tip. Keep the user's existing Solana programs, libraries and wallet.
+
+## Start with the user's task
+
+- [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md): transaction flow, agent wallets, swaps and quoting.
+- [Router and client API](https://github.com/bropump/neiro-kora-router-cloudflare#use-it): operator discovery, routing and submission.
+- [Run an operator](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/AGENT-SETUP.md): standard Kora installation and NEIRO configuration.
+- [NEIRO ID](https://github.com/bropump/neiro-id): separate onchain naming project for people and agents. Use its own protocol and configuration.
+
+## Network
+
+Kora endpoint: https://api.mainnet-beta.neiropay.app/rpc
+Operator directory: https://api.mainnet-beta.neiropay.app/operators
+Recent router activity: https://api.mainnet-beta.neiropay.app/network/activity
+Dashboard: https://api.mainnet-beta.neiropay.app/dashboard
+NEIRO mint: CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump (6 decimals)
+Chain: Solana mainnet-beta
+
+Use a separate Solana RPC for account reads and confirmation. Select an eligible operator, keep it pinned for preparation, quote and submission, and keep the same fee payer throughout. Use official Kora APIs and SDKs. The router's base sample quote is not a complete transfer quote. Build and quote the actual transaction, including reimbursement and account creation, before approval.
+
+Show the recipient, asset, amount and total NEIRO fee before wallet signing. Keep wallet keys and service credentials private. Return transaction receipts as https://orbmarkets.io/tx/{signature}. An unsigned quote or simulation is not an onchain payment. Never label local-fork results as mainnet receipts.
+
+## Operator configuration
+
+- [Kora config](https://github.com/bropump/neiro-payment-network-core/blob/main/examples/operator/kora.toml)
+- [Signer template](https://github.com/bropump/neiro-payment-network-core/blob/main/examples/operator/signers.toml)
+- [Official Kora deployment](https://solana.com/docs/tools/kora/operators)
+
+Run standard Kora. The repository provides configuration and guidance, not a custom runtime, installer or proxy package. Let the user's agent adapt hosting to their environment. Do not modify Kora or its SDK.
