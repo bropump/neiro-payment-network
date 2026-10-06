@@ -61,7 +61,7 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   }
   if([lock.runtime_image_digest,lock.image.split('@')[1]].includes(previous[0])&&!needsMetadata)return {status:'current',commit:lock.upstream_commit,payer:before.getConfig.fee_payers};
   rollback.imageTag=await resolveImageTag(previous[0]);
-  async function waitFor(digests,expectedState){
+  async function waitFor(digests,expectedState,transientState){
     const accepted=Array.isArray(digests)?digests:[digests];
     const deadline=now()+timeout;
     while(now()<deadline){
@@ -69,19 +69,22 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
       const regionsReady=originalRegions.every(region=>overview.regions.some(r=>r.region===region&&r.status==='active'&&(r.pods??[]).some(p=>(p.containers??[]).some(c=>c.name===name&&c.status==='ready'))));
       if(!regionsReady||active.length<running.length||!active.every(c=>c.status==='ready'&&accepted.some(digest=>c.image?.endsWith('@'+digest))))continue;
       let after;try{after=await publicState();}catch{continue;}
-      if(!isDeepStrictEqual(after,expectedState))throw Error('Public payer/settings changed beyond the approved metadata flag');
+      if(!isDeepStrictEqual(after,expectedState)){
+        if(isDeepStrictEqual(after,transientState))continue; // Known pre-transition state can lag a ready overview.
+        throw Error('Public payer/settings changed beyond the approved metadata flag');
+      }
       return {overview,after};
     }
     throw Error('Rollout readiness timed out');
   }
   try{
     await patch(ep.containerId,next);
-    const {overview,after}=await waitFor([lock.runtime_image_digest,lock.image.split('@')[1]],expected);
+    const {overview,after}=await waitFor([lock.runtime_image_digest,lock.image.split('@')[1]],expected,before);
     return {status:'updated',commit:lock.upstream_commit,image:lock.image,previousRuntimeDigest:previous[0],payer:after.getConfig.fee_payers,price:after.getConfig.validation_config.price,metadata:after.getConfig.validation_config.token_2022.allow_token_metadata_instructions,regions:overview.regions.map(r=>({region:r.region,status:r.status,instances:r.instances}))};
   }catch{
     console.log(JSON.stringify({stage:'rollback',previousRuntimeDigest:previous[0]}));
     await patch(ep.containerId,rollback);
-    try{await waitFor(previous[0],before);}catch{throw Error('Rollout failed; rollback requested but health not confirmed');}
+    try{await waitFor(previous[0],before,expected);}catch{throw Error('Rollout failed; rollback requested but health not confirmed');}
     throw Error('Rollout failed; previous image and public settings verified restored');
   }
 }
