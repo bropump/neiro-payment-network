@@ -10,7 +10,7 @@ const operator=keystring(keys.publicKey.export({format:'der',type:'spki'}).subar
 const record=recordAddress(operator);
 const original={v:1,url:'https://operator.example/',operator,payment:operator,mint:'CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump',genesis,oracle:'Jupiter',price:{type:'margin',margin:0.05}};
 const old=Buffer.alloc(733);old[0]=1;keybytes(operator).copy(old,1);old.write('NKORAF01',33);old.write(JSON.stringify(original),41);
-const terms={...original,v:3,operator,payment:operator,sig_alg:'ed25519',sig_enc:'raw64-after-json',msg_id:'NEIRO069-MSG1',signer:operator};
+const terms={...original,v:4,operator,payment:operator};
 function signed(body=terms, pair=keys) {
  const data=Buffer.alloc(733),bytes=Buffer.from(JSON.stringify(body));
  data[0]=1;keybytes(operator).copy(data,1);data.write('NEIRO069',33);data.writeUInt16LE(bytes.length,41);bytes.copy(data,43);
@@ -20,7 +20,7 @@ function signed(body=terms, pair=keys) {
 const account=signed();
 const copy=()=>structuredClone(account);
 function edit(fn) { const a=copy(),data=Buffer.from(a.data[0],'base64'); fn(data); a.data[0]=data.toString('base64'); return a; }
-test('signed NEIRO069 v3 authenticates operator terms',()=>{
+test('signed NEIRO069 v4 authenticates operator terms',()=>{
   const body=readRecord(record,account,genesis);
   assert.equal(recordAddress(body.operator),record);
   assert.equal(body.price.margin,0.05);
@@ -107,10 +107,10 @@ test('oversized or zero body length is rejected before parsing',()=>{
 
 test('JavaScript independently verifies the public Rust-produced fixture',()=>{
  const f=JSON.parse(readFileSync(new URL('./signed-record.fixture.json',import.meta.url)));
- assert.equal(readRecord(f.record,f.account,f.genesis).v,3);
+ assert.equal(readRecord(f.record,f.account,f.genesis).v,4);
 });
 
-for (const [field,value] of [['sig_alg','none'],['sig_enc','base64'],['msg_id','NEIRO069-MSG2'],['signer',PROGRAM],['v',2]]) {
+for (const [field,value] of [['sig_alg','none'],['sig_enc','base64'],['msg_id','NEIRO069-MSG2'],['signer',PROGRAM],['v',3]]) {
  test(`rejects correctly signed but unsupported ${field}`,()=>{
   assert.throws(()=>readRecord(record,signed({...terms,[field]:value}),genesis));
  });
@@ -134,9 +134,9 @@ test('the same JSON signed without the record or network binding is rejected',()
 
 test('an operator may explicitly sign a separate fee-receiving address',()=>{
  const body=readRecord(record,signed({...terms,payment:PROGRAM}),genesis);
- assert.equal(body.signer,operator);
+ assert.equal(body.operator,operator);
  assert.equal(body.payment,PROGRAM);
- assert.notEqual(body.signer,body.payment);
+ assert.notEqual(body.operator,body.payment);
 });
 test('verification uses stored bytes, never reconstructed JSON',()=>{
  const raw=Buffer.from(JSON.stringify(Object.fromEntries(Object.entries(terms).reverse())).replaceAll(',',', '));
@@ -150,4 +150,17 @@ test('verification uses stored bytes, never reconstructed JSON',()=>{
  const b=Buffer.from(a.data[0],'base64');original.subarray(end,end+64).copy(b,43+raw.length);
  a.data[0]=b.toString('base64');
  assert.throws(()=>readRecord(record,a,genesis),/attestation/);
+});
+
+test('v3 proof and metadata cannot be accepted as v4',()=>{
+ const f=JSON.parse(readFileSync(new URL('./signed-record-v3.fixture.json',import.meta.url)));
+ assert.throws(()=>readRecord(f.record,f.account,f.genesis),/attestation/);
+});
+test('v4 has exactly the agreed prefix, record, genesis and JSON bytes',()=>{
+ const raw=Buffer.from(JSON.stringify(terms));
+ const expected=Buffer.concat([Buffer.from('NEIRO069-MSG1','ascii'),Buffer.from([0]),keybytes(record),keybytes(genesis),raw]);
+ assert.deepEqual(attestationMessage(record,genesis,raw),expected);
+});
+test('expiry is not a supported v4 term even if correctly signed',()=>{
+ assert.throws(()=>readRecord(record,signed({...terms,expires_at:2000000000}),genesis));
 });

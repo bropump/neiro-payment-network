@@ -33,29 +33,58 @@ The isolated free/fixed signing endpoints rejected a one-lamport sponsor withdra
 
 ## Authenticate RPC-returned listing terms
 
-Use `readRecord(recordAddress, rpcAccount, expectedGenesis)` from `read-record.mjs` before accepting the listing passed into `verifyQuote`. This verifies the signed v3 format, operator authority and derived address, exact payload signature, mainnet/mint binding, and supported pricing schema. It has no private key or network dependency and returns the authenticated JSON. The Rust publisher and this Node reader share a public interoperability fixture. Unsigned v1 and previous signed v2 listings are rejected. Signature authenticity does not prove that an RPC supplied the latest state; see the [signed format specification](../../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-neiro069-msg1-v3).
+Use `readRecord(recordAddress, rpcAccount, expectedGenesis)` from `read-record.mjs` before accepting the listing passed into `verifyQuote`. This verifies the signed v4 format, operator authority and derived address, exact payload signature, mainnet/mint binding, and supported pricing schema. It has no private key or network dependency and returns the authenticated JSON. The Rust publisher and this Node reader share a public interoperability fixture. Unsigned v1 and previous signed v2/v3 listings are rejected. Signature authenticity does not prove that an RPC supplied the latest state; see the [signed format specification](../../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-v4).
 
 ### Reproduce the live Bunny signature check
 
-From the repository root, with Node.js 20 or later:
+With Node.js 20 or later, this standalone check uses only built-in modules and RPC. It does not import our reader, fetch GitHub, load keys or install packages:
 
 ```sh
 node --input-type=module <<'JS'
-import {readRecord} from './tools/kora-publisher/client/read-record.mjs';
+import assert from 'node:assert/strict';
+import {createHash,createPublicKey,verify} from 'node:crypto';
 const record = 'AUcq2QhmqGAH4QSm5qMPnfZb6TcEoKVF8fHGg9FnWKfo';
 const genesis = '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
+const operator = 'S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg';
+const program = 'recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5';
+const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function key(text) {
+  let n=0n;
+  for (const c of text) { const d=alphabet.indexOf(c); assert.ok(d>=0); n=n*58n+BigInt(d); }
+  const hex=n.toString(16).padStart(64,'0'); assert.equal(hex.length,64);
+  return Buffer.from(hex,'hex');
+}
+const publicKey=createPublicKey({format:'der',type:'spki',key:Buffer.concat([
+  Buffer.from('302a300506032b6570032100','hex'),key(operator)
+])});
+assert.deepEqual(key(record),createHash('sha256').update(Buffer.concat([
+  key(operator),Buffer.from('neiro-kora-fees'),key(program)
+])).digest());
 for (const rpc of ['https://api.mainnet-beta.solana.com', 'https://solana-rpc.publicnode.com']) {
-  const response = await fetch(rpc, {
-    method: 'POST', headers: {'content-type': 'application/json'},
-    body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'getAccountInfo',
-      params: [record, {encoding: 'base64', commitment: 'finalized'}]}),
-    signal: AbortSignal.timeout(20000)
+  const response=await fetch(rpc,{
+    method:'POST',headers:{'content-type':'application/json'},
+    body:JSON.stringify({jsonrpc:'2.0',id:1,method:'getAccountInfo',
+      params:[record,{encoding:'base64',commitment:'finalized'}]}),
+    signal:AbortSignal.timeout(20000)
   });
-  const result = await response.json();
-  if (result.error) throw Error(JSON.stringify(result.error));
-  const terms = readRecord(record, result.result.value, genesis);
-  if (terms.operator !== 'S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg') throw Error('unexpected operator');
-  console.log(rpc, 'operator signature VERIFIED', terms);
+  const result=await response.json(); if(result.error) throw Error(JSON.stringify(result.error));
+  const account=result.result.value;
+  assert.equal(account.owner,program); assert.equal(account.executable,false);
+  assert.equal(account.data[1],'base64');
+  const bytes=Buffer.from(account.data[0],'base64');
+  assert.equal(bytes.length,733); assert.equal(bytes[0],1);
+  assert.deepEqual(bytes.subarray(1,33),key(operator));
+  assert.equal(bytes.subarray(33,41).toString('ascii'),'NEIRO069');
+  const n=bytes.readUInt16LE(41),end=43+n;
+  assert.ok(n>0 && end+64<=bytes.length);
+  assert.ok(bytes.subarray(end+64).every(x=>x===0));
+  const json=bytes.subarray(43,end),sig=bytes.subarray(end,end+64);
+  const message=Buffer.concat([Buffer.from('NEIRO069-MSG1\0','ascii'),key(record),key(genesis),json]);
+  assert.ok(verify(null,message,publicKey,sig),'operator signature invalid');
+  const terms=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(json));
+  assert.equal(terms.v,4); assert.equal(terms.operator,operator); assert.equal(terms.genesis,genesis);
+  assert.deepEqual(Object.keys(terms).sort(),['genesis','mint','operator','oracle','payment','price','url','v']);
+  console.log(rpc,'Bunny v4 signature VERIFIED',terms);
 }
 JS
 ```

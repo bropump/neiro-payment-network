@@ -6,7 +6,7 @@ export const PROGRAM='recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5';
 export const MINT='CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump';
 export const SEED='neiro-kora-fees';
 export const MAGIC='NEIRO069';
-export const DOMAIN=Buffer.from('\xffNEIRO069-MSG1\0','latin1');
+export const DOMAIN=Buffer.from('NEIRO069-MSG1\0','ascii');
 const ALPHABET='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 export function keybytes(text) {
   assert.equal(typeof text,'string','public key');
@@ -23,7 +23,7 @@ export function keystring(bytes) {
   return '1'.repeat(zeros)+s;
 }
 export function attestationMessage(record,genesis,bodyBytes) {
-  return Buffer.concat([DOMAIN,keybytes(PROGRAM),keybytes(record),keybytes(genesis),bodyBytes]);
+  return Buffer.concat([DOMAIN,keybytes(record),keybytes(genesis),bodyBytes]);
 }
 const little=b=>BigInt('0x'+Buffer.from(b).reverse().toString('hex'));
 const P=(1n<<255n)-19n,L=(1n<<252n)+27742317777372353535851937790883648493n;
@@ -56,12 +56,8 @@ export function readRecord(record,account,expectedGenesis) {
   const bytes=data.subarray(43,end),sig=data.subarray(end,end+64);
   assert.ok(verifyAttestation(authority,attestationMessage(record,expectedGenesis,bytes),sig),'invalid operator attestation');
   const body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
-  assert.deepEqual(Object.keys(body).sort(),['genesis','mint','msg_id','operator','oracle','payment','price','sig_alg','sig_enc','signer','url','v']);
-  assert.equal(body.v,3,'signed schema');
-  assert.equal(body.sig_alg,'ed25519','signature algorithm');
-  assert.equal(body.sig_enc,'raw64-after-json','signature encoding');
-  assert.equal(body.msg_id,'NEIRO069-MSG1','message format');
-  assert.equal(body.signer,authority,'attestation signer');
+  assert.deepEqual(Object.keys(body).sort(),['genesis','mint','operator','oracle','payment','price','url','v']);
+  assert.equal(body.v,4,'signed schema');
   assert.equal(body.operator,authority,'operator authority');
   assert.equal(body.mint,MINT,'mint');
   assert.equal(body.genesis,expectedGenesis,'network');
