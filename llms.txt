@@ -21,7 +21,7 @@ Account size: 733 bytes. Payload marker: NKORAF01 at byte offset 33.
 
 There is no shared master directory account. Scan the Record program with the documented filters, then authenticate the owner, layout, authority and derived address. Listing URLs are untrusted input. Read live SOL balances and obtain quotes directly from selected operators, with bounded concurrency and deadlines. Verify advertised terms, current pricing inputs and the exact transaction before signing. Fastest means first fully verified quote received; cheapest means lowest verified fee among the candidates actually compared. An optional router may assist but is not required or trusted to approve fees.
 
-The publisher provides address, publish (create/update) and close commands; discovery is client-side work. Historical test listings were closed, not retained as permanent directory entries. Listings have no expiry; skip dead endpoints and reject mismatched terms.
+The publisher provides address, publish (create/update) and close commands; discovery is client-side work. Do not infer production readiness from a test listing. Close test listings unless the user explicitly requests retention. Listings have no expiry; skip dead endpoints and reject mismatched terms.
 
 ## Signing and operation
 

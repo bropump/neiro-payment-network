@@ -52,7 +52,7 @@ You can name a host or let your agent help choose one. The agent handles configu
 
 [Publication commands](docs/REGISTRATION.md) · [Complete agent workflow](docs/AGENT-SETUP.md)
 
-Publication deposits refundable rent and pays a transaction fee. The earlier Mac/Bunny test listings were closed for cleanup; a working operator must publish and leave its own listing open. Listing an operator does not guarantee traffic or certify its safety.
+Publication deposits refundable rent and pays a transaction fee. A working operator maintains its listing and endpoint. Test listings are normally closed for cleanup unless explicitly retained. Listing an operator does not guarantee traffic or certify its safety.
 
 ## What you need
 

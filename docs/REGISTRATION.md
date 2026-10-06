@@ -18,7 +18,7 @@ Follow the [agent setup](AGENT-SETUP.md) or [manual setup](JOIN.md) to build sto
    neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY address
    ```
 
-2. Append the printed address to `[validation].disallowed_accounts` in your private `kora.toml`, preserving other entries. Restart **every public Kora instance sharing the signer**. Verify the loaded settings and that signing requests touching this account are rejected. Block your listing account, not the entire SPL Record program.
+2. Append the printed **listing address (not your wallet address)** to `[validation].disallowed_accounts` in your private `kora.toml`, preserving other entries. Restart **every public Kora instance sharing the signer**. Verify the loaded settings and that signing requests touching this account are rejected. Block your listing account, not the entire SPL Record program.
 3. From the private deployment directory, using the operator's configured signer environment, publish:
 
    ```sh
@@ -33,7 +33,7 @@ Read the finalized record back and authenticate it using the [listing format and
 
 “Fastest” is the first fully verified quote received by that client. “Cheapest” is the lowest verified quote among the operators successfully compared for that transaction within the client's deadline. Neither is a claim the record itself proves. Keep the selected operator pinned through transaction preparation, signing and submission.
 
-The Mac/Bunny mainnet test listings were closed after testing to recover rent. Those tests do not supply permanent directory entries: an operating provider must publish and leave its listing open.
+Test publication is distinct from operating a production provider. Close disposable test listings after verification unless the user explicitly requests retention. A retained test listing is publicly discoverable; neither publication nor a passing test certifies production readiness. An operating provider must maintain its own listing and endpoint.
 
 ## Change terms or leave
 
