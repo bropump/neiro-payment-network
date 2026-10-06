@@ -9,8 +9,9 @@ import {isDeepStrictEqual} from 'node:util';
 const args=process.argv.slice(2),opts={container:'neiro-provider','state-dir':resolve('work/operator-updates')};
 for(let i=0;i<args.length;i++){
   if(args[i]==='--enable-metadata'){opts.metadata=true;continue;}
+  if(args[i]==='--public-profile'){opts.publicProfile=true;continue;}
   const name=args[i].replace(/^--/,'');
-  if(!['container','state-dir','candidate-lock','health-url','env-file','config-dir'].includes(name)||!args[i+1])throw Error('Required: --env-file PATH --config-dir PATH; optional --container NAME --candidate-lock PATH --enable-metadata');
+  if(!['container','state-dir','candidate-lock','health-url','env-file','config-dir'].includes(name)||!args[i+1])throw Error('Required: --env-file PATH --config-dir PATH; optional --container NAME --candidate-lock PATH --enable-metadata --public-profile');
   opts[name]=args[++i];
 }
 if(!opts['env-file']||!opts['config-dir'])throw Error('Supply existing --env-file and --config-dir paths; credentials will not be inspected');
@@ -37,6 +38,9 @@ async function main(){
   const binding=ports['8080/tcp'][0];if(binding.HostIp!=='127.0.0.1')throw Error('Require existing loopback port binding');
   const url=opts['health-url']||`http://127.0.0.1:${binding.HostPort}`;
   const before=await publicState(url),expected=structuredClone(before);
+  // Explicitly preserve an existing public endpoint despite stale auth in its env-file.
+  // This is reached only after unauthenticated baseline checks succeeded.
+  const authOverrides=opts.publicProfile?['-e','KORA_API_KEY=','-e','KORA_HMAC_SECRET=','-e','KORA_RECAPTCHA_SECRET=']:[];
   const pin=opts['candidate-lock']?JSON.parse(readFileSync(resolve(opts['candidate-lock']),'utf8')):await resolveMain();
   if(pin.channel!=='main'||!/^ghcr\.io\/solana-foundation\/kora@sha256:[a-f0-9]{64}$/.test(pin.image))throw Error('Invalid official image pin');
   // d5a7 adds this public field with the upstream default; no prior setting is overridden.
@@ -65,12 +69,12 @@ async function main(){
     const mount=`type=bind,src=${configDir},dst=/config${mounts[0].RW?'':',readonly'}`;
     // Existing Kora's native config validator consumes its own signer reference.
     phase='validate-config';
-    docker(['run','--rm','--platform','linux/amd64','--network','none','--env-file',envFile,'--mount',mount,'--entrypoint','kora',pin.image,'--config','/config/kora.toml','config','validate','--signers-config','/config/signers.toml']);
+    docker(['run','--rm','--platform','linux/amd64','--network','none','--env-file',envFile,...authOverrides,'--mount',mount,'--entrypoint','kora',pin.image,'--config','/config/kora.toml','config','validate','--signers-config','/config/signers.toml']);
     phase='stop-original';
     docker(['update','--restart=no',name]);docker(['stop','--time','20',name]);docker(['rename',name,backup]);renamed=true;
     const restartArg=restart.Name==='on-failure'&&restart.MaximumRetryCount?`on-failure:${restart.MaximumRetryCount}`:restart.Name;
     phase='start-replacement';
-    docker(['run','-d','--platform','linux/amd64','--name',name,'--restart',restartArg,'-p',`127.0.0.1:${binding.HostPort}:8080`,'--env-file',envFile,'--mount',mount,'--entrypoint','kora',pin.image,'--config','/config/kora.toml','rpc','start','--port','8080','--signers-config','/config/signers.toml']);
+    docker(['run','-d','--platform','linux/amd64','--name',name,'--restart',restartArg,'-p',`127.0.0.1:${binding.HostPort}:8080`,'--env-file',envFile,...authOverrides,'--mount',mount,'--entrypoint','kora',pin.image,'--config','/config/kora.toml','rpc','start','--port','8080','--signers-config','/config/signers.toml']);
     phase='verify-public-state';
     const after=await healthy(url,expected);
     writeFileSync(resolve(state,name+'.json'),JSON.stringify({updated_at:new Date().toISOString(),image:pin.image,upstream_commit:pin.upstream_commit,rollback_container:backup,rollback_config:original?resolve(state,backup+'.kora.toml'):null,health_check:'passed'},null,2)+'\n',{mode:0o600});

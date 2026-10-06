@@ -77,8 +77,10 @@ Arrange a host scheduler to run the following every five minutes, using absolute
 ```sh
 node scripts/update-kora-operator.mjs --container neiro-provider \
   --env-file "$NEIRO_OPERATOR_ENV" --config-dir "$NEIRO_OPERATOR_DIR" \
-  --state-dir "$NEIRO_OPERATOR_DIR/update-state"
+  --state-dir "$NEIRO_OPERATOR_DIR/update-state" --public-profile
 ```
+
+The examples use `--public-profile` only for an operator that is already publicly accessible. Before changing anything, the helper requires unauthenticated `getConfig` and `getPayerSigner` to succeed. The explicit flag passes empty Docker overrides for `KORA_API_KEY`, `KORA_HMAC_SECRET` and `KORA_RECAPTCHA_SECRET`, preventing stale values in an old environment file from unexpectedly making that existing public service private. It never reads or edits the environment file. Omit the flag to preserve those environment values; never use it to convert a private operator to public access.
 
 The supported Docker profile has one bind mount at `/config`, one loopback mapping to container port 8080, bridge networking, no privileged mode and no custom CPU/memory limits. The helper uses Kora's standard `/config/kora.toml` and `/config/signers.toml` startup command. Deployments with other startup arguments, authentication or additional Docker settings need their own host adapter; this helper does not promise to preserve arbitrary Docker configuration.
 
@@ -104,7 +106,7 @@ Use the already verified release pin for a deliberate metadata rollout:
 node scripts/update-kora-operator.mjs --container neiro-provider \
   --env-file "$NEIRO_OPERATOR_ENV" --config-dir "$NEIRO_OPERATOR_DIR" \
   --state-dir "$NEIRO_OPERATOR_DIR/update-state" \
-  --candidate-lock examples/operator/kora-release.json --enable-metadata
+  --candidate-lock examples/operator/kora-release.json --enable-metadata --public-profile
 ```
 
 Bunny uses the GitHub `Latest official Kora main` workflow. Its five-minute refresh and manual runs share one concurrency group, check out `operator-maintenance`, and commit validated pins back to that branch. Dispatch with `enable_metadata: true` to use the already tested pin, skip resolving a newer image, and apply the narrow metadata startup migration. The default is false; normal image updates retain the existing startup configuration. The Bunny helper reads only platform `/overview` and `/endpoints`, preserves environment values server-side, discards PATCH response bodies, and checks the public payer/settings before accepting a rollout. Its one-time metadata migration requires the recorded existing startup lineage; use a different adapter for unrelated Bunny deployments.
