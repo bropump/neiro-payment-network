@@ -1,0 +1,8 @@
+target
+.git
+.codex
+.env
+.env.*
+*keypair*.json
+signers.toml
+kora.toml

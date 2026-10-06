@@ -1,0 +1,206 @@
+[kora]
+rate_limit = 100
+
+# Allowed CORS origins. Defaults to ["*"] (allow all).
+# Set to specific origins for production deployments.
+# cors_allow_origins = ["https://your-app.com", "https://admin.your-app.com"]
+cors_allow_origins = ["*"]
+
+[kora.auth]
+# Optional: API key for simple authentication
+# api_key = "your-api-key"  # Deprecated: use api_keys array instead
+# api_keys = ["key-1", "key-2"]  # Supports multiple API keys
+
+# Optional: HMAC secret for signed requests
+# hmac_secret = "your-hmac-secret"
+
+# Optional: Maximum age in seconds for HMAC timestamp validation (default: 300)
+# max_timestamp_age = 300
+
+# Optional: reCAPTCHA v3 secret key for bot protection
+# recaptcha_secret = "your-recaptcha-secret"
+
+# Optional: Minimum reCAPTCHA score threshold (0.0 to 1.0, default: 0.5)
+# recaptcha_score_threshold = 0.5
+
+# Optional: RPC methods that require reCAPTCHA verification
+# protected_methods = ["signTransaction", "signAndSendTransaction", "signBundle", "signAndSendBundle"]
+
+# Lighthouse fee payer protection - adds balance assertions to prevent fee payer drainage
+# IMPORTANT: Only works with signTransaction/signBundle flows, NOT signAndSendTransaction/signAndSendBundle
+# When lighthouse modifies a transaction (adding assertion instruction), existing client signatures
+# become invalid. Use signTransaction → client re-signs → client sends pattern instead.
+[kora.lighthouse]
+enabled = false
+fail_if_transaction_size_overflow = true  # Reject transaction if adding assertion exceeds size limit
+
+# Cache configuration for Redis-based caching
+[kora.cache]
+enabled = false                    # Enable/disable caching (set to true with url to enable)
+url = "redis://localhost:6379"    # Redis connection URL (uncomment and set when enabling cache)
+default_ttl = 300                  # Default TTL in seconds (5 minutes)
+account_ttl = 60                   # Account data TTL in seconds (1 minute)
+price_ttl = 0                     # Token price TTL in seconds (set to 0 to disable price caching while keeping account caching on)
+
+# Enable/disable specific RPC methods
+[kora.enabled_methods]
+liveness = true
+estimate_transaction_fee = true
+get_supported_tokens = true
+sign_transaction = true
+sign_and_send_transaction = true
+transfer_transaction = true
+get_blockhash = true
+get_config = true
+get_payer_signer = true
+get_version = true
+
+[validation]
+max_allowed_lamports = 1000000
+# Max priority fee in lamports (unset = unlimited, 0 = none).
+# Covers ComputeBudget instructions and the v1 transaction config.
+# max_priority_fee_lamports = 100000
+max_signatures = 10
+price_source = "Mock"
+allow_durable_transactions = false
+cross_cluster_check = false
+cross_cluster_endpoints = [
+    "https://api.mainnet-beta.solana.com",
+    "https://api.devnet.solana.com",
+    "https://api.testnet.solana.com",
+]
+
+allowed_programs = [
+    "11111111111111111111111111111111",              # System Program
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # Token Program
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Program
+    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table Program
+    "ComputeBudget111111111111111111111111111111",   # Compute Budget Program
+    # "L2TExMFKdjpN9kozasaurPirfHy9P8sbXoAN1qA3S95", # Lighthouse Program (uncomment when lighthouse enabled)
+]
+allowed_tokens = [
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", # USDC
+]
+allowed_spl_paid_tokens = []
+#allowed_spl_paid_tokens = "All"  # Allow any token to be used for payment,
+disallowed_accounts = []
+# require_one_of_programs = []  # At least one of these programs must be called. Each must also appear in allowed_programs.
+
+# Fee payer policy controls what actions the fee payer can perform
+#
+# A lot of actions on Solana require System Program and/or SPL Token Programs,
+# but those programs have a lot of instructions that can be used to perform actions that could be problematic
+# for the fee payer, therefore we allow more granular control over what the fee payer can do with those programs.
+[validation.fee_payer_policy]
+
+[validation.fee_payer_policy.system]
+allow_transfer = true           # Allow fee payer to be sender in System Transfer/TransferWithSeed
+allow_assign = true             # Allow fee payer to be authority in System Assign/AssignWithSeed
+allow_create_account = true     # Allow fee payer to be payer in System CreateAccount/CreateAccountWithSeed
+allow_allocate = true           # Allow fee payer to be account in System Allocate/AllocateWithSeed
+
+[validation.fee_payer_policy.system.nonce]
+allow_initialize = true         # Allow fee payer to initialize nonce accounts
+allow_advance = true            # Allow fee payer to advance nonce accounts
+allow_authorize = true          # Allow fee payer to authorize nonce accounts
+allow_withdraw = true           # Allow fee payer to withdraw from nonce accounts
+
+[validation.fee_payer_policy.spl_token]
+allow_transfer = true           # Allow fee payer to be source in SPL token transfers
+allow_burn = true               # Allow fee payer to burn SPL tokens
+allow_close_account = true      # Allow fee payer to close SPL token accounts
+allow_approve = true            # Allow fee payer to approve SPL token delegates
+allow_revoke = true             # Allow fee payer to revoke SPL token delegates
+allow_set_authority = true      # Allow fee payer to change SPL token authorities
+allow_mint_to = true            # Allow fee payer to mint SPL tokens
+allow_initialize_mint = true    # Allow fee payer to initialize SPL token mints
+allow_initialize_account = true # Allow fee payer to initialize SPL token accounts
+allow_initialize_multisig = true # Allow fee payer to be signer in SPL token multisig initialization
+allow_freeze_account = true     # Allow fee payer to freeze SPL token accounts
+allow_thaw_account = true       # Allow fee payer to thaw SPL token accounts
+allow_withdraw_excess_lamports = true # Allow fee payer to be authority in SPL WithdrawExcessLamports
+allow_unwrap_lamports = true    # Allow fee payer to be authority in SPL UnwrapLamports
+
+[validation.fee_payer_policy.token_2022]
+allow_transfer = true           # Allow fee payer to be source in Token2022 transfers
+allow_burn = true               # Allow fee payer to burn Token2022 tokens
+allow_close_account = true      # Allow fee payer to close Token2022 accounts
+allow_approve = true            # Allow fee payer to approve Token2022 delegates
+allow_revoke = true             # Allow fee payer to revoke Token2022 delegates
+allow_set_authority = true      # Allow fee payer to change Token2022 authorities
+allow_mint_to = true            # Allow fee payer to mint Token2022 tokens
+allow_initialize_mint = true    # Allow fee payer to initialize Token2022 mints
+allow_initialize_account = true # Allow fee payer to initialize Token2022 accounts
+allow_initialize_multisig = true # Allow fee payer to be signer in Token2022 multisig initialization
+allow_freeze_account = true     # Allow fee payer to freeze Token2022 accounts
+allow_thaw_account = true       # Allow fee payer to thaw Token2022 accounts
+allow_withdraw_excess_lamports = true # Allow fee payer to be authority in Token2022 WithdrawExcessLamports
+allow_unwrap_lamports = true    # Allow fee payer to be authority in Token2022 UnwrapLamports
+
+[validation.fee_payer_policy.alt]
+allow_create = false            # Allow fee payer to be authority/payer in ALT CreateLookupTable
+allow_extend = false            # Allow fee payer to be authority/payer in ALT ExtendLookupTable
+allow_freeze = false            # Allow fee payer to be authority in ALT FreezeLookupTable
+allow_deactivate = false        # Allow fee payer to be authority in ALT DeactivateLookupTable
+allow_close = false             # Allow fee payer to be authority in ALT CloseLookupTable
+
+[validation.price]
+type = "margin" # free / margin / fixed
+margin = 0.1  # 10% margin (0.1 = 10%, 1.0 = 100%)
+
+[validation.token_2022]
+transfer_hook_policy = "deny_mutable_for_delayed_signing"
+# allow_token_metadata_instructions = true  # Sponsor token-metadata interface instructions (default: false)
+# allow_token_group_instructions = true     # Sponsor token-group interface instructions (default: false)
+blocked_mint_extensions = [
+    # "confidential_transfer_mint",     # Confidential transfer configuration for the mint
+    # "confidential_mint_burn",         # Confidential mint and burn configuration
+    # "transfer_fee_config",            # Transfer fee configuration
+    # "mint_close_authority",           # Authority allowed to close the mint
+    # "interest_bearing_config",        # Interest-bearing token configuration
+    # "non_transferable",               # Makes tokens non-transferable
+    # "permanent_delegate",             # Permanent delegate for the mint
+    # "transfer_hook",                  # Block tokens with transfer hooks
+    # "pausable",                       # Block pausable tokens
+    # "token_metadata",                 # Block embedded token-metadata (and its interface instructions)
+    # "token_group",                    # Block token-group configuration (and its interface instructions)
+    # "token_group_member",             # Block token-group membership
+]
+blocked_account_extensions = [
+    # "confidential_transfer_account", # Confidential transfer state for the account
+    # "non_transferable_account",      # Non-transferable token account
+    # "transfer_hook_account",          # Transfer hook state for the account
+    # "pausable_account",               # Pausable token account state
+    # "memo_transfer",                  # Requires memo for transfers
+    # "cpi_guard",                      # Prevents certain CPI calls
+    # "immutable_owner",                # Account owner cannot be changed
+    # "default_account_state",          # Default state for new accounts
+]
+
+[metrics]
+enabled = true
+endpoint = "/metrics"
+port = 8080  # Same port as main server, or separate port like 9090
+scrape_interval = 60
+
+[metrics.fee_payer_balance]
+enabled = true
+expiry_seconds = 30
+
+[kora.usage_limit]
+enabled = false
+cache_url = "redis://redis:6379"
+fallback_if_unavailable = false
+rules = []
+
+[kora.plugins]
+# Enabled transaction plugins for sign/signAndSend flows.
+# Available values: "gas_swap"
+enabled = []
+
+[kora.bundle]
+enabled = false
+
+[kora.bundle.jito]
+block_engine_url = "https://mainnet.block-engine.jito.wtf"
+# simulate_bundle_url = "https://mainnet.rpc.jito.wtf"  # Required when bundle.enabled = true

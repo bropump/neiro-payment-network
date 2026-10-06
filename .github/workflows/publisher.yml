@@ -1,0 +1,90 @@
+name: Standalone listing publisher
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/kora-publisher/**', '.github/workflows/publisher.yml']
+  pull_request:
+    paths: ['tools/kora-publisher/**', '.github/workflows/publisher.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publisher-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: '0'
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    container: rust:1.97-bookworm
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: tools/kora-publisher
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: rustup toolchain install nightly-2026-07-13 --profile minimal --component rustfmt
+      - run: cargo fmt --check
+      - run: cargo test --release --locked
+      - run: cargo build --release --locked
+      - name: Smoke test and package
+        run: |
+          test "$(target/release/neiro-kora-publisher --operator ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N address)" = '2WrymdQ7uPoaNB65u27DB4bw8NS1eYPS8hfA5K5TS7jQ'
+          mkdir dist
+          cp target/release/neiro-kora-publisher dist/
+          cd dist
+          sha256sum neiro-kora-publisher > SHA256SUMS
+          wc -c neiro-kora-publisher > SIZE.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: publisher-linux-${{ matrix.arch }}
+          path: tools/kora-publisher/dist/
+          if-no-files-found: error
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: aarch64
+          - runner: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: tools/kora-publisher
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: rustup toolchain install nightly-2026-07-13 --profile minimal --component rustfmt
+      - run: cargo fmt --check
+      - run: cargo test --release --locked
+      - run: cargo build --release --locked
+      - name: Smoke test and package
+        run: |
+          test "$(target/release/neiro-kora-publisher --operator ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N address)" = '2WrymdQ7uPoaNB65u27DB4bw8NS1eYPS8hfA5K5TS7jQ'
+          mkdir dist
+          cp target/release/neiro-kora-publisher dist/
+          cd dist
+          shasum -a 256 neiro-kora-publisher > SHA256SUMS
+          wc -c neiro-kora-publisher > SIZE.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: publisher-macos-${{ matrix.arch }}
+          path: tools/kora-publisher/dist/
+          if-no-files-found: error

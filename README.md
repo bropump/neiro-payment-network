@@ -16,6 +16,10 @@ Run Kora, accept NEIRO for transaction fees, and connect your operator to the NE
 
 **Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then [connect to the router](#connect-your-operator-in-3-steps). Your agent can guide you through the whole setup.
 
+## Optional onchain operator listing
+
+Operators can publish their declared fee terms in SPL Record for clients to discover directly through Solana RPC. The [standalone Rust publisher and listing-protection setup](docs/SPL-RECORD-LISTINGS.md) keeps official Kora unchanged. Each operator must deny their own listing account before publishing. This optional flow does not require the router; the registration instructions below describe the existing routed service.
+
 ## Ask your agent to set it up
 
 Give your coding agent this repository and paste:
