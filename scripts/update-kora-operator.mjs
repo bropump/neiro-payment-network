@@ -1,135 +1,90 @@
-// Update an existing Docker operator to the latest published official main image.
-// Preserve private configuration, keys, ports and startup arguments. No Kora patch.
+// Host-native Docker rollout. Docker consumes the existing env-file opaquely;
+// this helper never reads it or retrieves Config.Env from a running container.
 import {resolveMain} from './resolve-kora-main.mjs';
 import {execFileSync} from 'node:child_process';
-import http from 'node:http';
-import {mkdirSync,readFileSync,writeFileSync,rmSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync,renameSync,rmSync,statSync} from 'node:fs';
 import {resolve} from 'node:path';
+import {isDeepStrictEqual} from 'node:util';
 
-const args=process.argv.slice(2);
-let name='neiro-provider', state=resolve('work/operator-updates'), lockPath, healthUrl;
-for(let i=0;i<args.length;i+=2) {
-  if(!args[i+1]) throw new Error('Missing option value');
-  if(args[i]==='--container') name=args[i+1];
-  else if(args[i]==='--state-dir') state=resolve(args[i+1]);
-  else if(args[i]==='--candidate-lock') lockPath=resolve(args[i+1]);
-  else if(args[i]==='--health-url') healthUrl=args[i+1];
-  else throw new Error('Usage: update-kora-operator.mjs [--container NAME] [--state-dir PATH]');
+const args=process.argv.slice(2),opts={container:'neiro-provider','state-dir':resolve('work/operator-updates')};
+for(let i=0;i<args.length;i++){
+  if(args[i]==='--enable-metadata'){opts.metadata=true;continue;}
+  if(args[i]==='--public-profile'){opts.publicProfile=true;continue;}
+  const name=args[i].replace(/^--/,'');
+  if(!['container','state-dir','candidate-lock','health-url','env-file','config-dir'].includes(name)||!args[i+1])throw Error('Required: --env-file PATH --config-dir PATH; optional --container NAME --candidate-lock PATH --enable-metadata --public-profile');
+  opts[name]=args[++i];
 }
-if(!/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(name)) throw new Error('Invalid container name');
+if(!opts['env-file']||!opts['config-dir'])throw Error('Supply existing --env-file and --config-dir paths; credentials will not be inspected');
+const name=opts.container,state=resolve(opts['state-dir']),configDir=resolve(opts['config-dir']),envFile=resolve(opts['env-file']);
+if(!/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(name)||configDir.includes(','))throw Error('Invalid container/config path');
+if(!statSync(envFile).isFile())throw Error('Existing operator env-file required');
 mkdirSync(state,{recursive:true,mode:0o700});
-const mutex=resolve(state,name+'.lock');
-let acquired=false;
-function run(args,options={}) {
-  try {return execFileSync('docker',args,{encoding:'utf8',timeout:180000,stdio:['ignore','pipe','pipe'],...options});}
-  catch {throw new Error(`Docker ${args[0]} operation failed; no credentials or startup arguments were logged`);}
-}
+const mutex=resolve(state,name+'.lock');let acquired=false;
+function docker(args){try{return execFileSync('docker',args,{encoding:'utf8',timeout:180000,stdio:['ignore','pipe','pipe']}).trim();}catch{throw Error(`Docker ${args[0]} failed; private output suppressed`);}}
+function field(container,expression){return JSON.parse(docker(['inspect','--format',`{{json .${expression}}}`,container]));}
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
-let socketPath;
-function engine(method,path,body) {
-  return new Promise((resolve,reject)=>{
-    const request=http.request({socketPath,method,path,headers:{'Content-Type':'application/json'}},response=>{
-      let data='';response.on('data',chunk=>data+=chunk);
-      response.on('end',()=>{
-        if(response.statusCode>=300) {reject(new Error(`Docker engine HTTP ${response.statusCode}`));return;}
-        try {resolve(data?JSON.parse(data):{});} catch {reject(new Error('Invalid Docker engine response'));}
-      });
-    });
-    request.setTimeout(30000,()=>request.destroy(new Error('Docker engine timeout')));
-    request.on('error',()=>reject(new Error('Docker engine connection failed')));
-    request.end(body===undefined?undefined:JSON.stringify(body));
-  });
-}
-async function healthy(url,env,timeout=45000) {
-  const deadline=Date.now()+timeout;
-  while(Date.now()<deadline) {
-    try {
-      const response=await fetch(url,{method:'POST',redirect:'error',signal:AbortSignal.timeout(5000),
-        headers:{'Content-Type':'application/json',...(env.KORA_API_KEY?{'x-api-key':env.KORA_API_KEY}:{})},
-        body:JSON.stringify({jsonrpc:'2.0',id:1,method:'getVersion',params:{}})});
-      const result=await response.json();
-      if(response.ok && typeof result.result?.version==='string') return;
-    } catch {}
-    await pause(500);
-  }
-  throw new Error('Updated operator failed its local getVersion health check');
-}
-async function main() {
-  try {mkdirSync(mutex,{mode:0o700});acquired=true;writeFileSync(resolve(mutex,'pid'),String(process.pid));}
-  catch {
-    try {process.kill(Number(readFileSync(resolve(mutex,'pid'),'utf8')),0);}
-    catch {rmSync(mutex,{recursive:true,force:true});mkdirSync(mutex,{mode:0o700});acquired=true;writeFileSync(resolve(mutex,'pid'),String(process.pid));}
-    if(!acquired) {console.log('An operator update is already running');return;}
-  }
-  const context=JSON.parse(run(['context','inspect','--format','{{json .Endpoints.docker.Host}}']));
-  if(!context.startsWith('unix://')) throw new Error('This updater requires a local Docker Unix socket');
-  socketPath=context.slice(7);
-  const before=await engine('GET',`/containers/${name}/json`);
-  if(!before.State.Running) throw new Error('Operator is stopped; updater will not start it automatically');
-  const pin=lockPath?JSON.parse(readFileSync(lockPath,'utf8')):await resolveMain();
-  if(pin.channel!=='main' || !/^ghcr\.io\/solana-foundation\/kora@sha256:[a-f0-9]{64}$/.test(pin.image))
-    throw new Error('Invalid official main pin');
-  if(before.Config.Image===pin.image) {console.log(`Current: ${name} ${pin.upstream_commit}`);return;}
-  run(['pull','--platform','linux/amd64',pin.image]);
-  const env=Object.fromEntries(before.Config.Env.map(value=>{const index=value.indexOf('=');return [value.slice(0,index),value.slice(index+1)];}));
-  const config=before.Config.Cmd??[];
-  const option=(flag,fallback)=>{const i=config.indexOf(flag);return i<0?fallback:config[i+1];};
-  const validate=['run','--rm','--platform','linux/amd64','--network','none','--read-only','--tmpfs','/tmp'];
-  for(const key of Object.keys(env).filter(key=>key!=='PATH')) validate.push('-e',key);
-  for(const mount of before.Mounts) {
-    if(!['bind','volume'].includes(mount.Type)) throw new Error('Unsupported mount type; original operator remains running');
-    const source=mount.Type==='volume'?mount.Name:mount.Source;
-    if(source.includes(',') || mount.Destination.includes(',')) throw new Error('Unsupported comma in mount path');
-    validate.push('--mount',`type=${mount.Type},src=${source},dst=${mount.Destination},readonly`);
-  }
-  validate.push('--entrypoint','kora',pin.image,'--config',option('--config','/config/kora.toml'),
-    'config','validate','--signers-config',option('--signers-config','/config/signers.toml'));
-  run(validate,{env:{...process.env,...env,PATH:process.env.PATH,RPC_URL:'http://127.0.0.1:8899'}});
-  const binding=before.HostConfig.PortBindings?.['8080/tcp']?.[0];
-  if(!binding) throw new Error('Local port 8080 mapping is required for the health check');
-  const host=['','0.0.0.0','::'].includes(binding.HostIp)?'127.0.0.1':binding.HostIp;
-  const health=healthUrl ?? `http://${host}:${binding.HostPort}`;
-  const backup=name+'-rollback-'+Date.now();
-  const originalRestart=before.HostConfig.RestartPolicy;
-  let created=false;
-  try {
-    await engine('POST',`/containers/${before.Id}/update`,{RestartPolicy:{Name:'no'}});
-    await engine('POST',`/containers/${before.Id}/stop?t=20`);
-    await engine('POST',`/containers/${before.Id}/rename?name=${backup}`);
-    const keys=['Hostname','Domainname','User','AttachStdin','AttachStdout','AttachStderr','ExposedPorts','Tty',
-      'OpenStdin','StdinOnce','Env','Cmd','Volumes','WorkingDir','Entrypoint','Labels','StopSignal','StopTimeout','Healthcheck'];
-    const body=Object.fromEntries(keys.filter(k=>before.Config[k]!==undefined).map(k=>[k,before.Config[k]]));
-    const imageMetadata=JSON.parse(run(['image','inspect',pin.image]))[0];
-    body.Image=pin.image;body.HostConfig=before.HostConfig;
-    body.HostConfig.RestartPolicy=originalRestart;
-    // Replace old image labels with the new official image labels; retain custom labels.
-    body.Labels={...body.Labels,...imageMetadata.Config.Labels};
-    body.Labels['com.neiro.main-updater.original-container']=before.Id;
-    await engine('POST',`/containers/create?name=${name}&platform=linux/amd64`,body);created=true;
-    await engine('POST',`/containers/${name}/start`);
-    await healthy(health,env);
-    const after=await engine('GET',`/containers/${name}/json`);
-    if(after.Config.Image!==pin.image || after.Config.Env.join('\n')!==before.Config.Env.join('\n'))
-      throw new Error('Image or private environment preservation check failed');
-    let prior;
-    try {prior=JSON.parse(readFileSync(resolve(state,name+'.json'),'utf8'));} catch {}
-    writeFileSync(resolve(state,name+'.json'),JSON.stringify({updated_at:new Date().toISOString(),
-      image:pin.image,upstream_commit:pin.upstream_commit,rollback_container:backup,health_check:'passed'},null,2)+'\n',{mode:0o600});
-    console.log(`Updated: ${name} ${pin.upstream_commit}; rollback container ${backup}`);
-    if(prior?.rollback_container?.startsWith(name+'-rollback-') && prior.rollback_container!==backup) {
-      try {await engine('DELETE',`/containers/${prior.rollback_container}`);} catch {}
+async function publicState(url){const r={};for(const method of ['getConfig','getPayerSigner']){
+  const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params:{}}),redirect:'error',signal:AbortSignal.timeout(5000)});
+  const j=await response.json();if(!response.ok||!j.result)throw Error('Public readiness failed');r[method]=j.result;
+}return r;}
+async function healthy(url,expected){const deadline=Date.now()+60000;while(Date.now()<deadline){try{const value=await publicState(url);if(!isDeepStrictEqual(value,expected))throw Error('Settings mismatch');return value;}catch{}await pause(1000);}throw Error('New process did not preserve public payer/settings');}
+function atomic(path,data){const temp=path+'.metadata-update.tmp';writeFileSync(temp,data,{mode:0o600});renameSync(temp,path);}
+async function main(){
+  try{mkdirSync(mutex,{mode:0o700});acquired=true;writeFileSync(resolve(mutex,'pid'),String(process.pid));}
+  catch{let live=true;try{process.kill(Number(readFileSync(resolve(mutex,'pid'),'utf8')),0);}catch{live=false;}if(live)return console.log('Operator update already running');rmSync(mutex,{recursive:true,force:true});mkdirSync(mutex,{mode:0o700});acquired=true;writeFileSync(resolve(mutex,'pid'),String(process.pid));}
+  if(!field(name,'State.Running'))throw Error('Operator stopped; no automatic start');
+  const image=field(name,'Config.Image'),mounts=field(name,'Mounts'),ports=field(name,'HostConfig.PortBindings'),restart=field(name,'HostConfig.RestartPolicy');
+  if(mounts.length!==1||mounts[0].Type!=='bind'||mounts[0].Source!==configDir||mounts[0].Destination!=='/config'||Object.keys(ports).length!==1||ports['8080/tcp']?.length!==1||field(name,'HostConfig.NetworkMode')!=='bridge'||field(name,'HostConfig.Privileged')||field(name,'HostConfig.NanoCpus')!==0||field(name,'HostConfig.Memory')!==0)throw Error('Unsupported Docker profile; original operator unchanged');
+  const binding=ports['8080/tcp'][0];if(binding.HostIp!=='127.0.0.1')throw Error('Require existing loopback port binding');
+  const url=opts['health-url']||`http://127.0.0.1:${binding.HostPort}`;
+  const before=await publicState(url),expected=structuredClone(before);
+  // Explicitly preserve an existing public endpoint despite stale auth in its env-file.
+  // This is reached only after unauthenticated baseline checks succeeded.
+  const authOverrides=opts.publicProfile?['-e','KORA_API_KEY=','-e','KORA_HMAC_SECRET=','-e','KORA_RECAPTCHA_SECRET=']:[];
+  const pin=opts['candidate-lock']?JSON.parse(readFileSync(resolve(opts['candidate-lock']),'utf8')):await resolveMain();
+  if(pin.channel!=='main'||!/^ghcr\.io\/solana-foundation\/kora@sha256:[a-f0-9]{64}$/.test(pin.image))throw Error('Invalid official image pin');
+  // d5a7 adds this public field with the upstream default; no prior setting is overridden.
+  if(!Object.hasOwn(expected.getConfig.validation_config,'allowed_transaction_versions'))
+    expected.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];
+  const needsMetadata=opts.metadata&&!before.getConfig.validation_config.token_2022.allow_token_metadata_instructions;
+  if(image===pin.image&&!needsMetadata)return console.log(`Current: ${name} ${pin.upstream_commit}`);
+  docker(['pull','--platform','linux/amd64',pin.image]);
+  const revision=JSON.parse(docker(['image','inspect','--format','{{json .Config.Labels}}',pin.image]))['org.opencontainers.image.revision'];
+  if(revision!==pin.upstream_commit)throw Error('Image revision differs from verified pin');
+  const configPath=resolve(configDir,'kora.toml');let original;
+  const backup=name+'-rollback-'+Date.now();let renamed=false,phase="prepare-config";
+  try{
+    if(needsMetadata){
+      original=readFileSync(configPath,'utf8');
+      const header=/^\[validation\.token_2022\][ \t]*(?:#.*)?$/m,match=header.exec(original);
+      if(!match)throw Error('Expected existing Token-2022 config table');
+      const end=original.indexOf('\n[',match.index+match[0].length),stop=end<0?original.length:end;
+      const section=original.slice(match.index,stop),lines=section.match(/^allow_token_metadata_instructions\s*=/gm)||[];
+      if(lines.length>1)throw Error('Duplicate metadata settings');
+      const changed=lines.length?section.replace(/^allow_token_metadata_instructions\s*=.*$/m,'allow_token_metadata_instructions = true'):section.replace(header,match[0]+'\nallow_token_metadata_instructions = true');
+      writeFileSync(resolve(state,backup+'.kora.toml'),original,{mode:0o600});
+      atomic(configPath,original.slice(0,match.index)+changed+original.slice(stop));
+      expected.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;
     }
-  } catch {
-    let replacement;
-    try {replacement=await engine('GET',`/containers/${name}/json`);} catch {}
-    if(created || replacement?.Config.Labels?.['com.neiro.main-updater.original-container']===before.Id)
-      await engine('DELETE',`/containers/${name}?force=true`);
-    const original=await engine('GET',`/containers/${before.Id}/json`);
-    if(original.Name!==('/'+name)) await engine('POST',`/containers/${before.Id}/rename?name=${name}`);
-    await engine('POST',`/containers/${before.Id}/update`,{RestartPolicy:originalRestart});
-    if(!original.State.Running) await engine('POST',`/containers/${before.Id}/start`);
-    throw new Error('Update failed; original operator restored');
+    const mount=`type=bind,src=${configDir},dst=/config${mounts[0].RW?'':',readonly'}`;
+    // Existing Kora's native config validator consumes its own signer reference.
+    phase='validate-config';
+    docker(['run','--rm','--platform','linux/amd64','--network','none','--env-file',envFile,...authOverrides,'--mount',mount,'--entrypoint','kora',pin.image,'--config','/config/kora.toml','config','validate','--signers-config','/config/signers.toml']);
+    phase='stop-original';
+    docker(['update','--restart=no',name]);docker(['stop','--time','20',name]);docker(['rename',name,backup]);renamed=true;
+    const restartArg=restart.Name==='on-failure'&&restart.MaximumRetryCount?`on-failure:${restart.MaximumRetryCount}`:restart.Name;
+    phase='start-replacement';
+    docker(['run','-d','--platform','linux/amd64','--name',name,'--restart',restartArg,'-p',`127.0.0.1:${binding.HostPort}:8080`,'--env-file',envFile,...authOverrides,'--mount',mount,'--entrypoint','kora',pin.image,'--config','/config/kora.toml','rpc','start','--port','8080','--signers-config','/config/signers.toml']);
+    phase='verify-public-state';
+    const after=await healthy(url,expected);
+    writeFileSync(resolve(state,name+'.json'),JSON.stringify({updated_at:new Date().toISOString(),image:pin.image,upstream_commit:pin.upstream_commit,rollback_container:backup,rollback_config:original?resolve(state,backup+'.kora.toml'):null,health_check:'passed'},null,2)+'\n',{mode:0o600});
+    console.log(JSON.stringify({status:'updated',name,commit:pin.upstream_commit,image:pin.image,payer:after.getConfig.fee_payers,price:after.getConfig.validation_config.price,metadata:after.getConfig.validation_config.token_2022.allow_token_metadata_instructions,rollback:backup}));
+  }catch{
+    if(original!==undefined)atomic(configPath,original);
+    if(renamed){try{docker(['rm','-f',name]);}catch{}docker(['rename',backup,name]);}
+    const restartArg=restart.Name==='on-failure'&&restart.MaximumRetryCount?`on-failure:${restart.MaximumRetryCount}`:restart.Name;
+    docker(['update','--restart',restartArg,name]);if(!field(name,'State.Running'))docker(['start',name]);
+    await healthy(url,before);throw Error(`Update failed during ${phase}; original operator and config restored`);
   }
 }
-main().catch(error=>{console.error(error.message);process.exitCode=1;})
-  .finally(()=>{if(acquired) rmSync(mutex,{recursive:true,force:true});});
+main().catch(e=>{console.error(e.message);process.exitCode=1;}).finally(()=>{if(acquired)rmSync(mutex,{recursive:true,force:true});});

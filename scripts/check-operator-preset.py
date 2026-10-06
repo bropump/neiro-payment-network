@@ -33,7 +33,9 @@ assert v["max_signatures"] == 10
 assert v["allowed_programs"] == "All"
 policy = v["fee_payer_policy"]
 assert policy["system"]["allow_create_account"] is True
-assert all(value is False for name, value in policy["system"].items() if name not in {"allow_create_account", "nonce"})
+assert policy["system"]["allow_transfer"] is True
+assert v["token_2022"]["allow_token_metadata_instructions"] is True
+assert all(value is False for name, value in policy["system"].items() if name not in {"allow_create_account", "allow_transfer", "nonce"})
 assert all(value is False for value in policy["system"]["nonce"].values())
 for kind in ["spl_token", "token_2022", "alt"]:
     assert all(value is False for value in policy[kind].values())

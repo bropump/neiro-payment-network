@@ -7,6 +7,7 @@ import {resolve} from 'node:path';
 
 const repository = 'ghcr.io/solana-foundation/kora';
 const upstream = 'https://github.com/solana-foundation/kora';
+const metadataMinimum = 'd5a7e64b9e5603cfea5d4c5196553a60f19f9f7e';
 function inspect(reference, field) {
   try {
     return JSON.parse(execFileSync('docker', ['buildx', 'imagetools', 'inspect',
@@ -35,13 +36,18 @@ export async function resolveMain() {
   const comparison = await github(`compare/${revision}...${head.sha}`);
   if (!['identical','ahead'].includes(comparison.status))
     throw new Error('Published image is not a merged upstream main commit');
+  const metadataComparison = await github(`compare/${metadataMinimum}...${revision}`);
+  if (!['identical','ahead'].includes(metadataComparison.status))
+    throw new Error('Published image does not include the required metadata reconstruction fix');
   const platforms = (manifest.manifests ?? []).map(m => m.platform)
     .filter(p => p?.os === 'linux' && p.architecture !== 'unknown')
     .map(p => `${p.os}/${p.architecture}`);
   if (!platforms.length) platforms.push(`${metadata.os}/${metadata.architecture}`);
   return {channel:'main', tag:'edge', upstream, upstream_commit:revision,
     upstream_main_head:head.sha, image_tag:revision.slice(0,7), image,
-    published_image_platforms:platforms};
+    published_image_platforms:platforms,
+    metadata_minimum_commit:metadataMinimum,
+    runtime_image_digest:(manifest.manifests ?? []).find(m=>m.platform?.os==='linux'&&m.platform?.architecture==='amd64')?.digest ?? manifest.digest};
 }
 async function main() {
   const args = process.argv.slice(2);
@@ -59,7 +65,8 @@ async function main() {
         .replace(/^kora(?:-cli)? /,'');
     } catch { throw new Error('Official main image could not start'); }
     if (!/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.]+)?$/.test(version)) throw new Error('Invalid binary version');
-    const changed = lock.image !== pin.image || lock.channel !== 'main';
+    const changed = lock.image !== pin.image || lock.channel !== 'main' ||
+      lock.metadata_minimum_commit!==metadataMinimum;
     if (changed) writeFileSync(path, JSON.stringify({...lock,...pin,schema_version:2,version,
       verification_scope:'Official main image startup and canonical config/signers validation. Historical payment results retain their original image/config scope.',
       update_policy:'Track the latest successfully published upstream main image. Resolve edge at every installation/update, verify its merged revision, and pin that digest for the running process. Check for updates every five minutes; validate before replacement and retain rollback on failure.'}, null, 2)+'\n');
