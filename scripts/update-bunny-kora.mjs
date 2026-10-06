@@ -42,6 +42,7 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   }
   const containers=s=>s.regions.flatMap(r=>r.pods??[]).flatMap(p=>p.containers??[]).filter(c=>c.name===name);
   const initial=await read('/overview'),running=containers(initial);
+  const originalRegions=initial.regions.filter(r=>(r.pods??[]).some(p=>(p.containers??[]).some(c=>c.name===name))).map(r=>r.region);
   const previous=[...new Set(running.map(c=>c.image?.match(/@sha256:[a-f0-9]{64}$/)?.[0].slice(1)))];
   if(!running.length||previous.length!==1||!previous[0])throw Error('Cannot determine one previous image for rollback');
   const before=await publicState(),expected=structuredClone(before);
@@ -65,7 +66,8 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
     const deadline=now()+timeout;
     while(now()<deadline){
       await pause(5000);const overview=await read('/overview'),active=containers(overview);
-      if(active.length<running.length||!active.every(c=>accepted.some(digest=>c.image?.endsWith('@'+digest))))continue;
+      const regionsReady=originalRegions.every(region=>overview.regions.some(r=>r.region===region&&r.status==='active'&&(r.pods??[]).some(p=>(p.containers??[]).some(c=>c.name===name&&c.status==='ready'))));
+      if(!regionsReady||active.length<running.length||!active.every(c=>c.status==='ready'&&accepted.some(digest=>c.image?.endsWith('@'+digest))))continue;
       let after;try{after=await publicState();}catch{continue;}
       if(!isDeepStrictEqual(after,expectedState))throw Error('Public payer/settings changed beyond the approved metadata flag');
       return {overview,after};
