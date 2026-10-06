@@ -12,9 +12,9 @@ Integrated clients and apps can let users pay transaction fees in NEIRO without 
 
 Our testing has included x402, MPP, Jupiter swaps, transfers and trades.
 
-Run Kora, accept NEIRO for transaction fees, and connect your operator to the NEIRO router. This repository provides the NEIRO configuration and setup guidance. Kora is the software you run; we do not distribute a separate NEIRO Kora build.
+Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for direct discovery or connect to the existing NEIRO router. This repository provides configuration, setup guidance and the small listing publisher. Kora itself remains the official upstream software.
 
-**Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then [connect to the router](#connect-your-operator-in-3-steps). Your agent can guide you through the whole setup.
+**Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then follow the [agent setup](docs/AGENT-SETUP.md) to publish and verify your operator. [Router registration](#connect-your-operator-in-3-steps) remains available for the routed service.
 
 ## Optional onchain operator listing
 
@@ -25,34 +25,20 @@ Operators can publish their declared fee terms in SPL Record for clients to disc
 Give your coding agent this repository and paste:
 
 ```text
-Help me set up and learn to run a NEIRO payment operator.
-Follow the official Kora deployment guide for installation and hosting:
-https://solana.com/docs/tools/kora/operators#deployment
-Use AGENTS.md and docs/AGENT-SETUP.md for the NEIRO configuration
-and router connection steps.
-
-Start by asking where I want to run it. If I am unsure, explain the
-simple options—my own computer, a server or a cloud host—and help me
-choose based on cost, availability and how much maintenance I want.
-Explain what I need and guide me through getting anything missing.
-
-Walk me through the setup in plain language. Explain the fee options,
-wallet funding and optional remote signer, and help me choose settings.
-Use official Kora with the NEIRO configuration. Handle the installation,
-HTTPS, router registration and verification wherever you have access.
-First get one operator working and show me a routed quote. Then set up
-automatic restart and updates. Explain any steps I need to do myself.
-
-Teach me how to check that it is working, view logs, monitor my SOL
-balance, change fees, update, stop and restart it. Leave a short guide
-with the exact commands for my setup and what their results mean.
-
-Reuse choices and permissions I have already supplied. Ask only for
-missing information or required approval. Help me store credentials
-privately; never ask me to paste secrets into chat.
+Set up a NEIRO Kora operator on my chosen host using this repository.
+Follow AGENTS.md and docs/AGENT-SETUP.md through to verified operation.
+Build unchanged Kora and the Rust listing publisher, configure my signer,
+check SOL and NEIRO accounts, derive and deny my listing address in
+kora.toml before starting Kora, then sign and publish my SPL Record terms.
+Verify direct discovery, the loaded deny rule and independent quote checks.
+Use my existing permissions and payment limits for any live test, recover
+test funds as requested, and report receipts and costs. Keep an operational
+listing open unless I asked for a temporary test or retirement.
+Use normal tools for my host. Ask only for missing information, keep keys
+private and under my control, and leave simple operating commands.
 ```
 
-You do not need to choose a host or understand Kora before starting. Your agent helps you choose, explains each stage and handles the setup where it has access. It then shows you how to operate the service day to day.
+You can name a host or let your agent help choose one. The agent handles configuration and verification where it has access, then shows you how to operate the service day to day. This is an agent workflow using normal tools, not a one-command installer.
 
 [Agent instructions](docs/AGENT-SETUP.md) · [Manual setup](docs/JOIN.md) · [Fees and basics](TUTORIAL.md)
 
