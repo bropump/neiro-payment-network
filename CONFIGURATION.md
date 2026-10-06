@@ -83,3 +83,7 @@ Your host, dedicated signer reference, RPC/Jupiter credentials and intended publ
 ## Pricing service
 
 Stock Kora uses Jupiter for the supplied NEIRO pricing configuration. Keep the Jupiter credential available to Kora. Clients must independently check pricing inputs when verifying quotes; an onchain listing is not a price feed.
+
+The template sets `validation.max_price_staleness_slots = 150`. Kora rejects oracle prices older than this slot limit, or prices without the slot information needed to check freshness. This is approximately 30 seconds at 200 ms per slot (37.5 seconds at 250 ms); it does not reserve a quote for that duration or guarantee against price moves. `0` disables the protection. A newly requested quote can still use stale upstream data, so clients should retry only a bounded number of times or select another operator, then report fresh pricing unavailable. Illiquid tokens can remain unavailable under this policy; do not silently disable the guard to make quotes pass.
+
+Apply this setting in the existing `[validation]` section, restart Kora, and verify `getConfig.result.validation_config.max_price_staleness_slots` is `150`. This operator-side protection does not require an SPL Record change: the listing advertises fee terms, while Kora enforces its price-age limit. Clients can inspect the live setting and independently enforce their own freshness limit.

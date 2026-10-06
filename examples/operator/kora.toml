@@ -105,6 +105,8 @@ get_version = true # Return the Kora version string; not proof of the exact main
 max_allowed_lamports = 250000000 # 0.25 SOL per transaction; operator may choose another allowance
 max_signatures = 10 # Maximum transaction signatures, including the sponsor.
 price_source = "Jupiter" # Converts sponsored costs to token prices; needs your Jupiter key.
+max_price_staleness_slots = 150 # Reject older oracle prices or missing price slots; 0 disables.
+# About 30 seconds at 200 ms/slot; this is a slot limit, not a quote lifetime.
 allow_durable_transactions = false # Reject durable-nonce transactions (which can remain valid longer).
 cross_cluster_check = false # Optional cross-network check; adds RPC calls when enabled.
 # Other Solana cluster RPCs used by the cross-cluster check; this list does
