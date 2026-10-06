@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {generateKeyPairSync} from 'node:crypto';
+import {createPrivateKey, createPublicKey} from 'node:crypto';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const configDir = resolve(root, 'examples/operator');
@@ -14,10 +14,14 @@ if(lock.channel!=='main' || !/^[a-f0-9]{40}$/.test(lock.upstream_commit)) throw 
 const args = process.argv.slice(2);
 if (args.length && (args.length !== 2 || args[0] !== '--binary')) throw Error('Usage: verify-stock-kora.mjs [--binary /path/to/stock/kora]');
 const native = args.length ? resolve(args[1]) : undefined;
-const {privateKey, publicKey} = generateKeyPairSync('ed25519');
-const seed = privateKey.export({format:'der', type:'pkcs8'}).subarray(-32);
+// Public deterministic fixture, created inside this test; never a real operator key.
+const seed = Buffer.alloc(32, 79);
+const privateKey = createPrivateKey({key:Buffer.concat([Buffer.from('302e020100300506032b657004220420','hex'),seed]),format:'der',type:'pkcs8'});
+const publicKey = createPublicKey(privateKey);
 const pub = publicKey.export({format:'der', type:'spki'}).subarray(-32);
-const env = {...process.env, RPC_URL:'http://127.0.0.1:8899',
+const env = {PATH:process.env.PATH,
+  DOCKER_HOST:JSON.parse(execFileSync('docker',['context','inspect','--format','{{json .Endpoints.docker.Host}}'],{encoding:'utf8'})),
+  RPC_URL:'http://127.0.0.1:8899',
   JUPITER_API_KEY:'CONFIG_VALIDATION_ONLY',
   KORA_PRIVATE_KEY:JSON.stringify([...seed, ...pub]), NO_COLOR:'1'};
 // Prevent host credentials from silently changing this public-profile check.
@@ -44,4 +48,4 @@ console.log(actual);
 const koraPath = native ? resolve(configDir, 'kora.toml') : '/config/kora.toml';
 const signersPath = native ? resolve(configDir, 'signers.toml') : '/config/signers.toml';
 process.stdout.write(invoke(['--config', koraPath, 'config', 'validate', '--signers-config', signersPath]));
-console.log('PASS: stock Kora config and signer validation using an ephemeral test key');
+console.log('PASS: stock Kora config and signer validation using a public deterministic fixture key');

@@ -1,0 +1,9 @@
+{
+  "commandArray": [
+    "/bin/sh",
+    "-c"
+  ],
+  "argumentsArray": [
+    "set -eu; mkdir -p /tmp/kora; printf %s \"$KORA_CONFIG_BASE64\" | base64 -d > /tmp/kora/kora.original.toml; sed 's/^sign_transaction[[:space:]]*=[[:space:]]*false/sign_transaction = true/' /tmp/kora/kora.original.toml > /tmp/kora/kora.toml; grep -q \"^sign_transaction = true\" /tmp/kora/kora.toml; printf %s \"$KORA_SIGNERS_BASE64\" | base64 -d > /tmp/kora/signers.toml; exec kora --rpc-url \"$RPC_URL\" --config /tmp/kora/kora.toml rpc start --signers-config /tmp/kora/signers.toml"
+  ]
+}

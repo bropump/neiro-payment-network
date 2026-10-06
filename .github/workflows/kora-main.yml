@@ -1,20 +1,67 @@
 name: Latest official Kora main
+
 on:
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      enable_metadata:
+        description: Enable launch metadata using the already verified image pin
+        required: false
+        type: boolean
+        default: false
+
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: latest-official-kora-main
+  cancel-in-progress: false
+
 jobs:
-  inspect:
+  refresh:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: operator-maintenance
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Inspect secret-free Bunny overview and public Kora state
+      - name: Read the current public config templates
+        run: |
+          git fetch origin main --depth=1
+          git show FETCH_HEAD:examples/operator/kora.toml > examples/operator/kora.toml
+          git show FETCH_HEAD:examples/operator/signers.toml > examples/operator/signers.toml
+      - name: Resolve the latest successfully published upstream main image
+        if: ${{ !inputs.enable_metadata }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-kora-main.mjs --update-lock
+      - name: Check the canonical NEIRO configuration
+        run: python3 scripts/check-operator-preset.py
+      - name: Validate the official main image and canonical signer/config files
+        run: node scripts/verify-stock-kora.mjs
+      - name: Save the validated main snapshot
+        run: |
+          if ! git diff --quiet -- examples/operator; then
+            git config user.name 'bropump'
+            git config user.email '203769166+bropump@users.noreply.github.com'
+            git add examples/operator
+            git commit -m 'Track latest buildable official Kora main'
+            git push origin HEAD:operator-maintenance
+          fi
+      - name: Update our Bunny operator to the validated main image
+        if: ${{ vars.BUNNY_KORA_APP_ID != '' }}
         env:
           BUNNY_KORA_APP_ID: ${{ vars.BUNNY_KORA_APP_ID }}
           BUNNY_KORA_CONTAINER_NAME: ${{ vars.BUNNY_KORA_CONTAINER_NAME }}
           BUNNY_KORA_API_KEY: ${{ secrets.BUNNY_KORA_API_KEY }}
-        run: node scripts/rollout-metadata.mjs
+          ENABLE_METADATA: ${{ inputs.enable_metadata }}
+        run: |
+          if [ "$ENABLE_METADATA" = true ]; then
+            node scripts/update-bunny-kora.mjs --enable-metadata
+          else
+            node scripts/update-bunny-kora.mjs
+          fi

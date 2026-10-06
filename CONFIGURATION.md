@@ -28,7 +28,7 @@ This recommendation does not claim measured 90% signing success, compatibility w
 | Operator fee | Operator chooses margin, fixed or free; template example is cost plus 50% |
 | Sponsor allowance | Recommended 0.25 SOL per transaction; operator may choose another allowance |
 | Current program policy | `allowed_programs = "All"` |
-| Sponsor permissions | Account creation enabled; direct SOL transfers and sponsor token spending disabled |
+| Sponsor permissions | Account creation and reimbursed launch-funding SOL transfers enabled; sponsor token spending disabled |
 
 [Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml) · [Upstream main image snapshot](examples/operator/kora-release.json)
 
@@ -69,7 +69,9 @@ Five unsigned Jupiter builds passed the proposed static participation check with
 
 GUM Universal Deposit's ordinary sender transaction uses core SOL/SPL transfer and token-account instructions. Its current hosted widget requires the connected user to be the transaction fee payer, so changing Kora config alone does not make that widget gasless. GUM's separate bank, inbox and outbox processing is not part of the ordinary sender deposit. [GUM wallet-deposit documentation](https://docs.gum.ag/universal-deposit/embed).
 
-Token-2022 metadata reconstruction is separately tracked in [upstream #681](https://github.com/solana-foundation/kora/issues/681). #683 should not be described as fixing that issue or every launch, account-creation or application-integration limitation.
+Token-2022 metadata reconstruction from [cbef6ec](https://github.com/solana-foundation/kora/commit/cbef6ecbc40d753f66480d9cb286f6052f5637d0) is included in the merged upstream main commit `d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e`. The template enables `validation.token_2022.allow_token_metadata_instructions` and `validation.fee_payer_policy.system.allow_transfer` for launch metadata and payer-funded rent/setup transfers. NEIRO payment validation and configured spending allowances still apply. These flags do not restrict System transfers exclusively to rent. Preserve operator fees and all other payer permissions when migrating an existing config. The separate #683 protection is not enabled by this metadata change.
+
+Build and config must be updated together: an old binary still cannot reconstruct these CPIs, and an image upgrade alone does not turn on metadata in a private config. The local Surfpool matrix covers DBC classic/Token-2022, Raydium LaunchLab, Stonkfun standard and 1%/3% rewards, and normal Pump create_v2. It does not certify hosted websites, other modes, live pricing or arbitrary-program security.
 
 ## What you supply
 
