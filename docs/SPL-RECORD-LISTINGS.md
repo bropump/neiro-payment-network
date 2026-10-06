@@ -76,13 +76,13 @@ Send this read-only request to a mainnet Solana RPC that supports `getProgramAcc
 }
 ```
 
-The `memcmp` value is the base58 encoding of the eight ASCII bytes `NEIRO069`. The signed account has 733 bytes: initialized Record version `1` at byte 0, authority at bytes 1–32, `NEIRO069` at bytes 33–40, a little-endian u16 JSON byte length at bytes 41–42, the exact JSON bytes starting at byte 43, a 64-byte operator Ed25519 signature immediately after the JSON, and zero padding. The JSON fields are `v`, `url`, `operator`, `payment`, `mint`, `genesis`, `price` and `oracle`; `v` is `2`. They advertise public terms, not the full private Kora configuration. The current format has no expiry, namespace-address field or signed latency promise.
+The `memcmp` value is the base58 encoding of the eight ASCII bytes `NEIRO069`. The signed account has 733 bytes: initialized Record version `1` at byte 0, authority at bytes 1–32, `NEIRO069` at bytes 33–40, a little-endian u16 JSON byte length at bytes 41–42, the exact JSON bytes starting at byte 43, a 64-byte operator Ed25519 signature immediately after the JSON, and zero padding. The JSON fields are `v`, `url`, `operator`, `payment`, `mint`, `genesis`, `price`, `oracle`, `sig_alg`, `sig_enc`, `msg_id` and `signer`; `v` is `3`. They advertise public terms, not the full private Kora configuration. The current format has no expiry, namespace-address field or signed latency promise.
 
 Treat scan results as untrusted candidates. Verify program ownership, non-executable status, exact layout, authority equal to the advertised operator, the derived address, mainnet genesis and the expected NEIRO mint. Verify the separate operator signature before using any terms; the shared [reader](../tools/kora-publisher/client/read-record.mjs) rejects unsigned listings and invalid signatures. Reject malformed or unsupported fields. Checking only the authority field is insufficient: SPL Record initialization can name another wallet as authority without proving that wallet created or endorsed an arbitrary account. Do not accept arbitrary vanity addresses in this format.
 
 Read live operator SOL balances with `getMultipleAccounts` in supported batch sizes (at most 100 per call), then request live configuration and transaction quotes directly from candidate URLs. Protect against unsafe URLs and DNS destinations, bound response sizes and concurrency, and use deadlines. Verify the payer, payment destination and terms against the record, independently check pricing inputs and rounding, and inspect the exact transaction before signing. A matching config alone does not prove an honest quote.
 
-The current listing does not completely specify the fee calculation: a margin alone does not define the chargeable costs, oracle conversion or rounding. The existing test client supplies those rules for its tested payment shape; this is not a general verifier for every transaction Kora accepts. Before general client interoperability, define a precise, versioned calculation specification with test vectors covering those rules. One calculation shared by a listing-format version needs no additional per-operator field; a profile identifier is useful only if multiple calculations are supported. The current JSON `v = 2` describes the signed format and must not be treated as an already-defined complete fee profile, or silently assigned new semantics for existing listings.
+The current listing does not completely specify the fee calculation: a margin alone does not define the chargeable costs, oracle conversion or rounding. The existing test client supplies those rules for its tested payment shape; this is not a general verifier for every transaction Kora accepts. Before general client interoperability, define a precise, versioned calculation specification with test vectors covering those rules. One calculation shared by a listing-format version needs no additional per-operator field; a profile identifier is useful only if multiple calculations are supported. The current JSON `v = 3` describes the signed format and must not be treated as an already-defined complete fee profile, or silently assigned new semantics for existing listings.
 
 A [small client quote checker and tests](../tools/kora-publisher/client/README.md) now cover free, fixed NEIRO (including `strict`) and margin modes using independently supplied costs and prices. The publisher already preserves these modes in its `price` JSON. This helper is not a complete transaction-cost calculator; its tests and live limitations are documented alongside it.
 
@@ -114,14 +114,42 @@ If the operator later changes signing custody while keeping the same public key,
 
 `NEIRO069` is an eight-byte public format identifier, not an account, namespace keypair or registry administrator. Choosing or publishing this identifier grants nobody special rights over another operator's listing. There is no shared setup key to keep or discard. Each operator retains its own record authority for fee/URL updates and closure. The existing SPL Record program's deployment and any upgrade governance are separate; this tool does not deploy or administer that program.
 
-The marker replaces the earlier `NKORAF01` marker. Both markers are eight bytes. The signed v2 format keeps record size (733), marker offset (33), address derivation and record authority unchanged, but adds a length field, moves the JSON start to byte 43 and appends the separate signature. Existing operators migrate by using the updated publisher's `publish` command with a fresh signature journal. This writes the signed v2 payload without changing their key or deny entry. New clients filter for `NEIRO069` and reject the previous marker; old clients must update to discover migrated listings. No account recreation, additional rent deposit or authority change is required. Nobody can remotely change the marker accepted by an existing client; adopting another format requires changing that client's software or configuration.
+The marker replaces the earlier `NKORAF01` marker. Both markers are eight bytes. The current v3 format keeps the signed v2 frame (733 bytes, marker at 33, JSON length at 41, JSON at 43, raw signature immediately after JSON), derived address and authority. It adds explicit verification metadata to the JSON and uses `NEIRO069-MSG1`. Existing operators migrate in place with the updated publisher's `publish` command and a fresh signature journal. No account recreation, additional rent or deny-list change is needed. The reference reader accepts only v3; there is no silent fallback to unsigned v1 or the previous v2 message. Nobody can remotely change which format an existing reader accepts.
 
-## Operator attestation (signed v2)
+<a id="operator-attestation-signed-v2"></a>
 
-All publishers sign the same byte sequence through the operator's configured Keychain signer: `0xff || ASCII("NEIRO069:listing:v2") || 0x00 || program_pubkey[32] || record_pubkey[32] || genesis_hash[32] || exact_JSON_bytes`. The three addresses/hashes are decoded from base58 to raw 32-byte values. There is no JSON reserialization during verification. The domain's first byte is not a supported Solana transaction-message version, keeping this proof separate from public transaction-signing requests.
+## Operator attestation (NEIRO069-MSG1, v3)
+
+Every operator publishes these exact metadata values inside the signed JSON:
+
+```json
+{
+  "v": 3,
+  "sig_alg": "ed25519",
+  "sig_enc": "raw64-after-json",
+  "msg_id": "NEIRO069-MSG1",
+  "signer": "OPERATOR_PUBLIC_KEY"
+}
+```
+
+`v` versions the whole listing schema; `msg_id` identifies only the signing layout. They are separate identifiers with a fixed supported mapping: v3 requires `NEIRO069-MSG1`. A future mapping must be explicitly specified and supported; unknown IDs are rejected.
+
+`signer` must equal `operator` and the SPL Record authority. `payment` may intentionally differ: it is the fee-receiving wallet chosen in Kora configuration and explicitly endorsed by the operator signature. The publisher checks it against the responding Kora instance before publication. Readers must match the quote and actual transaction fee destination to this signed `payment`, rather than assume it equals `signer`. `sig` is the 64 raw bytes immediately after the length-delimited JSON, not a JSON property or the final 64 bytes of the padded account. With `n = u16_le(account[41:43])`, take the exact JSON bytes `account[43:43+n]` and `sig = account[43+n:43+n+64]` (half-open ranges). The rest must be zero padding. The metadata itself is covered by the signature. Reject unknown versions, algorithms, encodings and message IDs, including correctly signed per-operator variations. Do not execute or dynamically load code named by an untrusted record.
+
+`NEIRO069-MSG1` has exactly one definition, shared by all v3 operators. Sign Ed25519 directly over:
+
+```text
+0xff || ASCII("NEIRO069-MSG1") || 0x00
+     || program_pubkey[32] || record_pubkey[32] || genesis_hash[32]
+     || exact_JSON_bytes
+```
+
+The program is the SPL Record program, the record address is the account being read, and genesis is the expected network genesis. Decode these three base58 strings into raw 32-byte values, not UTF-8 strings. Do not hash the message first, reserialize the JSON or add a wallet message prefix. This is exact-byte signing, not canonical-JSON signing: key order and whitespace are already fixed in the stored bytes everyone reads. Parsing and serializing the same fields can produce different bytes and must never be used to reconstruct this signature message. Record/network binding prevents moving the same proof to another account or network. The domain's first byte is not a supported Solana transaction-message version, separating the proof from normal public transaction-signing requests.
+
+The onchain ID tells agents which defined format to use; it does not replace the format specification. A reader must know this fixed definition or reject the listing. The [read-only reproduction command](../tools/kora-publisher/client/README.md#reproduce-the-live-bunny-signature-check) and public Rust-produced fixture provide executable interoperability checks. Historical v2 used `0xff || ASCII("NEIRO069:listing:v2") || 0x00` with the same bindings and no verification metadata; that definition has not been changed.
 
 The operator signs once when creating or changing the listing, then signs the ordinary write transaction. Identical terms with a valid existing proof require neither signature nor an onchain transaction. Closing requires only the normal transaction signature. No expiry, heartbeat, central authority or periodic signing is introduced. The existing allocation holds both signatures' relevant data without additional rent: the transaction signature is in the transaction; the detached attestation is in the record.
 
 A client reading via any RPC or router verifies the stored signature with the advertised operator key, after binding that key to the record authority and derived address. Fabricating a fee, URL or payment address invalidates that proof. RPC-reported balances, liveness and other account metadata are not covered by it. A valid old proof can still be replayed: the attestation does not establish current chain state, completeness of discovery, freshness or economic honesty. Current-state assurance still needs appropriate chain/RPC verification.
 
-The previous plain-JSON v1 form is rejected by the signed reader; there is no unsigned fallback. Existing operators use `publish` once to update in place, using a fresh journal path. Readers of the old byte layout must adopt the v2 reader/specification. The SPL Record program itself still enforces its normal authority rules, rather than interpreting this application's signature format. Continue denying the listing account on every public Kora instance sharing its key.
+The previous plain-JSON v1 and signed v2 forms are rejected by the v3 reader; there is no format fallback. Existing operators use `publish` once to update in place, using a fresh journal path. Readers of the old byte layout must adopt the v3 reader/specification. The SPL Record program itself still enforces its normal authority rules, rather than interpreting this application's signature format. Continue denying the listing account on every public Kora instance sharing its key.

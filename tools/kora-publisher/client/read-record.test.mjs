@@ -10,7 +10,7 @@ const operator=keystring(keys.publicKey.export({format:'der',type:'spki'}).subar
 const record=recordAddress(operator);
 const original={v:1,url:'https://operator.example/',operator,payment:operator,mint:'CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump',genesis,oracle:'Jupiter',price:{type:'margin',margin:0.05}};
 const old=Buffer.alloc(733);old[0]=1;keybytes(operator).copy(old,1);old.write('NKORAF01',33);old.write(JSON.stringify(original),41);
-const terms={...original,v:2,operator,payment:operator};
+const terms={...original,v:3,operator,payment:operator,sig_alg:'ed25519',sig_enc:'raw64-after-json',msg_id:'NEIRO069-MSG1',signer:operator};
 function signed(body=terms, pair=keys) {
  const data=Buffer.alloc(733),bytes=Buffer.from(JSON.stringify(body));
  data[0]=1;keybytes(operator).copy(data,1);data.write('NEIRO069',33);data.writeUInt16LE(bytes.length,41);bytes.copy(data,43);
@@ -20,7 +20,7 @@ function signed(body=terms, pair=keys) {
 const account=signed();
 const copy=()=>structuredClone(account);
 function edit(fn) { const a=copy(),data=Buffer.from(a.data[0],'base64'); fn(data); a.data[0]=data.toString('base64'); return a; }
-test('signed NEIRO069 v2 authenticates operator terms',()=>{
+test('signed NEIRO069 v3 authenticates operator terms',()=>{
   const body=readRecord(record,account,genesis);
   assert.equal(recordAddress(body.operator),record);
   assert.equal(body.price.margin,0.05);
@@ -107,5 +107,47 @@ test('oversized or zero body length is rejected before parsing',()=>{
 
 test('JavaScript independently verifies the public Rust-produced fixture',()=>{
  const f=JSON.parse(readFileSync(new URL('./signed-record.fixture.json',import.meta.url)));
- assert.equal(readRecord(f.record,f.account,f.genesis).v,2);
+ assert.equal(readRecord(f.record,f.account,f.genesis).v,3);
+});
+
+for (const [field,value] of [['sig_alg','none'],['sig_enc','base64'],['msg_id','NEIRO069-MSG2'],['signer',PROGRAM],['v',2]]) {
+ test(`rejects correctly signed but unsupported ${field}`,()=>{
+  assert.throws(()=>readRecord(record,signed({...terms,[field]:value}),genesis));
+ });
+ test(`RPC cannot alter signed metadata ${field}`,()=>{
+  const a=edit(b=>{
+   const end=43+b.readUInt16LE(41),sig=Buffer.from(b.subarray(end,end+64));
+   const body={...terms,[field]:value},raw=Buffer.from(JSON.stringify(body));
+   b.fill(0,41);b.writeUInt16LE(raw.length,41);raw.copy(b,43);sig.copy(b,43+raw.length);
+  });
+  assert.throws(()=>readRecord(record,a,genesis),/attestation/);
+ });
+}
+test('signed v2 fixture is rejected without an implicit format fallback',()=>{
+ const f=JSON.parse(readFileSync(new URL('./signed-record-v2.fixture.json',import.meta.url)));
+ assert.throws(()=>readRecord(f.record,f.account,f.genesis),/attestation/);
+});
+test('the same JSON signed without the record or network binding is rejected',()=>{
+ const a=edit(b=>{const end=43+b.readUInt16LE(41);sign(null,b.subarray(43,end),keys.privateKey).copy(b,end);});
+ assert.throws(()=>readRecord(record,a,genesis),/attestation/);
+});
+
+test('an operator may explicitly sign a separate fee-receiving address',()=>{
+ const body=readRecord(record,signed({...terms,payment:PROGRAM}),genesis);
+ assert.equal(body.signer,operator);
+ assert.equal(body.payment,PROGRAM);
+ assert.notEqual(body.signer,body.payment);
+});
+test('verification uses stored bytes, never reconstructed JSON',()=>{
+ const raw=Buffer.from(JSON.stringify(Object.fromEntries(Object.entries(terms).reverse())).replaceAll(',',', '));
+ assert.deepEqual(JSON.parse(raw),terms);
+ const a=edit(b=>{
+  b.fill(0,41);b.writeUInt16LE(raw.length,41);raw.copy(b,43);
+  sign(null,attestationMessage(record,genesis,raw),keys.privateKey).copy(b,43+raw.length);
+ });
+ assert.deepEqual(readRecord(record,a,genesis),terms);
+ const original=Buffer.from(account.data[0],'base64'),end=43+original.readUInt16LE(41);
+ const b=Buffer.from(a.data[0],'base64');original.subarray(end,end+64).copy(b,43+raw.length);
+ a.data[0]=b.toString('base64');
+ assert.throws(()=>readRecord(record,a,genesis),/attestation/);
 });

@@ -16,7 +16,7 @@ pub const SEED: &str = "neiro-kora-fees";
 pub const MINT: &str = "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump";
 pub const SPACE: usize = 733;
 pub const MAGIC: &[u8; 8] = b"NEIRO069";
-pub const DOMAIN: &[u8] = b"\xffNEIRO069:listing:v2\0";
+pub const DOMAIN: &[u8] = b"\xffNEIRO069-MSG1\0";
 pub fn attestation_message(record: &Pubkey, genesis: &str, body: &[u8]) -> Result<Vec<u8>> {
     let chain: Pubkey = genesis.parse()?;
     Ok([DOMAIN, PROGRAM.as_ref(), record.as_ref(), chain.as_ref(), body].concat())
@@ -78,7 +78,9 @@ pub async fn publish(
             "NEIRO not accepted"
         );
         let data = serde_json::to_vec(&serde_json::json!({
-            "v":2, "url":parsed.as_str(), "operator":op.to_string(),
+            "v":3, "url":parsed.as_str(), "operator":op.to_string(),
+            "sig_alg":"ed25519", "sig_enc":"raw64-after-json",
+            "msg_id":"NEIRO069-MSG1", "signer":op.to_string(),
             "payment":config.kora.get_payment_address(&op)?.to_string(), "mint":MINT,
             "genesis":genesis,
             "price":validation.price, "oracle":validation.price_source

@@ -33,7 +33,7 @@ The isolated free/fixed signing endpoints rejected a one-lamport sponsor withdra
 
 ## Authenticate RPC-returned listing terms
 
-Use `readRecord(recordAddress, rpcAccount, expectedGenesis)` from `read-record.mjs` before accepting the listing passed into `verifyQuote`. This verifies the signed v2 format, operator authority and derived address, exact payload signature, mainnet/mint binding, and supported pricing schema. It has no private key or network dependency and returns the authenticated JSON. The Rust publisher and this Node reader share a public interoperability fixture. Unsigned v1 listings are rejected. Signature authenticity does not prove that an RPC supplied the latest state; see the [signed format specification](../../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-signed-v2).
+Use `readRecord(recordAddress, rpcAccount, expectedGenesis)` from `read-record.mjs` before accepting the listing passed into `verifyQuote`. This verifies the signed v3 format, operator authority and derived address, exact payload signature, mainnet/mint binding, and supported pricing schema. It has no private key or network dependency and returns the authenticated JSON. The Rust publisher and this Node reader share a public interoperability fixture. Unsigned v1 and previous signed v2 listings are rejected. Signature authenticity does not prove that an RPC supplied the latest state; see the [signed format specification](../../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-neiro069-msg1-v3).
 
 ### Reproduce the live Bunny signature check
 
@@ -60,4 +60,4 @@ for (const rpc of ['https://api.mainnet-beta.solana.com', 'https://solana-rpc.pu
 JS
 ```
 
-This only reads public data; it loads no keys and sends no transactions. The signature begins at `43 + JSON_length`, not at `account_length - 64`. For the current 331-byte Bunny JSON it occupies bytes 374–437 (zero-based, inclusive), followed by zero padding. Verify the complete domain-separated message specified above, not JSON alone or a reserialized object. The current listing can subsequently be updated or closed by its operator.
+This only reads public data; it loads no keys and sends no transactions. The signature begins at `43 + JSON_length`, not at `account_length - 64`. Read the length from bytes 41–42; never hard-code a particular operator’s signature offset. Zero padding follows the signature. Verify the complete domain-separated message specified above, not JSON alone or a reserialized object. The current listing can subsequently be updated or closed by its operator.

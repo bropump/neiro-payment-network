@@ -207,7 +207,11 @@ async fn legacy_marker_migration_only_writes_new_payload_without_changing_author
     let len = u16::from_le_bytes(instruction.data[21..23].try_into().unwrap()) as usize;
     let bytes = &instruction.data[23..23 + len];
     let body: Value = serde_json::from_slice(bytes).unwrap();
-    assert_eq!(body["v"], 2);
+    assert_eq!(body["v"], 3);
+    assert_eq!(body["sig_alg"], "ed25519");
+    assert_eq!(body["sig_enc"], "raw64-after-json");
+    assert_eq!(body["msg_id"], "NEIRO069-MSG1");
+    assert_eq!(body["signer"], operator.to_string());
     let sig = Signature::try_from(&instruction.data[23 + len..23 + len + 64]).unwrap();
     assert!(sig.verify(
         operator.as_ref(),
@@ -274,5 +278,46 @@ async fn attestation_is_bound_to_record_chain_and_exact_bytes() {
     assert!(
         bincode::deserialize::<VersionedMessage>(&bytes).is_err(),
         "attestation is not a transaction message"
+    );
+}
+
+#[tokio::test]
+async fn signed_v2_migrates_in_place_to_the_same_format_as_new_records() {
+    let (s, c) = fixture();
+    let op = s.pubkey();
+    let rec = address(&op).unwrap();
+    let fresh = capture(Value::Null, Some("https://operator.example/"), &s, &c).await;
+    let write = fresh.instructions().last().unwrap();
+    let len = u16::from_le_bytes(write.data[21..23].try_into().unwrap()) as usize;
+    let mut body: Value = serde_json::from_slice(&write.data[23..23 + len]).unwrap();
+    for field in ["sig_alg", "sig_enc", "msg_id", "signer"] {
+        body.as_object_mut().unwrap().remove(field);
+    }
+    body["v"] = json!(2);
+    let raw = serde_json::to_vec(&body).unwrap();
+    let chain: Pubkey = GENESIS.parse().unwrap();
+    let message = [
+        b"\xffNEIRO069:listing:v2\0".as_slice(),
+        PROGRAM.as_ref(),
+        rec.as_ref(),
+        chain.as_ref(),
+        &raw,
+    ]
+    .concat();
+    let proof = s.sign_message(&message).await.unwrap();
+    let mut data = vec![1];
+    data.extend_from_slice(op.as_ref());
+    data.extend_from_slice(b"NEIRO069");
+    data.extend_from_slice(&(raw.len() as u16).to_le_bytes());
+    data.extend_from_slice(&raw);
+    data.extend_from_slice(proof.as_ref());
+    data.resize(SPACE, 0);
+    let old = json!({"owner":PROGRAM.to_string(),"lamports":4_373_880,"executable":false,"rentEpoch":0,"data":[STANDARD.encode(data),"base64"]});
+    let migrated = capture(old, Some("https://operator.example/"), &s, &c).await;
+    assert_eq!(migrated.instructions().len(), 1, "migration only writes");
+    assert_eq!(
+        migrated.instructions()[0].data,
+        write.data,
+        "create and migration publish identical metadata and proof"
     );
 }
