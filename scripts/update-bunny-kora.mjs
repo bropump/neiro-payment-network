@@ -3,8 +3,18 @@ import {readFileSync} from 'node:fs';
 import {isDeepStrictEqual} from 'node:util';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
+import {execFileSync} from 'node:child_process';
 
-export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata=false,fetchFn=fetch,pause=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now,timeout=300000}) {
+function officialImageTag(digest){
+  // Public registry metadata only, never platform/container configuration.
+  const metadata=JSON.parse(execFileSync('docker',['buildx','imagetools','inspect','--format','{{json .Image}}',`ghcr.io/solana-foundation/kora@${digest}`],{encoding:'utf8',timeout:120000}));
+  const labels=metadata.config?.Labels??{},revision=labels['org.opencontainers.image.revision'];
+  if(labels['org.opencontainers.image.source']!=='https://github.com/solana-foundation/kora'||!/^[a-f0-9]{40}$/.test(revision??''))throw Error('Previous image provenance unavailable; no rollout attempted');
+  return revision.slice(0,7);
+}
+
+
+export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata=false,fetchFn=fetch,pause=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now,timeout=300000,resolveImageTag=officialImageTag}) {
   if(!app || !key)throw Error('Missing Bunny deployment credential/reference');
   if(lock.channel!=='main'||!/^ghcr\.io\/solana-foundation\/kora@sha256:[a-f0-9]{64}$/.test(lock.image)||!/^sha256:[a-f0-9]{64}$/.test(lock.runtime_image_digest)||!/^[a-f0-9]{40}$/.test(lock.upstream_commit))throw Error('Invalid verified main image pin');
   const apiBase=`https://api.bunny.net/mc/apps/${encodeURIComponent(app)}`;
@@ -32,6 +42,7 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   }
   const containers=s=>s.regions.flatMap(r=>r.pods??[]).flatMap(p=>p.containers??[]).filter(c=>c.name===name);
   const initial=await read('/overview'),running=containers(initial);
+  const originalRegions=initial.regions.filter(r=>(r.pods??[]).some(p=>(p.containers??[]).some(c=>c.name===name))).map(r=>r.region);
   const previous=[...new Set(running.map(c=>c.image?.match(/@sha256:[a-f0-9]{64}$/)?.[0].slice(1)))];
   if(!running.length||previous.length!==1||!previous[0])throw Error('Cannot determine one previous image for rollback');
   const before=await publicState(),expected=structuredClone(before);
@@ -41,31 +52,39 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   const needsMetadata=enableMetadata&&!before.getConfig.validation_config.token_2022.allow_token_metadata_instructions;
   const next={imageTag:lock.image_tag,imageDigest:lock.image.split('@')[1]};
   const rollback={imageDigest:previous[0]};
+  console.log(JSON.stringify({stage:'baseline',previousRuntimeDigest:previous[0],targetIndexDigest:lock.image.split('@')[1],targetPlatformDigest:lock.runtime_image_digest}));
   if(needsMetadata){
     if(before.getConfig.enabled_methods.sign_transaction!==true)throw Error('Operator does not match the recorded startup lineage');
     next.entryPoint={commandArray:['/bin/sh','-c'],argumentsArray:[readFileSync(new URL('./bunny-metadata-entrypoint.sh',import.meta.url),'utf8')]};
     rollback.entryPoint=JSON.parse(readFileSync(new URL('./bunny-previous-entrypoint.json',import.meta.url),'utf8'));
     expected.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;
   }
-  if(previous[0]===lock.runtime_image_digest&&!needsMetadata)return {status:'current',commit:lock.upstream_commit,payer:before.getConfig.fee_payers};
-  async function waitFor(digest,expectedState){
+  if([lock.runtime_image_digest,lock.image.split('@')[1]].includes(previous[0])&&!needsMetadata)return {status:'current',commit:lock.upstream_commit,payer:before.getConfig.fee_payers};
+  rollback.imageTag=await resolveImageTag(previous[0]);
+  async function waitFor(digests,expectedState,transientState){
+    const accepted=Array.isArray(digests)?digests:[digests];
     const deadline=now()+timeout;
     while(now()<deadline){
       await pause(5000);const overview=await read('/overview'),active=containers(overview);
-      if(active.length<running.length||!active.every(c=>c.image?.endsWith('@'+digest)))continue;
+      const regionsReady=originalRegions.every(region=>overview.regions.some(r=>r.region===region&&r.status==='active'&&(r.pods??[]).some(p=>(p.containers??[]).some(c=>c.name===name&&c.status==='ready'))));
+      if(!regionsReady||active.length<running.length||!active.every(c=>c.status==='ready'&&accepted.some(digest=>c.image?.endsWith('@'+digest))))continue;
       let after;try{after=await publicState();}catch{continue;}
-      if(!isDeepStrictEqual(after,expectedState))throw Error('Public payer/settings changed beyond the approved metadata flag');
+      if(!isDeepStrictEqual(after,expectedState)){
+        if(isDeepStrictEqual(after,transientState))continue; // Known pre-transition state can lag a ready overview.
+        throw Error('Public payer/settings changed beyond the approved metadata flag');
+      }
       return {overview,after};
     }
     throw Error('Rollout readiness timed out');
   }
   try{
     await patch(ep.containerId,next);
-    const {overview,after}=await waitFor(lock.runtime_image_digest,expected);
+    const {overview,after}=await waitFor([lock.runtime_image_digest,lock.image.split('@')[1]],expected,before);
     return {status:'updated',commit:lock.upstream_commit,image:lock.image,previousRuntimeDigest:previous[0],payer:after.getConfig.fee_payers,price:after.getConfig.validation_config.price,metadata:after.getConfig.validation_config.token_2022.allow_token_metadata_instructions,regions:overview.regions.map(r=>({region:r.region,status:r.status,instances:r.instances}))};
   }catch{
+    console.log(JSON.stringify({stage:'rollback',previousRuntimeDigest:previous[0]}));
     await patch(ep.containerId,rollback);
-    try{await waitFor(previous[0],before);}catch{throw Error('Rollout failed; rollback requested but health not confirmed');}
+    try{await waitFor(previous[0],before,expected);}catch{throw Error('Rollout failed; rollback requested but health not confirmed');}
     throw Error('Rollout failed; previous image and public settings verified restored');
   }
 }
