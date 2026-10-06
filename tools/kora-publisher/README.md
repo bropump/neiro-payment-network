@@ -37,8 +37,10 @@ Software/remote backends that sign raw Solana message bytes work through Keychai
 
 `cargo test --locked` runs offline adversarial tests (no mainnet credentials). See [listing setup](../../docs/SPL-RECORD-LISTINGS.md) and `SECURITY-REVIEW.md` for scope and recorded mainnet results. Historical patched CLI work is not required to install this executable.
 
-## Platform builds
+## Build where Kora runs
 
-This is a native Rust command, not a macOS app. Build on the host where you run Kora, or use its matching Linux container environment. CI builds and runs offline tests on Linux x86_64/ARM64 and macOS x86_64/ARM64; only successful run artifacts establish validation of that revision on that target. Linux binaries build inside Debian Bookworm, matching the upstream container glibc baseline. Other distributions must provide compatible runtime libraries or use the container. Windows users can use the tested Linux container or WSL path; native Windows is not claimed verified.
+This is a normal Rust executable. `cargo build --release --locked` builds for the current machine, using Kora's native build prerequisites and the pinned dependencies. No custom build script, installer, platform build matrix or new Kora distribution is required. Copy `target/release/neiro-kora-publisher` into your executable path if desired.
 
-Each target needs its own binary. The executable needs neither Python nor Node.js at runtime. `address`, `publish` (create/update) and `close` are provided; discovery and quote verification remain client-side code, not commands in this executable. `publish` uses the operator's configured Keychain backend; hardware/envelope/sending-only backend support remains limited as described above.
+Cross-compilation is optional: use Cargo's `--target TARGET` with the appropriate target toolchain, linker and native libraries. An executable built for one OS/architecture is not a universal binary. Compatibility follows the upstream dependencies and signing backend; only the recorded macOS mainnet run has been verified so far.
+
+The executable needs neither Python nor Node.js at runtime. `address`, `publish` (create/update) and `close` are provided. Discovery and quote verification remain client-side code, not commands in this executable.

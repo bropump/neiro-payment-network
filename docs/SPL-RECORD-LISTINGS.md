@@ -4,7 +4,7 @@ The optional [Rust publisher](../tools/kora-publisher/) creates, updates and clo
 
 ## Protect the account before publishing
 
-Build the command on the target machine with Rust, or obtain the matching artifact from a **successful** [publisher build](https://github.com/bropump/neiro-payment-network-core/actions/workflows/publisher.yml):
+Build the command on the machine where you run Kora, using Rust:
 
 ```sh
 cd tools/kora-publisher
@@ -46,7 +46,9 @@ neiro-kora-publisher --operator YOUR_PUBLIC_KEY close --journal close.json
 
 ## Platforms and security scope
 
-This is a native Rust executable. Build for the OS and architecture where it runs, not for one particular operator or hosting company. CI covers Linux x86-64/ARM64 and macOS x86-64/ARM64. Linux builds use Debian Bookworm, matching upstream Kora's container baseline. A [Dockerfile](../tools/kora-publisher/Dockerfile) supplies the same environment on compatible container hosts, including remotely hosted operators. A binary is portable only to compatible OS, architecture and runtime libraries. Native Windows and other targets are not claimed validated; Linux containers/WSL provide the Linux route on Windows hosts.
+This is a normal Rust executable: build it on the same platform and with the same native build prerequisites as Kora. Cargo builds for the current machine by default; no project-specific installer, platform matrix or cross-compilation script is required. The locked dependencies and pinned toolchain keep the source build reproducible in version selection. Compatibility still follows the upstream libraries and chosen signing backend.
+
+If you specifically need to build for a different machine, Cargo supports `--target TARGET`, with the matching target toolchain, linker and native libraries installed. Cross-compilation is optional; `--target` alone does not supply those prerequisites. The existing mainnet test exercised a macOS-built publisher against Mac and Bunny operators; it did not establish a native build on every operating system.
 
 `address`, `publish` and `close` need no Node.js or Python runtime. Discovery and quote verification remain client-side work; this executable has no discovery command. Listings advertise terms but do not enforce fee honesty. Clients must verify record authority/derived address, pricing inputs, quote and exact transaction before signing. Same-key protection depends on every public signer instance keeping the deny entry active. A single `getConfig` cannot prove every replica is safe. Only compatible raw-message Keychain signer backends have been established; other signer types fail closed rather than bypass signature checks.
 
