@@ -9,6 +9,9 @@ on:
       - 'scripts/resolve-kora-main.mjs'
       - 'scripts/update-kora-operator.mjs'
       - 'scripts/update-bunny-kora.mjs'
+      - 'scripts/test-update-bunny-kora.mjs'
+      - 'scripts/bunny-metadata-entrypoint.sh'
+      - 'scripts/bunny-previous-entrypoint.json'
       - '.github/workflows/kora-main.yml'
       - '.github/workflows/operator-preset.yml'
   push:
@@ -20,6 +23,9 @@ on:
       - 'scripts/resolve-kora-main.mjs'
       - 'scripts/update-kora-operator.mjs'
       - 'scripts/update-bunny-kora.mjs'
+      - 'scripts/test-update-bunny-kora.mjs'
+      - 'scripts/bunny-metadata-entrypoint.sh'
+      - 'scripts/bunny-previous-entrypoint.json'
       - '.github/workflows/kora-main.yml'
       - '.github/workflows/operator-preset.yml'
   workflow_dispatch:
@@ -40,6 +46,8 @@ jobs:
           for script in scripts/*.mjs; do
             node --check "$script"
           done
+      - name: Check Bunny rollout and rollback contracts without network access
+        run: node scripts/test-update-bunny-kora.mjs
       - name: Validate with the pinned official Kora image
         run: node scripts/verify-stock-kora.mjs
 
