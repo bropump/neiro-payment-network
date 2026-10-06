@@ -26,7 +26,7 @@ Help me choose a local or remote signer for this Kora operator.
 If I choose remote signing, use a backend supported by the exact Kora
 build we deploy. Configure it using secret references, validate it and
 check that Kora reports the expected payer. Keep the signing key and
-provider credentials out of chat, Git and router requests.
+provider credentials out of chat, Git and public requests.
 ```
 
 The agent should use [Kora's signer examples](https://github.com/solana-foundation/kora/blob/main/signers.example.toml) for the deployed revision. Backend availability in solana-keychain alone does not establish support in that Kora build. Replace the example memory entry with the chosen backend; do not accidentally leave an extra signer active. Remote signing adds provider setup, network dependency and potentially fees. Do not import or move an existing wallet unless the operator requests it.

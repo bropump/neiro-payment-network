@@ -6,19 +6,21 @@
 
 ## Solana transactions. Gas paid in NEIRO.
 
-The NEIRO GAS Network is an open network of payment sponsor operators running [Kora](https://github.com/solana-foundation/kora). Operators pay transaction fees in SOL and receive payment in NEIRO. You choose your fees, host and wallet; the router selects eligible operators by regional response time or estimated fee.
+The NEIRO GAS Network is an open network of payment sponsor operators running [Kora](https://github.com/solana-foundation/kora). Operators pay transaction fees in SOL and receive payment in NEIRO. You choose your fees, host and wallet. Operators publish onchain listings; clients discover them through Solana RPC and compare quotes directly.
 
 Integrated clients and apps can let users pay transaction fees in NEIRO without maintaining a separate SOL balance for sponsored transactions. Transactions still run and settle on Solana.
 
 Our testing has included x402, MPP, Jupiter swaps, transfers and trades.
 
-Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for direct discovery or connect to the existing NEIRO router. This repository provides configuration, setup guidance and the small listing publisher. Kora itself remains the official upstream software.
+Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for direct discovery. This repository provides configuration, setup guidance and the small listing publisher. Kora itself remains the official upstream software.
 
-**Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then follow the [agent setup](docs/AGENT-SETUP.md) to publish and verify your operator. [Router registration](#connect-your-operator-in-3-steps) remains available for the routed service.
+**Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then follow the [agent setup](docs/AGENT-SETUP.md) to publish and verify your operator.
 
-## Optional onchain operator listing
+## Onchain operator discovery
 
-Operators can publish their declared fee terms in SPL Record for clients to discover directly through Solana RPC. The [standalone Rust publisher and listing-protection setup](docs/SPL-RECORD-LISTINGS.md) keeps official Kora unchanged. Each operator must deny their own listing account before publishing. This optional flow does not require the router; the registration instructions below describe the existing routed service.
+Each operator publishes its own account under the existing SPL Record program using our shared listing format. Clients scan those accounts, verify identity and fee terms, check live SOL balances, and call operators directly. There is no master directory account to create and no required router or central registration API.
+
+The [standalone Rust publisher](docs/SPL-RECORD-LISTINGS.md) creates, updates and closes listings while keeping official Kora unchanged. Protect each operator's listing account in Kora before publishing. Listings persist until updated or closed; clients measure availability and quote speed themselves.
 
 ## Ask your agent to set it up
 
@@ -42,25 +44,21 @@ You can name a host or let your agent help choose one. The agent handles configu
 
 [Agent instructions](docs/AGENT-SETUP.md) · [Manual setup](docs/JOIN.md) · [Fees and basics](TUTORIAL.md)
 
-## Connect your operator in 3 steps
+## Publish your operator
 
-Once Kora is running at your public HTTPS URL:
+1. Build Kora and the publisher, configure signing and funding, and expose HTTPS.
+2. Derive the listing address, deny it in every public Kora instance sharing the signer, restart and verify protection.
+3. Sign and publish the operator's terms, then verify chain discovery and direct quotes.
 
-1. **Register:** send your Kora URL to `POST https://api.mainnet-beta.neiropay.app/operators/register`.
-2. **Host the proof:** serve the returned verification JSON at the specified path on your operator’s domain.
-3. **Verify:** send the returned operator ID to `POST https://api.mainnet-beta.neiropay.app/operators/verify`. Once verification passes and your operator is eligible, the router can send it requests.
+[Publication commands](docs/REGISTRATION.md) · [Complete agent workflow](docs/AGENT-SETUP.md)
 
-**The router brings the requests to you.** Once your operator is verified and eligible, the router automatically includes it when choosing an operator for clients using the network. You do not need to find users, connect to each app or route requests yourself. Keep Kora online and your SOL balance funded; you receive NEIRO for the transactions you sponsor, according to your fee settings.
-
-Clients connect to one NEIRO router endpoint. The router helps them select an eligible operator by speed or price, so they do not need to discover operators themselves. Apps use the Kora payment flow described in the [client guide](https://github.com/bropump/neiro-kora-router-cloudflare#use-it).
-
-Your agent can handle these steps. [Copy-paste API commands](docs/REGISTRATION.md) cover registration, checking eligibility and verifying again after upgrades or config changes.
+Publication deposits refundable rent and pays a transaction fee. The earlier Mac/Bunny test listings were closed for cleanup; a working operator must publish and leave its own listing open. Listing an operator does not guarantee traffic or certify its safety.
 
 ## What you need
 
 Run wherever official Kora runs; Mac, Docker and Bunny are examples, not requirements. Your agent adapts the setup using [upstream deployment guidance](https://solana.com/docs/tools/kora/operators#deployment) and the chosen host’s instructions.
 
-You need a host that can run Kora, a dedicated operator wallet funded with SOL, a NEIRO token account for reimbursement, Solana RPC access, a Jupiter pricing key and public HTTPS hosting. Your HTTPS host must also serve the router's verification file. Follow upstream Kora's installation requirements for your chosen host; Docker is optional.
+You need a host that can run Kora, a dedicated operator wallet funded with SOL, a NEIRO token account for reimbursement, Solana RPC access, a Jupiter pricing key and public HTTPS hosting. Follow upstream Kora's installation requirements for your chosen host; Docker is optional.
 
 The template recommends a **0.25 SOL per-transaction allowance** and includes an editable **50% markup example**. Choose margin, fixed or free pricing. SOL pays transaction costs; NEIRO reimbursement does not automatically refill SOL. See [fees and operating basics](TUTORIAL.md).
 
@@ -78,9 +76,9 @@ Remote signing is optional and recommended for stronger key isolation. Its signi
 
 [Build with NEIRO](docs/BUILD-WITH-NEIRO.md) · [Agent starting point](llms.txt)
 
-Use `https://api.mainnet-beta.neiropay.app/rpc` as your Kora client endpoint. Choose `?selection=fastest` or `?selection=cheapest`, obtain a payer and quote, approve the fee, and keep the same provider through signing and submission. Clients do not register as operators.
+Discover listings through Solana RPC, authenticate them, and call the listed Kora endpoints directly. Choose the first fully verified quote for fastest response, or compare verified total fees for cheapest among responding candidates. Read SOL balances live. Approve the exact transaction and fee, then keep the same operator through signing and submission.
 
-[Client and router documentation](https://github.com/bropump/neiro-kora-router-cloudflare#use-it) · [Live network dashboard](https://api.mainnet-beta.neiropay.app/dashboard) · [Operator status API](https://api.mainnet-beta.neiropay.app/operators)
+[Discovery format and client checks](docs/SPL-RECORD-LISTINGS.md#discovery-and-client-checks) · [Optional independent routers](docs/ROUTER.md)
 
 ## Configuration and updates
 

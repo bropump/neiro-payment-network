@@ -1,13 +1,11 @@
-# Using or hosting a router
+# Optional independent routers
 
-Operators run Kora and [register their endpoint](REGISTRATION.md). Clients use the router's `/rpc` endpoint with their Kora integration. Neither needs to host a router.
+The network does not require a router. Operators [publish their own SPL Records](REGISTRATION.md); clients discover and authenticate those records through Solana RPC and request Kora quotes directly.
 
-The router is a separate [Cloudflare Workers project](https://github.com/bropump/neiro-kora-router-cloudflare). Its repository contains deployment requirements, client usage and operating limits. It forwards requests to eligible Kora operators; Kora holds the signer and validates sponsorship.
+Anyone can build a router or indexer on the same public records to help clients discover operators, cache listings or compare quotes. That service is optional. A client can choose another service or perform the same work itself, without a central registration step.
 
-Current router: `https://api.mainnet-beta.neiropay.app`
+A router must validate the listing format and authority, obtain live balances and quotes, and label the operators and time window it compared. “Fastest” depends on where the measurement runs; a router's fastest operator need not be the client's fastest. “Cheapest” depends on the complete transaction and current pricing inputs.
 
-- `/rpc?selection=fastest` or `/rpc?selection=cheapest`: Kora client endpoint.
-- `/operators`: eligibility, pricing and timing information.
-- `/healthz`: router health.
+Clients must still independently verify the selected listing, quoted fee and exact transaction before signing, and keep the chosen operator pinned through submission. A router cannot make an unverified fee trustworthy merely by recommending it.
 
-Prepare the transaction with the selected payer, approve the actual Kora quote and keep that provider pinned through submission. The router does not switch or retry signed payments automatically.
+This describes the onchain discovery architecture; it does not establish that any older router deployment already supports this listing format.

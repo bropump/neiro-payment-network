@@ -1,6 +1,6 @@
 # Publish an operator listing without changing Kora
 
-The optional [Rust publisher](../tools/kora-publisher/) creates, updates and closes one operator-owned SPL Record account. It does not replace or patch official Kora, run a public service, or require a router. A separate client can scan the SPL Record program, authenticate the listings and request quotes from operators directly.
+The [Rust publisher](../tools/kora-publisher/) creates, updates and closes one operator-owned SPL Record account. It does not replace or patch official Kora, run a public service, or require a router. A separate client can scan the SPL Record program, authenticate the listings and request quotes from operators directly.
 
 ## Protect the account before publishing
 
@@ -43,6 +43,48 @@ neiro-kora-publisher --operator YOUR_PUBLIC_KEY close --journal close.json
 ```
 
 `publish` creates or updates; unchanged terms send nothing. Restart Kora after changing its pricing, then republish. The command checks the responding endpoint's operator, payment address, NEIRO acceptance, pricing and deny entry before loading the signer. A unique signature journal is flushed before each send. On timeout, reconcile that signature before retrying. Close returns the record rent to the operator; network fees are not refundable. No ATAs are created or closed by this tool.
+
+## Discovery and client checks
+
+The program already exists on mainnet. Each listing is a separate account; there is no shared master directory account to initialize. The current address is `create_with_seed(operator_public_key, "neiro-kora-fees", Record_program)`. The fixed derivation binds a listing address to its operator and is part of verification, not a cosmetic address choice.
+
+Send this read-only request to a mainnet Solana RPC that supports `getProgramAccounts` for SPL Record:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getProgramAccounts",
+  "params": [
+    "recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5",
+    {
+      "encoding": "base64",
+      "commitment": "finalized",
+      "filters": [
+        {
+          "dataSize": 733
+        },
+        {
+          "memcmp": {
+            "offset": 33,
+            "bytes": "E6YzdDpurUY"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+The `memcmp` value is the base58 encoding of the eight ASCII bytes `NKORAF01`. The account has 733 bytes: initialized Record version `1` at byte 0, authority at bytes 1–32, then the marker, a JSON object and zero padding. The JSON fields are `v`, `url`, `operator`, `payment`, `mint`, `genesis`, `price` and `oracle`; `v` is `1`. They advertise public terms, not the full private Kora configuration. The current format has no expiry, namespace-address field or signed latency promise.
+
+Treat scan results as untrusted candidates. Verify program ownership, non-executable status, exact layout, authority equal to the advertised operator, the derived address, mainnet genesis and the expected NEIRO mint. Reject malformed or unsupported fields. Checking only the authority field is insufficient: SPL Record initialization can name another wallet as authority without proving that wallet created or endorsed an arbitrary account. Do not accept arbitrary vanity addresses in this format.
+
+Read live operator SOL balances with `getMultipleAccounts` in supported batch sizes (at most 100 per call), then request live configuration and transaction quotes directly from candidate URLs. Protect against unsafe URLs and DNS destinations, bound response sizes and concurrency, and use deadlines. Verify the payer, payment destination and terms against the record, independently check pricing inputs and rounding, and inspect the exact transaction before signing. A matching config alone does not prove an honest quote.
+
+For fastest response, return the first **fully verified** quote without waiting for other tasks. For cheapest, compare verified total costs for the same intended operation among the candidates that respond within the deadline; report that comparison scope. Balance, availability and latency are live observations, not guarantees stored in SPL Record. Unreachable or mismatched operators are skipped. Pin the chosen operator through submission.
+
+RPC scan support and completeness vary. Handle RPC errors explicitly; an incomplete or truncated scan does not establish the complete operator set. Public listings can be spammed even when correctly signed. Production clients need bounded resource use and explicit discovery limits; a fixed test cap is not a protocol limit or a complete anti-spam solution.
 
 ## Platforms and security scope
 

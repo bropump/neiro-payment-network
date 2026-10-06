@@ -2,7 +2,7 @@
 
 Carry the setup through to a working, verified operator. Use the user's chosen host and existing permissions; ask only for missing host access, signer choice, fee settings or funding limits. An agent performs the steps below using normal build, file and service tools. This guide is not an automatic installer, and the publisher itself only administers the listing.
 
-For a router-free operator, follow this page in order. If the user explicitly wants the existing routed service, also follow [router registration](REGISTRATION.md); router registration is not required for SPL Record discovery.
+Follow this page in order. [Publication](REGISTRATION.md) creates one listing per operator under the existing SPL Record program. There is no shared directory account to initialize and no central registration service to join.
 
 1. **Build on the chosen host.** Inspect its existing tools and follow [official Kora deployment instructions](https://solana.com/docs/tools/kora/operators). Use an official, successfully built Kora revision and record the pin; do not patch Kora or its SDK. From its source checkout, build `cargo build --release --locked --bin kora`. From this repository's `tools/kora-publisher`, build `cargo build --release --locked`. Put the resulting executables on that host's executable path. Reuse an existing compatible stock Kora installation. Native build prerequisites follow upstream; do not introduce a custom installer or require Docker unless the host needs it.
 

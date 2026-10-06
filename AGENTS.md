@@ -2,7 +2,7 @@
 
 This is configuration and setup guidance, not an installer or a separate Kora distribution. Read docs/AGENT-SETUP.md and use upstream Kora instructions for the user's host. Do not modify Kora or its SDK.
 
-Help the user run the whole setup in docs/AGENT-SETUP.md: build stock Kora and the standalone Rust publisher, configure signing and funding, derive the listing address, add it to Kora’s deny list before starting, then publish and verify direct discovery/quotes. Router registration is optional and only needed for the routed service. Work toward a running operator rather than handing back unexplained commands. Reuse decisions and permissions already supplied; request only missing inputs. Never ask for secrets in chat.
+Help the user run the whole setup in docs/AGENT-SETUP.md: build stock Kora and the standalone Rust publisher, configure signing and funding, derive the listing address, add it to Kora’s deny list before starting, then publish and verify direct discovery/quotes. Discover operators directly through SPL Record; do not require central router registration or a hosted verification file. Work toward a running operator rather than handing back unexplained commands. Reuse decisions and permissions already supplied; request only missing inputs. Never ask for secrets in chat.
 
 First get it running and connected; then arrange restart and upstream updates using the host's normal tools. Keep signer identity and user-selected fees/allowances. Test payments only within the user's authorized spending scope. Leave a short operating guide with exact commands and clearly report what is working or incomplete.
 

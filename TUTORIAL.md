@@ -8,7 +8,7 @@ You run official **Kora**, Solana's payment sponsorship software, with our **NEI
 
 Help people use Solana without keeping SOL in their wallets, and charge for providing that service. You choose where to run it and what to charge. You keep control of your operator wallet.
 
-This is a service you operate, not staking or a guaranteed return. You receive fees when customers use your operator. You pay for hosting, RPC access and the SOL your operator spends. Being registered does not guarantee traffic or profit.
+This is a service you operate, not staking or a guaranteed return. You receive fees when customers use your operator. You pay for hosting, RPC access and the SOL your operator spends. Publishing a listing does not guarantee traffic or profit.
 
 ## How you get paid
 
@@ -25,7 +25,7 @@ Required token-account creation is part of the supported payment flow. Its spons
 
 Tell your agent which machine or host to use: your Mac, a server or a cloud container host such as Bunny.net, following upstream Kora requirements. It must stay online to serve payments.
 
-Have a dedicated operator wallet funded with SOL and a NEIRO token account for reimbursement. Keep enough SOL for your intended workload. Your agent can help prepare the accounts; the router does not enforce a dollar-denominated balance minimum.
+Have a dedicated operator wallet funded with SOL and a NEIRO token account for reimbursement. Keep enough SOL for your intended workload. Your agent can help prepare the accounts; an SPL Record listing does not impose a fixed SOL or NEIRO deposit beyond its rent.
 
 The agent also guides you through RPC access, the Jupiter pricing key required by the current Kora configuration, and a public HTTPS endpoint. Keep credentials in secret storage, never in the repository or a chat message.
 
@@ -87,11 +87,11 @@ This is **not a daily budget**. Many transactions can each consume up to the con
 - **Use a dedicated wallet.** Kora needs signing access to it. Do not use your personal savings wallet or commit its private key to Git.
 - **SOL goes out; NEIRO comes in.** Reimbursement does not automatically refill your SOL balance. You must manage that balance yourself.
 - **Failed transactions can cost money.** If an on-chain transaction fails, network fees can still be charged while its NEIRO payment is rolled back.
-- **Keep the supplied protections.** Use HTTPS and request limits, and retain Kora's transaction and sponsor permissions. The Cloudflare router requires public Kora endpoints; API-key-protected providers are not supported by its public profile. Spending limits reduce exposure but do not prevent every loss or software bug.
+- **Keep the supplied protections.** Use HTTPS and request limits, and retain Kora's transaction and sponsor permissions. Clients call the published HTTPS endpoint directly; its access requirements must be supported by the publisher and intended clients. Spending limits reduce exposure but do not prevent every loss or software bug.
 - **Track official main.** Check for the latest successfully published upstream main image every five minutes. Pin each deployment, validate your private config and retain rollback if an update fails. Main can contain unaudited changes; a successful build is not an audit. We do not patch Kora or the TypeScript SDK.
 
 The current template uses `allowed_programs = "All"` for broad program compatibility. Arbitrary programs are admitted, and the existing fee-payer policies do not establish a general sponsor-safety boundary. The prepared upstream #683 migration uses a restricted `allowed_programs` list with `sponsor_only_programs = "All"`; it awaits a merge into official main and validation. See [configuration and upgrade status](CONFIGURATION.md).
 
-## Register and verify
+## Publish and verify
 
-Follow the [registration guide](docs/REGISTRATION.md): submit your Kora URL, serve the returned verification JSON, then call verify. Keep that file available. After upgrading Kora or changing fees, verify again and obtain a new quote. There is no registration transaction or renewal schedule.
+Follow the [publication guide](docs/REGISTRATION.md): derive your listing address, deny it in every public Kora instance sharing the signer, then sign and publish your terms to SPL Record. Verify direct discovery and quotes. After changing advertised terms, republish. Publication pays a network fee and deposits refundable rent. There is no daily renewal or automatic expiry.

@@ -5,14 +5,14 @@ Keep your Solana app. Let an independent Kora operator supply SOL for the transa
 ## Start with a payment
 
 1. Ask what the user wants to send, its amount, the recipient and the wallet they already use. Reuse the existing code and wallet adapter.
-2. Read the [current router client documentation](https://github.com/bropump/neiro-kora-router-cloudflare#use-it) and [official Kora transaction walkthrough](https://solana.com/docs/tools/kora/guides/full-demo).
-3. Connect the Kora client to `https://api.mainnet-beta.neiropay.app/rpc`. Keep a separate Solana RPC for account reads, blockhashes and confirmation.
-4. Discover an eligible operator and pin it for this flow, following the router's current provider selection instructions. Use that operator as transaction fee payer. Keep application/token authorities with the user's wallet.
+2. Read the [SPL Record discovery and verification contract](SPL-RECORD-LISTINGS.md#discovery-and-client-checks) and [official Kora transaction walkthrough](https://solana.com/docs/tools/kora/guides/full-demo).
+3. Scan listings using Solana RPC, authenticate them, read live operator SOL balances and request quotes directly from their listed HTTPS endpoints. Use deadlines and bounded concurrency. Treat listing URLs as untrusted network input.
+4. Choose the first fully verified quote for fastest response, or compare verified total fees for cheapest among the responding candidates. Connect the Kora client directly to the chosen URL and keep that operator pinned. Use its signer as transaction fee payer; keep application/token authorities with the user's wallet. Solana RPC supplies account reads, blockhashes and confirmation.
 5. Build the user's transaction, including required recipient account creation. Use the current Kora SDK payment-instruction flow to estimate costs and add reimbursement in NEIRO, mint `CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump` (6 decimals). Recheck the completed transaction's quote and policies. Do not hardcode the homepage's base estimate as the final fee.
 6. Show the payment amount, recipient, NEIRO reimbursement including the operator tip, and any account deposits. Obtain wallet approval before signing the final message.
 7. Submit the wallet-signed transaction through the same operator using the documented signing/submission flow. Follow confirmation with Solana RPC and return an [Orb](https://orbmarkets.io) transaction link.
 
-If the user asks only for a quote, stop before signing or submitting. If no eligible operator is listed, report it; do not invent a quote or silently switch to spending the user's SOL.
+If the user asks only for a quote, stop before signing or submitting. If no usable operator is discovered, report it; do not invent a quote or silently switch to spending the user's SOL.
 
 ## Give an agent a wallet
 

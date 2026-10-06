@@ -1,75 +1,50 @@
-# Connect Kora to the router
+# Publish your operator onchain
 
-You need a running public HTTPS Kora endpoint and control of that hostname's web routing. Your wallet key stays with Kora. Registration uses HTTP; there is no registration transaction or periodic renewal.
+The network uses operator listings in SPL Record. Clients discover them through Solana RPC and call each operator's Kora endpoint directly. There is no required router registration, hosted proof file or central operator directory API.
 
-## Register
+## What gets created
 
-Set `KORA_ENDPOINT` to your real Kora HTTPS URL. The commands below use `curl` and `jq`:
+The existing SPL Record program is `recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5`. **Each operator creates its own record account under that program.** The network directory is the collection of valid records in our shared `NKORAF01` format, not one shared account containing everybody's entry. No master record or new program deployment is required before the first operator publishes.
 
-```sh
-export NEIRO_ROUTER_URL='https://api.mainnet-beta.neiropay.app'
-export KORA_ENDPOINT='https://kora.your-domain.com'
+The current publisher derives each listing from the operator public key and the fixed seed `neiro-kora-fees`. That binding is part of client authentication. An arbitrary or vanity record address is not accepted by this format merely because it contains the same JSON.
 
-jq -n --arg url "$KORA_ENDPOINT" '{url:$url}' |
-  curl --fail-with-body --silent --show-error \
-    "$NEIRO_ROUTER_URL/operators/register" \
-    -H 'content-type: application/json' --data-binary @- > registration.json
+## Publish
 
-jq '{id, status, verificationUrl, verification}' registration.json
-jq '.verification' registration.json > verification.json
-export OPERATOR_ID="$(jq -r '.id' registration.json)"
-```
+Follow the [agent setup](AGENT-SETUP.md) or [manual setup](JOIN.md) to build stock Kora and the standalone Rust publisher, configure signing and funding, and expose a stable HTTPS endpoint.
 
-Serve `verification.json` at the exact `verificationUrl` returned, such as `https://kora.your-domain.com/.well-known/neiro-router/ID`. Configure your HTTPS host to serve that path as JSON while sending Kora requests to Kora. This is a static file, not a Kora config field. It contains a token and `enabled: true`; it contains no wallet key.
+1. Derive your listing address without loading a signer:
 
-To show hosting locations on the dashboard, optionally add `"hostingRegions": ["Germany", "Singapore"]` to the verification JSON, using your actual locations. Multiple locations can share one endpoint. These are operator-reported labels, separate from Cloudflare's measurement locations. Keep them updated and repeat verification after changing them; they do not change routing or Kora settings.
+   ```sh
+   neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY address
+   ```
 
-Keep the file available. Complete initial verification within 15 minutes; if the pending record expires, register again and use the newly returned proof. The Kora endpoint must use HTTPS without URL credentials, an explicit port, query, fragment or redirects.
+2. Append the printed address to `[validation].disallowed_accounts` in your private `kora.toml`, preserving other entries. Restart **every public Kora instance sharing the signer**. Verify the loaded settings and that signing requests touching this account are rejected. Block your listing account, not the entire SPL Record program.
+3. From the private deployment directory, using the operator's configured signer environment, publish:
 
-## Verify and check
+   ```sh
+   neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY publish --url https://OPERATOR_HOST/ --journal listing-create.json
+   ```
 
-```sh
-jq -n --arg id "$OPERATOR_ID" '{id:$id}' |
-  curl --fail-with-body --silent --show-error \
-    "$NEIRO_ROUTER_URL/operators/verify" \
-    -H 'content-type: application/json' --data-binary @-
+The command checks the live operator identity, payment address, NEIRO acceptance, pricing and deny entry before signing. It then creates the account and writes the advertised terms in an onchain transaction. Publication costs a transaction fee and a refundable rent deposit. Keep signing credentials private. If submission times out, reconcile the signature in the journal before retrying.
 
-curl --fail --silent --show-error "$NEIRO_ROUTER_URL/operators" |
-  jq --arg id "$OPERATOR_ID" '.operators[] | select(.id == $id)'
-```
+## Check discovery and quotes
 
-Look for `status: "active"` in the verify response and `eligible: true` in the operator listing. Verification checks the hosted proof, Kora payer identity, required methods and NEIRO payment support. Background checks also sample unsigned quotes. This does not certify every transaction or the provider's exact software build. There is no dollar-denominated wallet-balance admission check; you still need enough SOL to sponsor your workload.
+Read the finalized record back and authenticate it using the [listing format and RPC filters](SPL-RECORD-LISTINGS.md#discovery-and-client-checks). A client scans for listings, reads live operator SOL balances, and requests quotes directly from the listed HTTPS endpoints. It verifies each quote against the advertised terms and independent pricing inputs before signing the exact transaction.
 
-The router allows one verification attempt per registration per 60 seconds. Cached routing views can take up to approximately 120 seconds to reflect changes. Obtain a quote for your intended transaction through `/rpc?operator=YOUR_OPERATOR_ID` and keep that operator pinned through signing and submission.
+“Fastest” is the first fully verified quote received by that client. “Cheapest” is the lowest verified quote among the operators successfully compared for that transaction within the client's deadline. Neither is a claim the record itself proves. Keep the selected operator pinned through transaction preparation, signing and submission.
 
-## Check through the router
+The Mac/Bunny mainnet test listings were closed after testing to recover rent. Those tests do not supply permanent directory entries: an operating provider must publish and leave its listing open.
 
-With the registration variables above, check your pinned Kora identity:
+## Change terms or leave
+
+After changing fees or the endpoint, restart Kora as needed, verify the running configuration, and run `publish` again with a fresh journal path. The same listing address is updated. Clients must reject mismatches during the changeover. Unchanged terms send no transaction.
+
+Listings have no expiry or daily renewal. An offline operator's record can remain onchain; clients skip unreachable operators and reject invalid quotes. Being listed is not a guarantee of availability or safety.
+
+To retire the listing and recover its rent:
 
 ```sh
-curl --fail-with-body --silent --show-error \
-  "$NEIRO_ROUTER_URL/rpc?operator=$OPERATOR_ID" \
-  -H 'content-type: application/json' \
-  --data '{"jsonrpc":"2.0","id":1,"method":"getPayerSigner","params":{}}'
+neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY close --journal listing-close.json
 ```
 
-Expect your operator's public payer in `result.signer_address`. Have your agent use [Kora's API/SDK](https://solana.com/docs/tools/kora) to prepare an unsigned transaction with that payer and request `estimateTransactionFee` through the same pinned URL. Check the returned payer, payment address and NEIRO fee. Quoting does not sign, submit or spend funds; a successful quote is not a settled payment.
-
-## After an upgrade or config change
-
-Validate your config, restart Kora, then repeat the verify and listing commands with your saved `OPERATOR_ID`. No new registration is needed while the endpoint and payer/payment identity stay the same. The router does not install or upgrade Kora for you, and currently does not reject operators merely for running an older version.
-
-If verification fails, check that the proof URL returns the unchanged token with `enabled: true`, that Kora is reachable publicly, and that its config supports NEIRO. A 429 may indicate the verification cooldown or a request limit. Background checks continue, but successful verification does not instantly invalidate every routing cache.
-
-## Change identity or leave
-
-For a new endpoint or payer/payment identity, remove the old registration and register the new endpoint. To remove your registration, first serve the same proof token with `enabled: false`, then call:
-
-```sh
-jq -n --arg id "$OPERATOR_ID" '{id:$id}' |
-  curl --fail-with-body --silent --show-error \
-    "$NEIRO_ROUTER_URL/operators/remove" \
-    -H 'content-type: application/json' --data-binary @-
-```
-
-Check `/operators` after cache refresh. Operators configured directly in a router deployment must be removed from that deployment's settings instead.
+Confirm finalized closure. Network fees are not refundable. No token accounts are created or closed by the publisher. Leave a production listing open while the operator is available.

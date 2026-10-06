@@ -1,27 +1,21 @@
-# Run Kora with the NEIRO config
+# Run Kora and publish your operator
 
-Give your agent the [setup prompt](../README.md#ask-your-agent-to-set-it-up). It should guide you through these steps and handle the commands for your host.
+Give your agent the [setup prompt](../README.md#ask-your-agent-to-set-it-up), or follow the [complete setup workflow](AGENT-SETUP.md). The operator uses official Kora and a separate Rust executable for listing administration.
 
-## Get it working
-
-1. Install [official Kora](https://solana.com/docs/tools/kora/operators) wherever you want to run it. Use the latest successfully built official main revision and pin that build.
-2. Put [kora.toml](../examples/operator/kora.toml) and [signers.toml](../examples/operator/signers.toml) in one private folder. Choose your fee at the top of `kora.toml`; the comments explain the options. Keep both `sign_transaction = true` and `sign_and_send_transaction = true` under `[kora.enabled_methods]`, the NEIRO default. After starting, confirm both are enabled in `getConfig`.
-3. Supply your upstream Solana mainnet `RPC_URL` and `JUPITER_API_KEY` through private storage. For the example local signer, `KORA_PRIVATE_KEY` contains the keypair data, not a filename. [Remote signing](SIGNING.md) is optional.
-4. Fund your dedicated payer with SOL and prepare its NEIRO account to receive fees. Have the agent show the public payer, mainnet network and NEIRO mint before transferring funds. The router does not require a fixed SOL/NEIRO deposit. Keep enough SOL for your intended workload; NEIRO revenue does not automatically refill it.
+1. Build or install [official Kora](https://solana.com/docs/tools/kora/operators) on your chosen host. Pin the running revision. Build the publisher with `cargo build --release --locked` from `tools/kora-publisher`.
+2. Keep private copies of [kora.toml](../examples/operator/kora.toml) and [signers.toml](../examples/operator/signers.toml). Choose the operator's fees, spending policies and local or [remote signer](SIGNING.md). Supply Solana mainnet `RPC_URL` and Jupiter credentials privately.
+3. Fund the operator's SOL sponsorship balance and listing rent; prepare its NEIRO fee-receipt account. There is no fixed token deposit imposed by the listing. NEIRO revenue does not automatically refill SOL.
+4. Derive the listing with `neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY address`. Add that address to the existing `[validation].disallowed_accounts` in every public instance sharing the key, preserving other entries.
 5. Validate and start Kora with your private files:
 
-```sh
-kora --config /path/to/kora.toml config validate --signers-config /path/to/signers.toml
-kora --config /path/to/kora.toml rpc start --signers-config /path/to/signers.toml
-```
+   ```sh
+   kora --config /path/to/kora.toml config validate --signers-config /path/to/signers.toml
+   kora --config /path/to/kora.toml rpc start --signers-config /path/to/signers.toml
+   ```
 
-6. Expose HTTPS with two routes: the Kora API and its static verification file. Your agent should use your host's ingress or the [proxy example](HTTPS.md). A tunnel pointing only at Kora cannot serve the file.
-7. Use `https://api.mainnet-beta.neiropay.app` as the router base and `/rpc` for Kora clients. Follow [register → host proof → verify](REGISTRATION.md). Check that the router reports your operator as eligible and that an unsigned quote succeeds through your operator's router URL.
+6. Expose a stable [HTTPS endpoint](HTTPS.md). Verify `getConfig`, `getPayerSigner`, the loaded deny rule and actual signing rejection for the listing account.
+7. [Publish the SPL Record](REGISTRATION.md), confirm finality, then verify independent discovery and direct quotes. No router or hosted verification file is required.
 
-Kora’s `RPC_URL` must point to your Solana RPC provider, not the NEIRO router. Kora needs the signer and RPC/Jupiter credentials; the router never needs your private key. The public router does not supply provider API credentials. Keep Kora's transaction policies and request limits.
+Kora's `RPC_URL` must be a Solana RPC endpoint. Keep signer credentials out of public requests and listings. Retain transaction policies and request limits.
 
-## Keep it running
-
-Once connected, let the agent arrange automatic restart and upstream update checks using your host's normal tools. Keep the same private config and signer, validate before upgrades and retain the previous build for rollback. Check updates every five minutes; after replacing a build or changing fees, restart successfully and [verify again](REGISTRATION.md#after-an-upgrade-or-config-change).
-
-Ask the agent to leave exact status, logs, stop, restart, update and balance-check commands. Check SOL liquidity and RPC/Jupiter quotas. The router checks compatibility and health, not whether you run the latest upstream revision.
+Use the host's normal service tools for restart, monitoring and upgrades. Preserve the signer and deny entry, validate before replacing a build and retain a rollback version. Republish after changing advertised terms. Leave exact status, log, restart and balance-check commands in the private operating notes.

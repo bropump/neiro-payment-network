@@ -1,6 +1,6 @@
 # NEIRO configuration
 
-This repository owns the Kora operator template and recommendation. Use a private copy of the templates and the [registration guide](docs/REGISTRATION.md). Kora runs separately from the router.
+This repository owns the Kora operator template and recommendation. Use a private copy of the templates and the [registration guide](docs/REGISTRATION.md). Kora and the listing publisher are separate executables; clients discover operators onchain.
 
 ## Current recommendation
 
@@ -64,7 +64,7 @@ Under the proposal, arbitrary outer and inner program IDs can run, but an unappr
 
 Do not leave `allowed_programs = "All"` in the migrated configuration: the proposal explicitly leaves the sponsor-participation gate disabled in that mode. Sponsor-funded app-owned account creation or other sponsor participation can require additional reviewed programs. Trust in an approved outer program includes its handling of downstream calls; this is not an audit of every routed venue.
 
-Before activation, resolve and pin an official merged main image supporting the setting, confirm its final semantics, update the canonical config hashes, verify router admission, and test representative payments, swaps and launches plus refusal of prohibited sponsor participation. Publish the verified upstream commit and image digest with the updated recommendation.
+Before activation, resolve and pin an official merged main image supporting the setting, confirm its final semantics, update the canonical config hashes, verify direct quotes and listing-account protection, and test representative payments, swaps and launches plus refusal of prohibited sponsor participation. Publish the verified upstream commit and image digest with the updated recommendation.
 
 ## Checked application paths
 
@@ -78,8 +78,8 @@ Build and config must be updated together: an old binary still cannot reconstruc
 
 ## What you supply
 
-Your host, dedicated key reference, RPC/Jupiter credentials, intended public HTTPS endpoint and the router URL. The Cloudflare router uses public providers without a credential store. See [registration](docs/REGISTRATION.md) for joining, verifying after upgrades and checking eligibility.
+Your host, dedicated signer reference, RPC/Jupiter credentials and intended public HTTPS endpoint. See [publication](docs/REGISTRATION.md) for deriving and protecting the listing, publishing terms and checking direct discovery after changes.
 
 ## Pricing service
 
-Stock Kora uses Jupiter for the supplied NEIRO pricing configuration. Keep the Jupiter credential available to Kora; the router does not supply a replacement price feed.
+Stock Kora uses Jupiter for the supplied NEIRO pricing configuration. Keep the Jupiter credential available to Kora. Clients must independently check pricing inputs when verifying quotes; an onchain listing is not a price feed.
