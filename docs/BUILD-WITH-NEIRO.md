@@ -16,9 +16,14 @@ If the user asks only for a quote, stop before signing or submitting. If no elig
 
 ## Give an agent a wallet
 
-Use the [PaySponge SDK](https://github.com/paysponge/paysponge-sdk) and its current signing documentation. Connect or create the user's chosen agent wallet, keep credentials private, and read its Solana public address. Prepare the complete sponsored transaction first. Use Sponge to sign it, preserving the operator fee payer and every instruction, then submit through that pinned NEIRO operator.
+A normal Solana keypair is enough. Reuse an existing wallet or signer before introducing another service. The signing choice is independent of NEIRO gas sponsorship.
 
-Start with a small, approved payment and verify the recipient balance and Orb receipt. Wallet access is separate from permission to spend. For swaps and other operations, reuse the same signing adapter with the appropriate Solana instructions.
+- **Local keypair:** use the user's existing Solana library and keep the private key in private storage. The agent prepares a transaction and signs only after the agreed approval.
+- **Solana Keychain:** use a [supported signing backend](https://solana.com/docs/tools/keychain) through its standard interface.
+- **PaySponge:** use the [PaySponge SDK](https://github.com/paysponge/paysponge-sdk) and current sign-only flow when the user wants that service. Preserve the operator fee payer and every instruction.
+- **Existing wallet or signer:** keep its normal transaction-signing integration. It must sign the final sponsored Solana message without replacing the fee payer or silently rebuilding it.
+
+Whichever method the user chooses, prepare the complete sponsored transaction, show the payment and NEIRO fee, obtain approval, collect the user's signature and submit through the pinned NEIRO operator. Keep private keys and provider credentials private. Wallet access is separate from permission to spend. Start with a small approved payment and verify the recipient balance and Orb receipt, then reuse the signing integration for swaps and other operations.
 
 ## Add a Jupiter swap
 
