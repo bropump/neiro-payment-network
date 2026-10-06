@@ -137,10 +137,10 @@ disallowed_accounts = [] # Explicitly blocked account addresses; none listed her
 [validation.fee_payer_policy]
 
 # System Program: native SOL and basic account operations. Account creation
-# is enabled so Kora can sponsor required setup/rent. Direct SOL transfers
-# from the sponsor and changes to its account ownership/allocation are disabled.
+# and payer-funded SOL transfers are enabled for launch setup/rent. Kora must
+# still collect the configured NEIRO reimbursement. Assignment/allocation remain disabled.
 [validation.fee_payer_policy.system]
-allow_transfer = false           # Allow fee payer to be sender in System Transfer/TransferWithSeed
+allow_transfer = true            # Sponsor launch funding/rent; payment validation still applies
 allow_assign = false             # Allow fee payer to be authority in System Assign/AssignWithSeed
 allow_create_account = true     # Allow fee payer to be payer in System CreateAccount/CreateAccountWithSeed
 allow_allocate = false           # Allow fee payer to be account in System Allocate/AllocateWithSeed
@@ -200,6 +200,9 @@ allow_deactivate = false        # Allow fee payer to be authority in ALT Deactiv
 allow_close = false             # Allow fee payer to be authority in ALT CloseLookupTable
 
 [validation.token_2022]
+# Token launches can initialize/update Token-2022 metadata through CPIs.
+# Requires the metadata reconstruction fix merged in upstream main d5a7e64.
+allow_token_metadata_instructions = true
 # Transfer hooks let a token invoke extra program logic during transfers.
 # This preset rejects transfer hooks; changing it changes accepted token behavior.
 transfer_hook_policy = "deny_all"

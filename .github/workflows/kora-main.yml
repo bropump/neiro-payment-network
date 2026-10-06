@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      enable_metadata:
+        description: Enable launch metadata using the already verified image pin
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -29,6 +35,7 @@ jobs:
           git show FETCH_HEAD:examples/operator/kora.toml > examples/operator/kora.toml
           git show FETCH_HEAD:examples/operator/signers.toml > examples/operator/signers.toml
       - name: Resolve the latest successfully published upstream main image
+        if: ${{ !inputs.enable_metadata }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/resolve-kora-main.mjs --update-lock
@@ -51,4 +58,10 @@ jobs:
           BUNNY_KORA_APP_ID: ${{ vars.BUNNY_KORA_APP_ID }}
           BUNNY_KORA_CONTAINER_NAME: ${{ vars.BUNNY_KORA_CONTAINER_NAME }}
           BUNNY_KORA_API_KEY: ${{ secrets.BUNNY_KORA_API_KEY }}
-        run: node scripts/update-bunny-kora.mjs
+          ENABLE_METADATA: ${{ inputs.enable_metadata }}
+        run: |
+          if [ "$ENABLE_METADATA" = true ]; then
+            node scripts/update-bunny-kora.mjs --enable-metadata
+          else
+            node scripts/update-bunny-kora.mjs
+          fi
