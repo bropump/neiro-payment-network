@@ -3,7 +3,7 @@
 `verify-quote.mjs` is a small, pure JavaScript quote checker, not a router, complete payment SDK or replacement for Kora. It has no network, signing or third-party dependencies. Node's built-in assertion failures reject a quote.
 
 ```sh
-node --test tools/kora-publisher/client/verify-quote.test.mjs
+node --test tools/kora-publisher/client/*.test.mjs
 cargo test --locked --manifest-path tools/kora-publisher/Cargo.toml --test pricing_modes
 ```
 
@@ -30,3 +30,34 @@ Client tests cover free/fixed/margin calculations, fixed strictness, rounding, c
 On 6 October 2026, isolated loopback instances of Mac's unchanged Kora image using mainnet RPC returned a verified free zero-fee quote and rejected a fixed quote for stale oracle data. The existing Mac margin instance rejected stale pricing too. Positive fixed/margin calculations passed deterministic tests; these checks are **not successful mainnet fixed/free transfers or published fixed/free listings**. No transaction was broadcast. Request a free quote without `fee_token` to avoid Kora's otherwise unnecessary token-price lookup for zero.
 
 The isolated free/fixed signing endpoints rejected a one-lamport sponsor withdrawal with `allow_transfer = false`. The pinned library also confirms such a transfer is allowed when that permission is true and other limits permit it. Public Mac/Bunny configurations, including `allow_transfer = true` for the user's DBC flow, were not changed. Temporary instances and credential copies were removed. Upcoming `sponsor_only_programs` protection (#683 / PR #692) restricts untrusted-program access to the sponsor; it does not override explicitly allowed System transfers or make fixed/free pricing reimburse every cost.
+
+## Authenticate RPC-returned listing terms
+
+Use `readRecord(recordAddress, rpcAccount, expectedGenesis)` from `read-record.mjs` before accepting the listing passed into `verifyQuote`. This verifies the signed v2 format, operator authority and derived address, exact payload signature, mainnet/mint binding, and supported pricing schema. It has no private key or network dependency and returns the authenticated JSON. The Rust publisher and this Node reader share a public interoperability fixture. Unsigned v1 listings are rejected. Signature authenticity does not prove that an RPC supplied the latest state; see the [signed format specification](../../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-signed-v2).
+
+### Reproduce the live Bunny signature check
+
+From the repository root, with Node.js 20 or later:
+
+```sh
+node --input-type=module <<'JS'
+import {readRecord} from './tools/kora-publisher/client/read-record.mjs';
+const record = 'AUcq2QhmqGAH4QSm5qMPnfZb6TcEoKVF8fHGg9FnWKfo';
+const genesis = '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
+for (const rpc of ['https://api.mainnet-beta.solana.com', 'https://solana-rpc.publicnode.com']) {
+  const response = await fetch(rpc, {
+    method: 'POST', headers: {'content-type': 'application/json'},
+    body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'getAccountInfo',
+      params: [record, {encoding: 'base64', commitment: 'finalized'}]}),
+    signal: AbortSignal.timeout(20000)
+  });
+  const result = await response.json();
+  if (result.error) throw Error(JSON.stringify(result.error));
+  const terms = readRecord(record, result.result.value, genesis);
+  if (terms.operator !== 'S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg') throw Error('unexpected operator');
+  console.log(rpc, 'operator signature VERIFIED', terms);
+}
+JS
+```
+
+This only reads public data; it loads no keys and sends no transactions. The signature begins at `43 + JSON_length`, not at `account_length - 64`. For the current 331-byte Bunny JSON it occupies bytes 374–437 (zero-based, inclusive), followed by zero padding. Verify the complete domain-separated message specified above, not JSON alone or a reserialized object. The current listing can subsequently be updated or closed by its operator.

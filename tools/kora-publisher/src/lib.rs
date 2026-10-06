@@ -16,6 +16,11 @@ pub const SEED: &str = "neiro-kora-fees";
 pub const MINT: &str = "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump";
 pub const SPACE: usize = 733;
 pub const MAGIC: &[u8; 8] = b"NEIRO069";
+pub const DOMAIN: &[u8] = b"\xffNEIRO069:listing:v2\0";
+pub fn attestation_message(record: &Pubkey, genesis: &str, body: &[u8]) -> Result<Vec<u8>> {
+    let chain: Pubkey = genesis.parse()?;
+    Ok([DOMAIN, PROGRAM.as_ref(), record.as_ref(), chain.as_ref(), body].concat())
+}
 pub fn address(op: &Pubkey) -> Result<Pubkey> {
     Ok(Pubkey::create_with_seed(op, SEED, &PROGRAM)?)
 }
@@ -38,6 +43,7 @@ pub async fn publish(
     let header = [vec![1], op.to_bytes().to_vec()].concat();
     let mut current = rpc.get_account_with_commitment(&record, rpc.commitment()).await?.value;
     let mut ixs = vec![];
+    let mut attestation = None;
     // Anyone can pre-fund this address; recover that SOL before atomically creating the record.
     if let Some(a) = current.as_ref().filter(|a| {
         url.is_some()
@@ -72,17 +78,27 @@ pub async fn publish(
             "NEIRO not accepted"
         );
         let data = serde_json::to_vec(&serde_json::json!({
-            "v":1, "url":parsed.as_str(), "operator":op.to_string(),
+            "v":2, "url":parsed.as_str(), "operator":op.to_string(),
             "payment":config.kora.get_payment_address(&op)?.to_string(), "mint":MINT,
             "genesis":genesis,
             "price":validation.price, "oracle":validation.price_source
         }))?;
-        let mut payload = [MAGIC.as_slice(), &data].concat();
-        ensure!(payload.len() <= SPACE - 33, "listing too large");
+        ensure!(data.len() + 8 + 2 + 64 <= SPACE - 33, "listing too large");
+        let message = attestation_message(&record, genesis, &data)?;
+        let mut payload = [MAGIC.as_slice(), &(data.len() as u16).to_le_bytes(), &data].concat();
+        let signature_offset = payload.len();
         payload.resize(SPACE - 33, 0);
-        if current.as_ref().is_some_and(|a| a.data[33..] == payload) {
-            return Ok(None);
+        if let Some(a) = &current {
+            let existing = &a.data[33..];
+            let sig = Signature::try_from(&existing[signature_offset..signature_offset + 64])?;
+            if existing[..signature_offset] == payload[..signature_offset]
+                && existing[signature_offset + 64..].iter().all(|b| *b == 0)
+                && sig.verify(op.as_ref(), &message)
+            {
+                return Ok(None);
+            }
         }
+        attestation = Some((message, signature_offset));
         if current.is_none() {
             let rent = rpc.get_minimum_balance_for_rent_exemption(SPACE).await?;
             ensure!(rent <= 7_000_000, "rent cap exceeded");
@@ -102,6 +118,18 @@ pub async fn publish(
         message: VersionedMessage::Legacy(message),
     };
     ensure!(bincode::serialize(&tx)?.len() <= 1232, "transaction exceeds packet size");
+    // Check all transaction/rent limits before asking the backend for either signature.
+    if let Some((message, offset)) = attestation {
+        let sig = signer
+            .sign_message(&message)
+            .await
+            .map_err(|_| anyhow!("attestation signing failed"))?;
+        ensure!(sig.verify(op.as_ref(), &message), "invalid backend signature for listing");
+        if let VersionedMessage::Legacy(message) = &mut tx.message {
+            let write = message.instructions.last_mut().context("missing listing write")?;
+            write.data[13 + offset..13 + offset + 64].copy_from_slice(sig.as_ref());
+        }
+    }
     let bytes = tx.message.serialize();
     let signature = signer.sign_message(&bytes).await.map_err(|_| anyhow!("signing failed"))?;
     ensure!(signature.verify(op.as_ref(), &bytes), "invalid backend signature");

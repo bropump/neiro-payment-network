@@ -38,3 +38,15 @@ Verify new mainnet lifecycle and public signing rejection receipts, client disco
 Verdict remains **APPROVE WITH NOTES** for the tested flow. Evidence does not establish future operator honesty, uniform guard configuration across unobserved replicas, price-source independence or universal protection against losses.
 
 Detailed evidence: `outputs/standalone-publisher-live-20261006/independent-mainnet-review.json`; fresh raw RPC reads: `independent-mainnet-rpc.json`.
+
+## Signed listing restoration — 6 October 2026
+
+The publisher now signs an independent, domain-separated Ed25519 attestation over program ID, derived record address, genesis and exact v2 JSON bytes, then signs the normal write transaction. Every create/update uses this format; a matching signed listing is a no-op. Rent/fee/message-size checks precede either signing request. Closing remains available without an attestation and returns rent to the operator.
+
+The shared reference reader rejects unsigned v1, malformed lengths/padding, altered terms, wrong authority/derived address/network, invalid signatures, noncanonical signature scalars, and small-order public keys or R encodings. Public fixtures verify interoperability between the Rust signer and JavaScript reader. This is reference verification tooling, not a deployed frontend or an audit certification. A valid proof authenticates terms; it cannot establish their recency, discovery completeness, balances, endpoint safety or quote honesty.
+
+17 Rust tests and 68 shared JavaScript tests passed for this change. The existing unrelated Surfpool namespace test is not part of the shared GitHub test package and was not rerun for this format change.
+
+Bunny's existing mainnet record was updated in place. Two independent RPC endpoints returned the same finalized transaction and record; the detached payload signature and transaction signature both verified. Fabricated copies with changed URL, fee model and payment destination were rejected. Existing Kora config, NEIRO balances and record rent were unchanged; only 5,000 lamports of network fee were spent. No ATA was created or closed.
+
+Publication: [2CJpjod1LuQahY4TrJQadUm9uCHi4aZmbMewUNSzsz2HJugK5beGAHi653VSD8tuDbpFpUAsjrAm1TJzTqPrJ6NV](https://explorer.solana.com/tx/2CJpjod1LuQahY4TrJQadUm9uCHi4aZmbMewUNSzsz2HJugK5beGAHi653VSD8tuDbpFpUAsjrAm1TJzTqPrJ6NV). Record: `AUcq2QhmqGAH4QSm5qMPnfZb6TcEoKVF8fHGg9FnWKfo`.

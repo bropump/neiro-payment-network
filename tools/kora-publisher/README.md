@@ -29,9 +29,11 @@ Publication checks the responding Kora's operator, listing deny entry, price/ora
 
 The command checks record owner/layout/authority, expected signer/network, HTTPS URL without credentials/query/fragment, payload size, 7,000,000-lamport rent cap, 10,000-lamport network fee cap, transaction size and returned signature. Prefunded seeded addresses are recovered atomically before account creation. Closing returns all record lamports to the operator. It creates no token accounts and never transfers tokens.
 
-Only public advertised terms are stored: endpoint, operator/payment address, NEIRO mint, genesis, pricing and oracle. No expiry or automatic renewal. This is an operator declaration, not enforcement of economic honesty. Clients must authenticate the derived account and authority, verify quotes independently and inspect the exact transaction before signing. Discovery URL handling, spam limits, RPC trust and price freshness remain client concerns. No audit or general loss-prevention guarantee is implied.
+The signed v2 payload includes a separate operator Ed25519 signature binding the exact terms to the network, SPL Record program and record address. Create/update automatically signs it through Keychain before signing the write transaction; unchanged valid signed listings require no signing or transaction. Readers reject missing or invalid attestations. See the [shared format and migration](../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-signed-v2).
 
-Software/remote backends that sign raw Solana message bytes work through Keychain. Hardware envelope-signing, modifying or sending-only backends are not established compatible; signature verification fails closed. No custom secret parser or key copies are added.
+Only public advertised terms are stored: endpoint, operator/payment address, NEIRO mint, genesis, pricing and oracle. No expiry or automatic renewal. This is an operator declaration, not enforcement of economic honesty. Clients must authenticate the derived account, authority and detached operator signature, verify quotes independently and inspect the exact transaction before signing. Discovery URL handling, spam limits, RPC trust and price freshness remain client concerns. No audit or general loss-prevention guarantee is implied.
+
+The backend must sign both raw attestation bytes and raw Solana transaction-message bytes through Keychain. Hardware envelope-signing, modifying or sending-only backends are not established compatible; signature verification fails closed. No custom secret parser or key copies are added.
 
 ## Verification
 

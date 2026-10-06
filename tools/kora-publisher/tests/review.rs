@@ -1,7 +1,9 @@
 //! Independent security review: no real credentials or network requests.
 use base64::{engine::general_purpose::STANDARD, Engine};
 use kora_lib::{config::SplTokenConfig, Config};
-use neiro_kora_publisher::{address, guard::verify_live, publish, MINT, PROGRAM, SPACE};
+use neiro_kora_publisher::{
+    address, attestation_message, guard::verify_live, publish, DOMAIN, MINT, PROGRAM, SPACE,
+};
 use serde_json::{json, Value};
 use solana_client::{nonblocking::rpc_client::RpcClient, rpc_request::RpcRequest};
 use solana_keychain::{Signer, SolanaSigner};
@@ -10,7 +12,13 @@ use solana_sdk::{
     pubkey::Pubkey,
     signature::{Keypair, Signature},
 };
-use std::{collections::HashMap, sync::Mutex};
+use std::{
+    collections::HashMap,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Mutex,
+    },
+};
 
 fn fixture() -> (Signer, Config) {
     let s = Signer::from_memory(&Keypair::new().to_base58_string()).unwrap();
@@ -74,12 +82,14 @@ fn payment_override_and_paid_all_are_matched_explicitly() {
     payer["payment_address"] = json!(op.to_string());
     assert!(verify_live(&c, op, &live, &payer).is_err());
 }
-struct Capture {
+struct Capture<'a> {
+    calls: AtomicUsize,
+    signer: &'a Signer,
     op: Pubkey,
     bytes: Mutex<Vec<u8>>,
 }
 #[async_trait::async_trait]
-impl SolanaSigner for Capture {
+impl SolanaSigner for Capture<'_> {
     fn pubkey(&self) -> Pubkey {
         self.op
     }
@@ -87,13 +97,22 @@ impl SolanaSigner for Capture {
         true
     }
     async fn sign_message(&self, b: &[u8]) -> Result<Signature, solana_keychain::SignerError> {
+        self.calls.fetch_add(1, Ordering::SeqCst);
+        if b.starts_with(DOMAIN) {
+            return self.signer.sign_message(b).await;
+        }
         *self.bytes.lock().unwrap() = b.to_vec();
         Ok(Signature::default())
     }
 }
 const GENESIS: &str = "11111111111111111111111111111111";
 async fn capture(account: Value, url: Option<&str>, s: &Signer, c: &Config) -> VersionedMessage {
-    let capture = Capture { op: s.pubkey(), bytes: Mutex::new(vec![]) };
+    let capture = Capture {
+        calls: AtomicUsize::new(0),
+        signer: s,
+        op: s.pubkey(),
+        bytes: Mutex::new(vec![]),
+    };
     let rpc = RpcClient::new_mock_with_mocks(
         "succeeds".into(),
         HashMap::from([
@@ -185,11 +204,75 @@ async fn legacy_marker_migration_only_writes_new_payload_without_changing_author
         SPACE - 33
     );
     assert_eq!(&instruction.data[13..21], b"NEIRO069");
-    let end = instruction.data[21..].iter().position(|byte| *byte == 0).unwrap() + 21;
-    let body: Value = serde_json::from_slice(&instruction.data[21..end]).unwrap();
+    let len = u16::from_le_bytes(instruction.data[21..23].try_into().unwrap()) as usize;
+    let bytes = &instruction.data[23..23 + len];
+    let body: Value = serde_json::from_slice(bytes).unwrap();
+    assert_eq!(body["v"], 2);
+    let sig = Signature::try_from(&instruction.data[23 + len..23 + len + 64]).unwrap();
+    assert!(sig.verify(
+        operator.as_ref(),
+        &attestation_message(&address(&operator).unwrap(), GENESIS, bytes).unwrap()
+    ));
     assert_eq!(body["operator"], operator.to_string());
     assert_eq!(body["price"], serde_json::to_value(&config.validation.price).unwrap());
     let keys: Vec<_> =
         instruction.accounts.iter().map(|i| message.static_account_keys()[*i as usize]).collect();
     assert_eq!(keys, vec![address(&operator).unwrap(), operator]);
+    // Optional public-only interoperability fixture, never real keys.
+    if let Ok(path) = std::env::var("NEIRO_PUBLIC_FIXTURE_OUT") {
+        let mut account_bytes = vec![1];
+        account_bytes.extend_from_slice(operator.as_ref());
+        account_bytes.extend_from_slice(&instruction.data[13..]);
+        std::fs::write(path,serde_json::to_vec_pretty(&json!({"record":address(&operator).unwrap().to_string(),"genesis":GENESIS,"account":{"owner":PROGRAM.to_string(),"executable":false,"data":[STANDARD.encode(account_bytes),"base64"]}})).unwrap()).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn unchanged_valid_attestation_needs_no_signing_or_transaction() {
+    let (s, c) = fixture();
+    let op = s.pubkey();
+    let message = capture(record(op), Some("https://operator.example/"), &s, &c).await;
+    let mut data = vec![1];
+    data.extend_from_slice(op.as_ref());
+    data.extend_from_slice(&message.instructions()[0].data[13..]);
+    let a = json!({"owner":PROGRAM.to_string(),"lamports":4_373_880,"executable":false,"rentEpoch":0,"data":[STANDARD.encode(data),"base64"]});
+    let rpc = RpcClient::new_mock_with_mocks(
+        "succeeds".into(),
+        HashMap::from([
+            (RpcRequest::GetGenesisHash, json!(GENESIS)),
+            (RpcRequest::GetAccountInfo, json!({"context":{"slot":1},"value":a})),
+        ]),
+    );
+    let recorder =
+        Capture { calls: AtomicUsize::new(0), signer: &s, op, bytes: Mutex::new(vec![]) };
+    let dir = tempfile::tempdir().unwrap();
+    let journal = dir.path().join("j");
+    assert!(publish(&rpc, &c, &recorder, op, Some("https://operator.example/"), GENESIS, &journal)
+        .await
+        .unwrap()
+        .is_none());
+    assert_eq!(recorder.calls.load(Ordering::SeqCst), 0);
+    assert!(recorder.bytes.lock().unwrap().is_empty());
+    assert!(!journal.exists());
+}
+
+#[tokio::test]
+async fn attestation_is_bound_to_record_chain_and_exact_bytes() {
+    let (s, _) = fixture();
+    let record = address(&s.pubkey()).unwrap();
+    let body = b"{\"v\":2}";
+    let bytes = attestation_message(&record, GENESIS, body).unwrap();
+    let sig = s.sign_message(&bytes).await.unwrap();
+    assert!(sig.verify(s.pubkey().as_ref(), &bytes));
+    for changed in [
+        attestation_message(&Pubkey::new_unique(), GENESIS, body).unwrap(),
+        attestation_message(&record, &Pubkey::new_unique().to_string(), body).unwrap(),
+        attestation_message(&record, GENESIS, b"{\"v\":1}").unwrap(),
+    ] {
+        assert!(!sig.verify(s.pubkey().as_ref(), &changed));
+    }
+    assert!(
+        bincode::deserialize::<VersionedMessage>(&bytes).is_err(),
+        "attestation is not a transaction message"
+    );
 }
