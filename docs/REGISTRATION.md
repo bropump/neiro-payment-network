@@ -4,7 +4,7 @@ The network uses operator listings in SPL Record. Clients discover them through 
 
 ## What gets created
 
-The existing SPL Record program is `recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5`. **Each operator creates its own record account under that program.** The network directory is the collection of valid records in our shared `NKORAF01` format, not one shared account containing everybody's entry. No master record or new program deployment is required before the first operator publishes.
+The existing SPL Record program is `recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5`. **Each operator creates its own record account under that program.** The network directory is the collection of valid records in our shared `NEIRO069` format, not one shared account containing everybody's entry. No master record or new program deployment is required before the first operator publishes.
 
 The current publisher derives each listing from the operator public key and the fixed seed `neiro-kora-fees`. That binding is part of client authentication. An arbitrary or vanity record address is not accepted by this format merely because it contains the same JSON.
 

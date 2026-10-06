@@ -15,6 +15,7 @@ pub const PROGRAM: Pubkey = solana_sdk::pubkey!("recr1L3PCGKLbckBqMNcJhuuyU1zgo8
 pub const SEED: &str = "neiro-kora-fees";
 pub const MINT: &str = "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump";
 pub const SPACE: usize = 733;
+pub const MAGIC: &[u8; 8] = b"NEIRO069";
 pub fn address(op: &Pubkey) -> Result<Pubkey> {
     Ok(Pubkey::create_with_seed(op, SEED, &PROGRAM)?)
 }
@@ -76,7 +77,7 @@ pub async fn publish(
             "genesis":genesis,
             "price":validation.price, "oracle":validation.price_source
         }))?;
-        let mut payload = [b"NKORAF01".as_slice(), &data].concat();
+        let mut payload = [MAGIC.as_slice(), &data].concat();
         ensure!(payload.len() <= SPACE - 33, "listing too large");
         payload.resize(SPACE - 33, 0);
         if current.as_ref().is_some_and(|a| a.data[33..] == payload) {

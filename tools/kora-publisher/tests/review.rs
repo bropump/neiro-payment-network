@@ -163,3 +163,33 @@ async fn close_returns_rent_only_to_operator_and_update_only_writes_record() {
     assert_eq!(update.static_account_keys()[ix.program_id_index as usize], PROGRAM);
     assert_eq!(update.static_account_keys()[ix.accounts[0] as usize], rec);
 }
+
+#[tokio::test]
+async fn legacy_marker_migration_only_writes_new_payload_without_changing_authority() {
+    let (signer, config) = fixture();
+    let operator = signer.pubkey();
+    let mut old = record(operator);
+    let mut bytes = STANDARD.decode(old["data"][0].as_str().unwrap()).unwrap();
+    bytes[33..41].copy_from_slice(b"NKORAF01");
+    old["data"][0] = json!(STANDARD.encode(bytes));
+    let message = capture(old, Some("https://operator.example/"), &signer, &config).await;
+    assert_eq!(message.instructions().len(), 1, "no create, close or authority change");
+    assert_eq!(message.header().num_required_signatures, 1);
+    assert_eq!(message.static_account_keys()[0], operator);
+    let instruction = &message.instructions()[0];
+    assert_eq!(message.static_account_keys()[instruction.program_id_index as usize], PROGRAM);
+    assert_eq!(instruction.data[0], 1, "Record Write");
+    assert_eq!(&instruction.data[1..9], &[0; 8], "write offset zero");
+    assert_eq!(
+        u32::from_le_bytes(instruction.data[9..13].try_into().unwrap()) as usize,
+        SPACE - 33
+    );
+    assert_eq!(&instruction.data[13..21], b"NEIRO069");
+    let end = instruction.data[21..].iter().position(|byte| *byte == 0).unwrap() + 21;
+    let body: Value = serde_json::from_slice(&instruction.data[21..end]).unwrap();
+    assert_eq!(body["operator"], operator.to_string());
+    assert_eq!(body["price"], serde_json::to_value(&config.validation.price).unwrap());
+    let keys: Vec<_> =
+        instruction.accounts.iter().map(|i| message.static_account_keys()[*i as usize]).collect();
+    assert_eq!(keys, vec![address(&operator).unwrap(), operator]);
+}

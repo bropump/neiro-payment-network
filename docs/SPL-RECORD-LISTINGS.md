@@ -67,7 +67,7 @@ Send this read-only request to a mainnet Solana RPC that supports `getProgramAcc
         {
           "memcmp": {
             "offset": 33,
-            "bytes": "E6YzdDpurUY"
+            "bytes": "E6KkkiG7rCQ"
           }
         }
       ]
@@ -76,7 +76,7 @@ Send this read-only request to a mainnet Solana RPC that supports `getProgramAcc
 }
 ```
 
-The `memcmp` value is the base58 encoding of the eight ASCII bytes `NKORAF01`. The account has 733 bytes: initialized Record version `1` at byte 0, authority at bytes 1–32, then the marker, a JSON object and zero padding. The JSON fields are `v`, `url`, `operator`, `payment`, `mint`, `genesis`, `price` and `oracle`; `v` is `1`. They advertise public terms, not the full private Kora configuration. The current format has no expiry, namespace-address field or signed latency promise.
+The `memcmp` value is the base58 encoding of the eight ASCII bytes `NEIRO069`. The account has 733 bytes: initialized Record version `1` at byte 0, authority at bytes 1–32, then the marker, a JSON object and zero padding. The JSON fields are `v`, `url`, `operator`, `payment`, `mint`, `genesis`, `price` and `oracle`; `v` is `1`. They advertise public terms, not the full private Kora configuration. The current format has no expiry, namespace-address field or signed latency promise.
 
 Treat scan results as untrusted candidates. Verify program ownership, non-executable status, exact layout, authority equal to the advertised operator, the derived address, mainnet genesis and the expected NEIRO mint. Reject malformed or unsupported fields. Checking only the authority field is insufficient: SPL Record initialization can name another wallet as authority without proving that wallet created or endorsed an arbitrary account. Do not accept arbitrary vanity addresses in this format.
 
@@ -103,3 +103,9 @@ A focused 6 October 2026 regression used offline Surfpool and the pinned upstrea
 This is why setup adds each operator's **listing account address** to its Kora deny list. A shared namespace address cannot replace that entry. Blocking the whole Record program would also block Kora sponsorship of unrelated Record operations, including NEIRO ID writes. Read-only RPC discovery is unaffected.
 
 If the operator later changes signing custody while keeping the same public key, its derived listing address stays the same. Rotating to a different public key changes the derived address: protect and verify the new listing before publishing it, and close the old listing using its existing authority when retiring it. Do not remove access to the old authority before its rent and remaining assets have been reconciled.
+
+## Marker ownership and migration
+
+`NEIRO069` is an eight-byte public format identifier, not an account, namespace keypair or registry administrator. Choosing or publishing this identifier grants nobody special rights over another operator's listing. There is no shared setup key to keep or discard. Each operator retains its own record authority for fee/URL updates and closure. The existing SPL Record program's deployment and any upgrade governance are separate; this tool does not deploy or administer that program.
+
+The marker replaces the earlier `NKORAF01` marker. Both are eight bytes, so record size (733), marker offset (33), JSON offset (41), address derivation and record authority remain unchanged. Existing operators migrate by using the updated publisher's `publish` command with a fresh signature journal. This writes the new marker without changing their key or deny entry. New clients filter for `NEIRO069` and reject the previous marker; old clients must update to discover migrated listings. No account recreation, additional rent deposit or authority change is required. Nobody can remotely change the marker accepted by an existing client; adopting another format requires changing that client's software or configuration.

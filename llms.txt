@@ -17,7 +17,7 @@ Genesis: 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d
 NEIRO mint: CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump (6 decimals)
 SPL Record program: recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5
 Listing: one account per operator, derived with create_with_seed(operator, "neiro-kora-fees", Record program).
-Account size: 733 bytes. Payload marker: NKORAF01 at byte offset 33.
+Account size: 733 bytes. Payload marker: NEIRO069 at byte offset 33.
 
 There is no shared master directory account. Scan the Record program with the documented filters, then authenticate the owner, layout, authority and derived address. Listing URLs are untrusted input. Read live SOL balances and obtain quotes directly from selected operators, with bounded concurrency and deadlines. Verify advertised terms, current pricing inputs and the exact transaction before signing. Fastest means first fully verified quote received; cheapest means lowest verified fee among the candidates actually compared. An optional router may assist but is not required or trusted to approve fees.
 
