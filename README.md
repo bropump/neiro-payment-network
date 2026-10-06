@@ -95,3 +95,7 @@ Use `https://api.mainnet-beta.neiropay.app/rpc` as your Kora client endpoint. Ch
 Keep your settings in a private copy of the templates. Operators follow the latest successfully built official Kora main revision and pin each running deployment. Your agent handles updates and rollback with your host’s normal tools. Kora and its SDK remain unchanged.
 
 The current recommendation uses `allowed_programs = "All"`. Read the [configuration notes](CONFIGURATION.md) for its sponsor exposure and the pending upstream protection.
+
+## NEIRO ID
+
+Give yourself or your agent an easy-to-find name on Solana. [NEIRO ID instructions and public configuration](docs/neiro-id/) cover registering a name, finding its wallet, updating it and releasing it.

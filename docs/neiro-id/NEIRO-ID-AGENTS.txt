@@ -1,0 +1,99 @@
+NEIRO ID — live mainnet naming protocol
+
+NAMESPACE
+nameAg2pEQgmuxNBGQ333ZWx15EKnFHek64GaSmDSbL
+
+NETWORK AND PROGRAMS
+Solana mainnet-beta
+Genesis hash: 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d
+Record program: recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5
+System program: 11111111111111111111111111111111
+Machine-readable configuration: neiro-id-agent-protocol.json
+Optional SDK-free Node resolver: neiro-id-resolver.mts
+
+HISTORICAL MAINNET EXAMPLE — RELEASED
+mac was registered, resolved successfully, and then released by its owner.
+It is no longer the owner's registered name; always resolve current state.
+Closure transaction: 3NYP8fmWbGvTvAUoY8pAcmjbNZksTr3GRCCmE9kfBL6y5d1UEW5yerup5gboeZfVwJymvvaGnYXWvgQJRULVUv9q
+Name: mac (MAC and Mac normalize to the same name)
+Record: 6aE66c98U3zJAAvTrtZoK6c9pBr28kjXDh1LLqF6bWXx
+Wallet and authority during the test: ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N
+Registration transaction:
+5pfLcHWBn9hAjksBy25boaCc3AXTQaZqp38TohxVEYxzVH3YJsqK6qVwtf7zWTootDXNYNZQyNdT5pRSqHnR9pw
+
+LOOKUP
+1. Accept 1–24 ASCII letters, digits, or underscores; lowercase the name.
+2. Decode the namespace and Record program addresses to their 32-byte keys.
+3. Derive the record address:
+   base58(SHA256(namespace32 || UTF8("n1:" + normalizedName) || program32))
+4. Call getAccountInfo on that record address using any mainnet RPC:
+   {"jsonrpc":"2.0","id":1,"method":"getAccountInfo","params":["6aE66c98U3zJAAvTrtZoK6c9pBr28kjXDh1LLqF6bWXx",{"encoding":"base64","commitment":"finalized"}]}
+5. Validate the returned record before returning its wallet field.
+
+The namespace is the shared address-derivation base, not a master account
+containing a list. Read a name's derived record account to resolve it.
+An RPC account value of null means absent at that commitment. Present but
+invalid data is an error; do not treat it as a wallet or as an available name.
+
+ACCOUNT VALIDATION AND LAYOUT
+Owner must equal the Record program, executable must be false, data length
+must be exactly 101 bytes, and these fields must match:
+  byte 0: initialized Record version, 1
+  bytes 1–32: record authority public key
+  bytes 33–40: ASCII NEIROID1
+  bytes 41–64: exact normalized name followed by zero padding to 24 bytes
+  bytes 65–96: resolved wallet public key
+  bytes 97–100: revision, u32 little endian
+Only return the wallet after all format and requested-name checks pass.
+Authority is the wallet allowed to update or release the name. The resolved
+wallet may be different if its authority intentionally sets another wallet.
+
+REGISTRATION
+The registering user controls their own private wallet. No operator or
+registrar needs to sign or stay online. The configuration contains deliberately
+public namespace creation material in publicNamespaceSeedHex: use those exact
+32 bytes as the Ed25519 seed; do not hash it again. Check its derived public key
+matches the namespace above. Never fund that public namespace key or use it as
+a user record authority. Each client signs the namespace part locally.
+
+1. Verify the RPC genesis hash, normalize the name, derive its record address,
+   and check it is absent. A competing transaction may still register it first.
+2. Query getMinimumBalanceForRentExemption for 101 bytes, getLatestBlockhash,
+   and getFeeForMessage. Use consistent commitment for the recent blockhash
+   and fee quote. Registration requires SOL for rent and fees.
+3. Build one atomic transaction containing:
+   a. System CreateAccountWithSeed. Accounts: funding wallet signer+writable,
+      derived record writable, namespace base signer. Data: u32LE(3),
+      namespace32, u64LE(seed byte length), UTF8("n1:"+name), u64LE(rent),
+      u64LE(101), Record program32.
+   b. Record Initialize. Accounts: record writable, user's authority.
+      Data: one byte 0.
+   c. Record Write. Accounts: record writable, user's authority signer.
+      Data: byte 1, u64LE(0), u32LE(68), followed by this payload:
+      ASCII NEIROID1 (8), name zero-padded to 24 bytes, resolved wallet (32),
+      revision u32LE(0).
+4. Sign with the funding wallet, the user's authority, and the public namespace
+   key. Usually the funding wallet and user authority are the same signer.
+5. Simulate, submit with sendTransaction, confirm successful execution, then
+   read and validate the actual record. A signature alone is not confirmation.
+
+MANAGEMENT
+Update: Record Write as above, signed by the record's current authority;
+keep the canonical name and marker valid and update the wallet/revision.
+Release: Record Close. Accounts: record writable, authority signer, refund
+wallet writable. Data: one byte 3. This closes that name and returns its rent.
+Update and release do not need the namespace creation signature.
+A released name may be registered again by any user.
+
+USAGE
+  import { resolveName } from './neiro-id-resolver.mts';
+  const record = await resolveName('mac', yourMainnetRpcUrl);
+  // record.destination is the resolved wallet; null means absent.
+
+No website, hosted API, mandatory SDK, token holding, or operator signing
+service is required. Agents need the shared configuration once, their own
+wallet for changes, and ordinary Solana RPC access.
+The Record program enforces its authority checks; clients enforce this naming
+and payload convention. A name is scoped to this namespace.
+The older ZQj5... namespace is separate. Both mac test records were released;
+the namespace and protocol remain usable without them.
