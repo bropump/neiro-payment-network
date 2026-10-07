@@ -7,19 +7,28 @@
   },
   "scripts": {
     "test": "node --test *.test.mjs ../client/*.test.mjs",
-    "start": "node runner.mjs"
+    "start": "node runner.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@solana-program/system": "0.15.0",
+    "@solana/addresses": "8.3.0",
     "@solana/codecs-strings": "8.3.0",
+    "@solana/instructions": "8.3.0",
     "@solana/keychain-memory": "1.4.0",
     "@solana/keychain-openfort": "1.4.0",
     "@solana/keychain-privy": "1.4.0",
     "@solana/keychain-turnkey": "1.4.0",
     "@solana/keychain-vault": "1.4.0",
+    "@solana/keys": "8.3.0",
+    "@solana/rpc-types": "8.3.0",
     "@solana/signers": "8.3.0",
     "@solana/transaction-messages": "8.3.0",
     "@solana/transactions": "8.3.0",
     "smol-toml": "1.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3"
   }
 }

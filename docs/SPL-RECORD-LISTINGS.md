@@ -2,47 +2,11 @@
 
 The [Node.js publisher](../tools/kora-publisher/script/) creates, renews, updates and closes one operator-owned SPL Record account. It does not replace or patch official Kora, run a public service, or require a router. A separate client can scan the SPL Record program, authenticate the listings and request quotes from operators directly.
 
-## Protect the account before publishing
+## Operator setup
 
-Install Node.js 24 or newer, then download the locked JavaScript dependencies. No compilation is required:
+Follow the [main setup guide](../README.md#set-up-your-operator): install the script, run `protect` on your private Kora config, restart every Kora instance sharing the key, then run one supervised `renew --watch` process. That command handles creation and renewal. `protect` adds the individual listing account to `validation.disallowed_accounts`; it does not restart Kora or block unrelated SPL Records such as NEIRO ID names.
 
-```sh
-cd tools/kora-publisher/script
-npm ci --ignore-scripts --registry=https://registry.npmjs.org
-node runner.mjs address --operator YOUR_PUBLIC_KEY
-```
-
-This reads no private key and creates no onchain account. Copy its printed address into the existing `[validation].disallowed_accounts` array in your private `kora.toml`, preserving other entries. Restart every public Kora instance using this signer **before publication**, and check that the running `getConfig` exposes the address and actual signing requests touching it are rejected.
-
-```toml
-[validation]
-disallowed_accounts = ["YOUR_DERIVED_LISTING_ADDRESS"]
-```
-
-The placeholder above must be replaced with the command's actual output. Do not add a second `[validation]` section. The shared config cannot know a new operator's address in advance. Each operator has a different listing, derived from their signer public key, and the same address is reused if they close and recreate it.
-
-The two existing test operators have ready-to-merge snippets:
-
-| Operator | Public signer | Listing to deny |
-|---|---|---|
-| [Mac](../tools/kora-publisher/examples/mac-listing-guard.toml) | `ANYLfraNjYogERmhLaKfb3Vd183QFZyVb8oLTdU2Xp2N` | `2WrymdQ7uPoaNB65u27DB4bw8NS1eYPS8hfA5K5TS7jQ` |
-| [Bunny](../tools/kora-publisher/examples/bunny-listing-guard.toml) | `S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg` | `AUcq2QhmqGAH4QSm5qMPnfZb6TcEoKVF8fHGg9FnWKfo` |
-
-Use those entries only for the corresponding signer. The snippets are public examples, not private deployment snapshots. Publishing them to GitHub does not restart or reconfigure an existing server.
-
-Deny the **listing account**, not the entire SPL Record program. Unrelated records, including NEIRO ID names, remain usable. Listing discovery uses read-only Solana RPC and does not need the listing account inside the payment transaction.
-
-## Create, update and close
-
-Use the same configured signer credentials/environment as your operator deployment; do not put secrets in command arguments. The command reads `kora.toml` and `signers.toml` by default; pass their paths when running elsewhere. `--signer-name` selects a named signer if the file contains more than one.
-
-```sh
-node runner.mjs publish --operator YOUR_PUBLIC_KEY --url https://your-operator.example/ --state-dir /PRIVATE/renewal
-node runner.mjs renew --watch --operator YOUR_PUBLIC_KEY --url https://your-operator.example/ --state-dir /PRIVATE/renewal
-node runner.mjs close --operator YOUR_PUBLIC_KEY --state-dir /PRIVATE/renewal
-```
-
-`publish` creates, migrates or updates; unchanged v5 terms younger than 24 chain hours send nothing. Changed terms update immediately. Every operator must also run the [renewal worker](RENEWAL.md) with `renew --watch` or one hourly native timer and persistent private state; it locks the state directory and reconciles pending submissions before a renewal. Restart Kora after changing its pricing, then republish. The command checks the responding endpoint's operator, payment address, NEIRO acceptance, pricing and deny entry before loading the signer. A unique signature journal is flushed before each send. On timeout, reconcile that signature before retrying. Stop the renewal worker before closing. Close returns the record rent to the operator; network fees are not refundable. No ATAs are created or closed by this tool.
+Use [operations](RENEWAL.md) for updates, recovery and closure. The rest of this page specifies the onchain format for client implementers.
 
 ## Discovery and client checks
 
@@ -94,7 +58,7 @@ RPC scan support and completeness vary. Handle RPC errors explicitly; an incompl
 
 ## Platforms and security scope
 
-The recommended publisher is a portable Node.js 24 script. The same source runs with a suitable Node runtime on macOS, Linux, Windows and supported Raspberry Pi systems; it requires no Rust compiler or native addon build. Dependencies are pinned in package-lock.json and installed with scripts disabled. A container is optional hosting packaging, not required for local operation. Tests and hardware coverage are reported separately; portability is not a claim of tests on every device.
+Use the [setup guide](../README.md#set-up-your-operator) to install the publisher. It requires Node.js 24 or newer. Dependencies are pinned in `package-lock.json` and installed with scripts disabled. See the security review for tested platforms and signing backends.
 
 `address`, `publish`, `renew`, `check`, `discover` and `close` are provided. `discover` verifies signatures and chain expiry; it does not select the cheapest/fastest quote. Listings advertise terms but do not enforce fee honesty. Clients must verify record authority/derived address, pricing inputs, quote and exact transaction before signing. Same-key protection depends on every public signer instance keeping the deny entry active. A single `getConfig` cannot prove every replica is safe. Only compatible raw-message Keychain signer backends have been established; other signer types fail closed rather than bypass signature checks.
 
@@ -112,7 +76,7 @@ If the operator later changes signing custody while keeping the same public key,
 
 `NEIRO069` is an eight-byte public format identifier, not an account, namespace keypair or registry administrator. Choosing or publishing this identifier grants nobody special rights over another operator's listing. There is no shared setup key to keep or discard. Each operator retains its own record authority for fee/URL updates and closure. The existing SPL Record program's deployment and any upgrade governance are separate; this tool does not deploy or administer that program.
 
-The marker replaces the earlier `NKORAF01` marker. The v5 format keeps the 733-byte account, marker at byte 33, little-endian u16 JSON length at 41, JSON at 43, raw signature immediately after JSON, and zero padding. Address derivation, authority and deny entry stay unchanged. `publish` migrates v1/v2/v3/v4 in place using a fresh signature journal and a finalized block anchor. It emits the same payload as a new create; no additional rent, account recreation or authority change is required. Installing a reader does not migrate another operator's account. Every operator must authorize its own migration and install renewal. Strict discovery rejects legacy listings until then; it does not reinterpret v4 signatures as expiring v5 records.
+The marker replaces the earlier `NKORAF01` marker. The v5 format keeps the 733-byte account, marker at byte 33, little-endian u16 JSON length at 41, JSON at 43, raw signature immediately after JSON, and zero padding. Address derivation, authority and deny entry stay unchanged. `publish` migrates v1/v2/v3/v4 in place using the existing private state directory and a fresh finalized block anchor. It emits the same payload as a new create; no additional rent, account recreation or authority change is required. Installing a reader does not migrate another operator's account. Every operator must authorize its own migration and install renewal. Strict discovery rejects legacy listings until then; it does not reinterpret v4 signatures as expiring v5 records.
 
 <a id="operator-attestation-signed-v2"></a>
 <a id="operator-attestation-neiro069-msg1-v3"></a>

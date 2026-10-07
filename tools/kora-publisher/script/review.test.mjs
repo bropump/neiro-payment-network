@@ -7,7 +7,7 @@ import path from 'node:path';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {getTransactionDecoder} from '@solana/transactions';
 import {getCompiledTransactionMessageDecoder} from '@solana/transaction-messages';
-import {publish,lockState,reconcile,termsFromConfig} from './publisher.mjs';
+import {publish,lockState,reconcile,termsFromConfig} from './publisher.ts';
 import {PROGRAM,MINT,SEED,recordAddress,keystring,keybytes,readRecord,verifyAttestation} from '../client/read-record.mjs';
 const genesis='11111111111111111111111111111111';
 function fixture(t){
@@ -98,7 +98,7 @@ test('configuration guard rejects malformed strings in place of required account
  assert.throws(()=>termsFromConfig(toml,f.operator,f.terms.url,genesis,{...live,fee_payers:f.operator},payer));
 });
 test('discovery refreshes chain Clock after candidate anchor lookup',async t=>{
- const {main}=await import('./runner.mjs');const f=fixture(t);await f.run();const calls=[];
+ const {main}=await import('./runner.ts');const f=fixture(t);await f.run();const calls=[];
  const previousFetch=globalThis.fetch,previousLog=console.log;globalThis.fetch=async (_url,options)=>{
   const req=JSON.parse(options.body);calls.push(req);
   let result;if(req.method==='getProgramAccounts')result=[{pubkey:f.record,account:f.account}];else result=await f.rpc(req.method,req.params);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateKeyPairSync, verify} from 'node:crypto';
 import {getBase58Decoder} from '@solana/codecs-strings';
-import {loadSigner, mapSignerConfig, selectSignerConfig} from './signer.mjs';
+import {loadSigner, mapSignerConfig, selectSignerConfig} from './signer.ts';
 
 const memoryToml = `[signer_pool]
 strategy = "round_robin"

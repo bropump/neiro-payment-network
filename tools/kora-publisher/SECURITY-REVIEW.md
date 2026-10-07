@@ -1,6 +1,21 @@
-# Portable Node runner review — 7 October 2026
+# TypeScript runner and setup review — 7 October 2026
 
-The recommended Node implementation is `script/`, source [7f88948](https://github.com/bropump/neiro-payment-network-core/commit/7f88948d6cbbd0ce420b26a75fa13ddf96eab998). Independent review: **APPROVE WITH NOTES**, no outstanding material security regression found. This is testing and engineering review, not a formal audit.
+Current runtime files in `script/` are strict TypeScript executed directly by Node 24. Independent review: **APPROVE WITH NOTES**; no material security regression found. Runtime validation, signer verification, fee/rent caps and transaction recovery remain necessary; static types do not replace them.
+
+- Strict `tsc --noEmit` passed for all five runtime modules, without `any` annotations or TypeScript suppression directives. The existing JavaScript reference reader has explicit TypeScript declarations and its own runtime tests.
+- All **141 local tests passed**, including the configuration editor, signer adapters, transaction recovery, signed listings and quote checks.
+- The new `protect` command derives and adds only the operator's listing to the actual Kora config, with an exact private backup. Tests cover existing entries/comments, CRLF, idempotence, invalid UTF-8, unsupported TOML, symlinks, concurrent modifications, and POSIX owner/group/mode preservation. It does not load credentials, send transactions or restart Kora. Review findings on UTF-8, CRLF and file metadata were fixed before release.
+- The TypeScript implementation passed actual SPL Record execution in offline Surfpool: create, no-op, accelerated daily renewal, changed terms, expiry rejection, close, and rent/prefund recovery. Generated local signer only. Four local transaction fees totaled 20,000 lamports; all 5,992,560 rent lamports and the prefunded lamport returned. No mainnet write was needed for this source conversion.
+- Official-registry npm audit reported zero known vulnerabilities. Dependencies remain locked with integrity hashes and installation scripts disabled.
+- An independent usability review checked the consolidated install → protect → restart → supervised renewal guide. Every public Kora instance sharing the key must still enforce the deny entry; editing a file alone is not evidence that every service loaded it.
+
+This section records local checks. CI checks types and tests on Linux, macOS and Windows before packaging. Deployment status and prior platform evidence are recorded separately below. Existing RPC trust, signer compromise, one-worker, durable-state and Windows power-loss limitations still apply. This is an engineering review, not a formal audit.
+
+---
+
+# Previous JavaScript release review — 7 October 2026
+
+The previous Node release is source [7f88948](https://github.com/bropump/neiro-payment-network-core/commit/7f88948d6cbbd0ce420b26a75fa13ddf96eab998). Independent review: **APPROVE WITH NOTES**, no outstanding material security regression found. This is testing and engineering review, not a formal audit.
 
 - [CI](https://github.com/bropump/neiro-payment-network-core/actions/runs/37600960099) passed 126 tests on Linux, macOS and Windows, using `npm ci --ignore-scripts`; no Rust or native compilation. npm reported install times of 3s, 4s and 6s respectively.
 - Actual SPL Record execution in offline Surfpool passed create, no-op, accelerated daily renewal, config update, expiry rejection, close and rent/prefund recovery. Generated local signer only; normal signature/blockhash checks enabled. Four transaction fees total20,000lamports; all5,992,560rent lamports and the prefunded1lamport recovered.

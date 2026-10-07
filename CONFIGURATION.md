@@ -35,7 +35,7 @@ This recommendation does not claim measured 90% signing success, compatibility w
 
 `signTransaction` returns a signed transaction for the client to submit; `signAndSendTransaction` signs and submits through Kora. Both are part of the NEIRO default and apply the configured validation and payment policies. Existing deployments using the older `sign_transaction = false` preset should set it to `true`, validate their configuration, restart Kora, and check that `getConfig.result.enabled_methods.sign_transaction` is `true`.
 
-Operators follow the latest successfully built official upstream main revision and pin each deployment. Use upstream Kora and your host's update tools; there is no NEIRO software package to install. Retain the previous build for rollback. Kora and its SDK remain unchanged. See [setup and updates](docs/JOIN.md).
+Operators follow the latest successfully built official upstream main revision and pin each deployment. Use upstream Kora and your host's update tools; the NEIRO listing runner is a separate script and does not replace Kora. Retain the previous build for rollback. Kora and its SDK remain unchanged. See [setup and updates](docs/JOIN.md).
 
 Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
 

@@ -6,7 +6,7 @@ import path from 'node:path';
 import {randomBytes} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
 import {createMemorySigner} from '@solana/keychain-memory';
-import {rpcClient,publish,anchorAt,chainTime} from './publisher.mjs';
+import {rpcClient,publish,anchorAt,chainTime} from './publisher.ts';
 import {MINT,recordAddress,readRecord} from '../client/read-record.mjs';
 const url=process.env.SURFPOOL_RPC||'http://127.0.0.1:18997';assert.equal(new URL(url).hostname,'127.0.0.1');
 const rpc=rpcClient(url),signer=await createMemorySigner({privateKey:new Uint8Array(randomBytes(32))}),operator=signer.address;

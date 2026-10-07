@@ -23,7 +23,10 @@ jobs:
       - name: Install locked JavaScript dependencies without install scripts
         working-directory: tools/kora-publisher/script
         run: npm ci --ignore-scripts --no-fund --registry=https://registry.npmjs.org
-      - name: Test without compilation
+      - name: Check strict TypeScript
+        working-directory: tools/kora-publisher/script
+        run: npm run typecheck
+      - name: Test script and client checks
         working-directory: tools/kora-publisher/script
         run: npm test
   package:
@@ -39,6 +42,6 @@ jobs:
           printf %s "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           image="ghcr.io/bropump/neiro-kora-publisher:$GITHUB_SHA"
           docker build -f tools/kora-publisher/script/Dockerfile -t "$image" tools/kora-publisher
-          docker run --rm --entrypoint node "$image" /app/script/runner.mjs --help
+          docker run --rm --entrypoint node "$image" /app/script/runner.ts --help
           docker push "$image"
           docker logout ghcr.io
