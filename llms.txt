@@ -8,7 +8,8 @@ Operator installation has one canonical guide: [main README](https://raw.githubu
 
 - [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md)
 - [Discovery format and client checks](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/SPL-RECORD-LISTINGS.md)
-- [Set up an operator](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/AGENT-SETUP.md)
+- [Set up an operator](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/README.md)
+- [Operator verification checklist](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/AGENT-SETUP.md)
 - [Required daily renewal and scheduler setup](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/RENEWAL.md)
 - [Publish, update or close a listing](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/REGISTRATION.md)
 - [NEIRO ID](https://github.com/bropump/neiro-id): separate naming protocol.
@@ -24,9 +25,11 @@ Account size: 733 bytes. Payload marker: NEIRO069 at byte offset 33.
 
 There is no shared master directory account. Scan the Record program with the documented filters, then authenticate the owner, layout, authority and derived address. Listing URLs are untrusted input. Read live SOL balances and obtain quotes directly from selected operators, with bounded concurrency and deadlines. Verify advertised terms, current pricing inputs and the exact transaction before signing. Fastest means first fully verified quote received; cheapest means lowest verified fee among the candidates actually compared. An optional router may assist but is not required or trusted to approve fees.
 
-The runner provides protect, address, check, publish, renew, discover and close. Every operator must use v5 with signed anchor_slot and anchor_blockhash, renew after 24 chain hours, and be rejected at 48 hours from the trusted finalized anchor block time. Reject all older listing versions without fallback. `renew --watch` checks hourly, or an hourly native timer invokes renew with private persistent state; unchanged terms before 24 hours require no signing or transaction. Stop the sole renewal worker before closure. Do not infer production readiness from a test listing. Close test listings unless the user explicitly requests retention. Skip dead endpoints and reject mismatched terms.
+The runner provides protect, address, check, publish, renew, discover and close. Every operator must use v5 with signed anchor_slot and anchor_blockhash, renew after 24 chain hours, and be rejected at 48 hours from the trusted finalized anchor block time. Reject all older listing versions without fallback. `renew --watch` checks hourly with private persistent state; unchanged terms before 24 hours require no signing or transaction. Stop the sole renewal worker before closure. Do not infer production readiness from a test listing. Close test listings unless the user explicitly requests retention. Skip dead endpoints and reject mismatched terms.
 
 ## Signing and operation
+
+The template caps priority fees at 100,000 lamports and checks modeled sponsor outflow and network fees separately against `max_allowed_lamports = 250000000`. Preserve chosen operator overrides, validate the live settings and verify signing rejects above-cap requests. Quotes alone do not enforce admission. Landed failures still cost network fees while the NEIRO reimbursement rolls back; these limits do not guarantee zero losses.
 
 Reuse the user's existing wallet or signer. Show the recipient, asset, amount and total fee before wallet signing. Preserve existing authorizations and spending limits. Keep keys and credentials private. Return finalized transaction receipts; a quote or simulation is not an onchain payment.
 

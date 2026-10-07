@@ -46,7 +46,9 @@ For a new operator, copy these files into your private deployment directory:
 
 The supplied signer template uses `KORA_PRIVATE_KEY`: put the dedicated wallet's key material in that private environment variable through your secret manager. It expects the key value, **not a file path**. For a remote signer, replace that entry with the provider configuration and credential references. Give Kora and the runner access to the same selected signer. Never paste keys into chat or commit them to Git.
 
-In `kora.toml`, choose your fee under `[validation.price]`: **margin**, **fixed NEIRO** or **free**. The template's **50% margin is an example**. Also choose `max_allowed_lamports`, the per-transaction spending allowance; it is not a daily budget. The template also caps priority fees at `100000` lamports (0.0001 SOL) per transaction using `max_priority_fee_lamports`; callers may request less, but higher amounts are rejected before signing. Keep the NEIRO mint and required API methods enabled. See [fee examples](TUTORIAL.md#3-set-your-fees) and [spending permissions](CONFIGURATION.md).
+In `kora.toml`, choose your fee under `[validation.price]`: **margin**, **fixed NEIRO** or **free**. The template's **50% margin is an example**. Also choose `max_allowed_lamports`: Kora checks modeled sponsor SOL outflow (including account rent) and network fees separately against this limit. It is not a combined cap or daily budget. The template also caps priority fees at `100000` lamports (0.0001 SOL) per transaction using `max_priority_fee_lamports`; callers may request less, but higher amounts are rejected before signing. Keep the NEIRO mint and required API methods enabled. See [fee examples](TUTORIAL.md#3-set-your-fees) and [spending permissions](CONFIGURATION.md).
+
+**Failed transactions still cost the operator SOL.** If a submitted transaction executes and fails, its network fee remains charged while the NEIRO reimbursement and rent transfers roll back. Caps bound accepted costs; they do not guarantee reimbursement or profit. Size the outflow allowance for your workload, including launch rent.
 
 Set these in the services' private environment:
 
@@ -104,7 +106,7 @@ curl --fail-with-body https://YOUR_OPERATOR_HOST/ \
   --data '{"jsonrpc":"2.0","id":1,"method":"getConfig","params":{}}'
 ```
 
-Check `getPayerSigner` in the same way by changing `method`. The signer, payment destination, NEIRO acceptance, fees and blocked listing must match your setup. The runner also checks these before publication. Its endpoint calls currently do not supply API-key/HMAC/CAPTCHA credentials; resolve unsupported access requirements without exposing keys or silently removing existing protections.
+Check `getPayerSigner` in the same way by changing `method`. The signer, payment destination, NEIRO acceptance, fees and blocked listing must match your setup. Confirm `max_allowed_lamports` and `max_priority_fee_lamports` match your chosen limits. The estimate endpoint can quote above a cap; the signing path must reject it. The runner checks listing identity, terms and protection before publication. Its endpoint calls currently do not supply API-key/HMAC/CAPTCHA credentials; resolve unsupported access requirements without exposing keys or silently removing existing protections.
 
 **Check:** an enabled public signing method rejects a bounded request touching your listing because of the account-deny rule. An authentication error or disabled-method response does not prove this. Have the setup agent perform this non-destructive check on each public instance before publishing; see the [verification checklist](docs/AGENT-SETUP.md).
 

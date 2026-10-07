@@ -43,9 +43,17 @@ Operators follow the latest successfully built official upstream main revision a
 
 Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
 
+## Failed transactions and launch costs
+
+A failed, landed transaction still charges the operator its base and priority fees. Its NEIRO reimbursement and account-creation transfers roll back. Putting reimbursement first in the transaction does not change this. Preflight and spending caps reduce exposure; they cannot guarantee zero losses. See [Solana transaction processing](https://solana.com/docs/core/transactions/transaction-pipeline).
+
+`max_allowed_lamports` is checked against network fees and modeled sponsor outflow separately. A rent-heavy launch therefore needs enough allowance for its account creation, even when its network fee is small. Keep the separate `max_priority_fee_lamports` cap to restrict priority fees. Re-quote the complete transaction after changing priority fees, instructions or account-creation requirements. An estimate above a cap may still be returned; Kora rejects it on the signing path.
+
+If the operator requires failed-transaction fees to be covered in advance, that needs a separate funded payment/reservation design. The standard configuration and SPL listing do not implement one. Funding that reserve also has a network-fee payer; NEIRO collateral carries conversion-price risk.
+
 ## Prepared recommendation after #683 ships
 
-As checked on 2 October 2026, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not merged into official main. Keep the current configuration until it merges and passes compatibility checks in a published main image. A tagged release is not required. Do not patch Kora or assume an unknown TOML field activates the proposed protection.
+As checked on 7 October 2026, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not merged into official main. Keep the current configuration until it merges and passes compatibility checks in a published main image. A tagged release is not required. Do not patch Kora or assume an unknown TOML field activates the proposed protection.
 
 After the feature ships, replace the current program setting with the following fragment and retain the 0.25 SOL allowance:
 
