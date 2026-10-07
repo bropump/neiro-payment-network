@@ -1,6 +1,8 @@
 # Build with NEIRO
 
-Keep your Solana app. Let an independent Kora operator supply SOL for the transaction and receive NEIRO covering the gas and their tip.
+Keep your existing Solana SDK, program instructions and wallet. Use official Kora to have an independent operator supply SOL for transaction costs and receive NEIRO. You do not need an NPN SDK, a new CLI or a mandatory router.
+
+Your normal Solana RPC still handles chain reads and confirmation. The selected operator’s Kora endpoint handles sponsorship quotes and signing. An operator URL is not a replacement for your Solana RPC URL.
 
 ## Start with a payment
 
@@ -18,6 +20,29 @@ The reference `client/verify-quote.mjs` uses `maxAgeSlots: 0` by default, matchi
 
 If the user asks only for a quote, stop before signing or submitting. If no usable operator is discovered, report it; do not invent a quote or silently switch to spending the user's SOL.
 
+## Use your existing program or transaction builder
+
+Build the operation with the selected operator before asking the wallet to sign. For each candidate, rebuild the same intended operation with that candidate’s payer and fee destination; compare the verified total fee, not the same serialized transaction sent to different payers.
+
+| Transaction role | Use |
+| --- | --- |
+| Network fee payer | Selected operator’s public key in the Solana message |
+| Account creation/rent funder | Operator only where the program/builder supports that payer; otherwise the user still needs SOL for that instruction |
+| Transfer, swap, mint or position authority | User’s existing wallet or the program’s intended authority |
+| NEIRO reimbursement destination | Verified signed listing’s `payment` address; it may differ from the operator |
+| New account/keypair signers | Preserve the signers required by the original program |
+| Account closure/rent destination | Explicitly agreed recipient, normally the original rent funder for disposable tests |
+
+For a classic SPL transfer to a missing ATA, use the operator as the ATA-creation payer, the recipient as the token-account owner, and the user as transfer authority. Changing only the message fee payer does not change an instruction’s rent payer. The recipient’s ATA is still controlled by the recipient, so the sponsor cannot assume it can reclaim that rent later.
+
+For Jupiter, preserve the route, slippage/minimum output, lookup tables, account setup and cleanup instructions. For Meteora/other account-creating programs, preserve the program’s configuration, authorities and extra account signers and explicitly select the creation payer. Do not replace every occurrence of the user’s address with the operator. If the builder fixes the user as funder or requires signatures before sponsorship can be added, adapt that builder flow or report it unsupported.
+
+Use the official Kora SDK to obtain the reimbursement instruction. Add it and the intended compute-budget settings before final approval; recompute the full cost and quote after any instruction change. Decode the complete message and resolved lookup tables before signing. The [reference quote checker](../tools/kora-publisher/client/README.md) accepts an independently calculated `costLamports`; it does not discover all costs for an arbitrary program.
+
+For the tested classic SPL + new ATA shape, the cost basis is the RPC’s `getFeeForMessage` for the complete message plus `getMinimumBalanceForRentExemption(165)` for the new classic token account. The network-fee result already includes priority fees: do not add those twice. Existing ATAs add no new rent. Do not apply this 165-byte rule to Token-2022, arbitrary account creation or unknown CPI outflows. Simulation can help establish those costs, but state can change before execution and a successful simulation is not a settlement guarantee.
+
+With `signTransaction`, verify the returned message bytes exactly match those the user approved, verify all required signatures, and submit that same wire transaction through your RPC. With `signAndSendTransaction`, the operator broadcasts; compare its returned signature with the expected signed transaction when available and independently confirm effects. Never automatically re-sign a changed message. The operator must remain the selected fee payer in both flows.
+
 ## Fast, verified operator selection
 
 Use this flow in clients and agent integrations; an optional router can suggest candidates but cannot replace these checks.
@@ -30,6 +55,30 @@ Use this flow in clients and agent integrations; an optional router can suggest 
 6. **Pin and approve once.** Re-read selected terms; if they changed, re-quote. Inspect the exact completed transaction: fee payer, instructions, transfer amounts, recipients, account authorities, NEIRO reimbursement, compute budget and blockhash validity. Resolve lookup tables before inspection. Obtain the user’s signature only for the approved message. Do not let a config change authorize a higher charge. Keep the chosen operator pinned through submission and reconcile the original transaction signature before retrying or switching after an uncertain send; otherwise duplicate payments are possible.
 
 Measure scan, batch reads, quote round trip, verification, time to selected result, and confirmation separately with a monotonic timer. Selection time includes verification, not just the HTTP response. Report cold discovery separately from cached selection, sample count and failures. These are client implementation practices: the publisher’s `discover` command authenticates records but does not implement a payment router or quote race.
+
+## Speed without skipping checks
+
+- Keep an authenticated candidate cache and update it in the background. Deduplicate finalized anchor-block reads and reuse a single sufficiently recent finalized Clock read for the batch. Recheck the selected listing before approval; cached signatures cannot prove latest state.
+- Batch balances instead of one request per operator. Reuse HTTP connections and perform independent config/price/account reads concurrently, with bounded concurrency and response sizes. Do not send wallet signatures to competing operators during selection.
+- A quote task counts as successful only after fee and identity verification. `Promise.race()` on raw HTTP responses can select an invalid response or fail on a dead endpoint. For fastest, use the first successful verified task (for example, `Promise.any()`), with a deadline on every task; stop waiting for other read-only tasks after returning the winner. For cheapest, wait only until the comparison deadline and report coverage.
+- Handle all rejected tasks. Do not put an awaited `Promise.allSettled()` in a `finally` block before returning the fastest result: that removes the latency benefit. Cancel pending fetches or consume their outcomes in the background.
+- Measure with `performance.now()`: discovery, authentication, balance reads, quotes, verification, selected-result delivery and confirmation are different timings. Local test milliseconds are not estimates of internet or mainnet latency.
+
+## Errors, changes and safe retries
+
+| Situation | Client response |
+| --- | --- |
+| HTTP timeout, 403, 405 or non-JSON response | Mark the endpoint unavailable for this attempt; do not assume success or parse an empty body as JSON. Apply a short backoff. |
+| HTTP 200 with JSON-RPC `error` | Treat as a failed request and retain its sanitized cause. |
+| Changed terms, fee mismatch, wrong recipient or unsupported cost model | Reject before signing. Refresh and re-quote only under the user’s existing limits. |
+| Old oracle data | Follow the client’s explicit price-quality policy. `maxAgeSlots = 0` accepts age risk; it does not make a price current. Never silently switch to free sponsorship or user-funded SOL. |
+| Quote succeeds but signing rejects | Check live caps, sponsor balance, account rent and program permissions. An estimate is not an admission guarantee. |
+| Submission response is lost | Persist and query the original signature. Do not rebuild with a fresh blockhash or another operator until the old attempt is conclusively resolved. |
+| Same signed transaction is rebroadcast | The signature stays the same. This is different from signing another payment with a new message/blockhash. |
+| Blockhash expires | Resolve whether the original landed, using signature history and blockhash validity/last-valid block height. A wall-clock timeout alone is not proof that it failed. |
+| Transaction lands with an execution error | Report the failed operation and charged network fee. Instruction effects, including NEIRO reimbursement, roll back. |
+
+Persist the expected signature and blockhash lifetime before submission. Use a consistent commitment policy for blockhash retrieval, preflight and confirmation. Keep an explicit `unknown`/`pending` outcome when RPC data cannot establish the result. Never respond to uncertainty by issuing a second payment automatically.
 
 ## Give an agent a wallet
 
@@ -58,3 +107,19 @@ Follow [Jupiter's current instruction-building guide](https://developers.jup.ag/
 Agree a small budget before sending. Record every created token account, its owner and rent funder. After a disposable test, return remaining assets when authorized and close newly created empty accounts whose authority the user controls, returning rent to the funder. Do not close existing user accounts or burn non-test assets. A classic mint itself has no ordinary close instruction.
 
 Report what was actually checked: quote, simulation, local fork, mainnet confirmation or paid service response. Preserve transaction receipts. No hosted service, launchpad or facilitator is proven by a plain transfer test.
+
+## Surfpool verification — 7 October 2026
+
+These checks executed against two isolated, unchanged Kora instances and a Surfpool mainnet fork, using fresh local-only keys, synthetic balances and a deterministic Mock oracle. The signed listing URLs were mapped to loopback test endpoints; this does not test public HTTPS or live Jupiter price quality. It is not a mainnet benchmark. [Machine-readable results](test-results/client-practices-surfpool-2026-10-07.json).
+
+- Published, discovered and authenticated two real v5 SPL Record accounts; read operator balances in one RPC batch.
+- Independently calculated a classic SPL transfer plus missing recipient ATA: 10,200 lamports network fee (including 200 priority) + 2,039,280 rent. Quotes matched the listed 5% and 10% margins exactly under the fixture price.
+- Rejected an overcharge, changed live pricing, wrong payment destination, low client fee cap, stale fixture price, tampered record and changed returned message. The exact 48-hour expiry check used injected trusted context; it was not a 48-hour wall-clock run.
+- Live Kora signing rejected a transaction touching its denied listing and a 100,001-lamport priority fee against a 100,000 cap.
+- A dead endpoint and a first-arriving invalid quote did not win the verified quote race. Across five controlled rounds, the cheaper operator had an injected 250 ms delay: fastest returned the other verified result without waiting, while cheapest selected the cheaper quote after comparison.
+- Submitted the approved sponsored transfer with zero user SOL. Confirmed one token base unit reached the recipient, exact NEIRO reimbursement reached the operator, and the operator paid the independently calculated SOL cost. Rebroadcasting the same signed transaction did not produce a second payment or fee; Surfpool reports it as already processed.
+- Returned the recipient’s test token, closed its newly created ATA and returned all 2,039,280 lamports of rent to the sponsor, then closed both listings. These accounts were controlled test fixtures; ordinary clients cannot close someone else’s ATA.
+
+Local measured timings: discovery **106.0 ms**, authentication **3.6 ms**, batched balances **0.4 ms**. Median verified fastest-result delivery **4.9 ms** versus **256.1 ms** waiting for both, with the intentional 250 ms delay included. These values demonstrate return behavior on this local machine, not expected production speed.
+
+The 104 existing reader/quote tests also passed. This run does not establish arbitrary-program cost calculation, browser-wallet compatibility, Jupiter swap execution or Meteora launch compatibility. Earlier launch tests have a separate scope; do not infer those results from this transfer.

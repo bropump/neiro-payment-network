@@ -23,6 +23,8 @@ NEIRO has six decimals. `oracle.tokenPriceSol` is an independently obtained **pl
 
 The helper requires exact agreement with its independently supplied price, with no automatic tolerance. Kora's f64-to-Decimal oracle conversion, price movement between requests, or precision-boundary differences can cause conservative rejection. The caller must reproduce and verify the pinned oracle normalization; passing the operator's own price back to this helper is not independent verification. This is not yet a complete specification/verifier for every Kora-supported transaction shape: rent, priority fees, payer outflow, missing payment instructions and Token-2022 fees require a transaction-aware cost calculation by the caller. The live payment harness has only established the ordinary classic-SPL transfer shape.
 
+See [using existing builders, security, speed and retry practices](../../../docs/BUILD-WITH-NEIRO.md#use-your-existing-program-or-transaction-builder) for the complete integration flow. The [7 October Surfpool results](../../../docs/BUILD-WITH-NEIRO.md#surfpool-verification--7-october-2026) exercise two margin operators, a paid transfer with new ATA rent, exact-message checks and fastest/cheapest selection.
+
 ## Tests and observed behavior
 
 Client tests cover free/fixed/margin calculations, fixed strictness, rounding, changed configuration, wrong identities/mints, overcharges, fee caps, stale/future/missing price slots and malformed inputs. Rust tests use the actual pinned Kora library with deterministic RPC and mock oracle fixtures; their disabled oracle-age setting exists only because that fixture oracle has no slot. The public operator template and reference client default to no oracle-age cutoff; positive limits remain available.

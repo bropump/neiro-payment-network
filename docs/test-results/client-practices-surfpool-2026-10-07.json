@@ -1,0 +1,143 @@
+{
+  "environment": "Surfpool mainnet fork; local keys and synthetic funds; unchanged stock Kora; deterministic Mock oracle 0.001 SOL/NEIRO. Local endpoint mapping and injected delays only in selection tests.",
+  "tests": [
+    "two real v5 records discovered/authenticated; balances batch-read",
+    "independent rent + network + priority calculation matches both live margin quotes",
+    "one-base-unit overcharge rejected",
+    "changed live pricing rejected",
+    "wrong reimbursement destination rejected",
+    "client fee cap rejected",
+    "stale fixture price rejected with explicit client policy",
+    "tampered onchain bytes rejected",
+    "48-hour exact expiry rejected",
+    "100001-lamport priority fee rejected by live signing path",
+    "live Kora signing rejects transaction touching its listing",
+    "dead endpoint and first-arriving overcharge do not win verified race",
+    "first verified response returns before slower cheaper quote (controlled +250ms delay)",
+    "changed returned message rejected",
+    "paid transfer and missing ATA succeeded with zero user SOL; identical signature rebroadcast did not duplicate",
+    "recipient token restored; new ATA rent returned to sponsor; both listings closed"
+  ],
+  "timings": {
+    "publish_a": 13134.579958,
+    "publish_b": 13209.459082999998,
+    "scan": 106.00770900000134,
+    "authenticate": 3.605290999999852,
+    "batch_balances": 0.4334999999991851,
+    "submit_to_confirmed": 25.71729100000084
+  },
+  "quote_a": {
+    "response": {
+      "fee_in_lamports": 2151954,
+      "fee_in_token": 2151954,
+      "signer_pubkey": "DT9j8fnWVnqaY6x1ptFhVm9HU3eBetHFpBGCgQRguUVM",
+      "payment_address": "DT9j8fnWVnqaY6x1ptFhVm9HU3eBetHFpBGCgQRguUVM"
+    },
+    "network": 10200,
+    "rent": 2039280,
+    "cost": 2049480
+  },
+  "quote_b": {
+    "response": {
+      "fee_in_lamports": 2254428,
+      "fee_in_token": 2254428,
+      "signer_pubkey": "DP3DAsQmNakUmbYb6kuHrV3gUTNzGRkRn5SxJxAkkjLq",
+      "payment_address": "DP3DAsQmNakUmbYb6kuHrV3gUTNzGRkRn5SxJxAkkjLq"
+    },
+    "network": 10200,
+    "rent": 2039280,
+    "cost": 2049480
+  },
+  "selection": [
+    {
+      "fastest": {
+        "name": "b",
+        "fee": 2254428,
+        "ms": 10.084500000000844
+      },
+      "returnMs": 10.090041999999812,
+      "cheapest": {
+        "name": "a",
+        "fee": 2151954,
+        "ms": 257.92883300000176
+      },
+      "allCompletedMs": 257.9964170000021
+    },
+    {
+      "fastest": {
+        "name": "b",
+        "fee": 2254428,
+        "ms": 4.725540999999794
+      },
+      "returnMs": 4.727665999998862,
+      "cheapest": {
+        "name": "a",
+        "fee": 2151954,
+        "ms": 256.1280000000006
+      },
+      "allCompletedMs": 256.1409999999996
+    },
+    {
+      "fastest": {
+        "name": "b",
+        "fee": 2254428,
+        "ms": 4.8521249999976135
+      },
+      "returnMs": 4.854707999998936,
+      "cheapest": {
+        "name": "a",
+        "fee": 2151954,
+        "ms": 255.80970799999704
+      },
+      "allCompletedMs": 255.82320799999798
+    },
+    {
+      "fastest": {
+        "name": "b",
+        "fee": 2254428,
+        "ms": 5.551749999998719
+      },
+      "returnMs": 5.555082999999286,
+      "cheapest": {
+        "name": "a",
+        "fee": 2151954,
+        "ms": 255.84179199999926
+      },
+      "allCompletedMs": 255.85458300000028
+    },
+    {
+      "fastest": {
+        "name": "b",
+        "fee": 2254428,
+        "ms": 4.731332999999722
+      },
+      "returnMs": 4.734291000000667,
+      "cheapest": {
+        "name": "a",
+        "fee": 2151954,
+        "ms": 258.01350000000093
+      },
+      "allCompletedMs": 258.0318330000009
+    }
+  ],
+  "payment": {
+    "signature": "5NTY1NMv1nLyXpNwKJ2RhgaxmDj4ru7FQnYnNJt1DeL7rKnmsGbZy473peD2venwGDxaasjq7nyF8HQXa5pFuDGG",
+    "fee": 10200,
+    "slot": 454287782
+  },
+  "cleanup": {
+    "signature": "5sKyzjVT9mwxhZir5WWV41ywgaojPah6K6oEfJDrKsCB5iTV4RNq9SRzdwrsXYqvUSgXrW5QG4iGPHfva5euPTAC",
+    "rentReturned": 2039280,
+    "fee": 10000
+  },
+  "status": "PASS",
+  "koraImage": "ghcr.io/solana-foundation/kora@sha256:fc465ca4fc97f317f1cdb857dde382ff0ad306af81d287d7805bba67ca35c247",
+  "scopeNotes": [
+    "Five controlled selection rounds; cheap endpoint delayed 250 ms. Not a production benchmark.",
+    "Mock oracle price is a deterministic fixture, including injected price slot; no live Jupiter freshness claim.",
+    "Expiry boundary is injected trusted reader context, not elapsed 48 hours.",
+    "Publication is finalized; payment receipt checked at confirmed.",
+    "Kora signTransaction was used; user signature and full message equality checked before RPC submission.",
+    "No mainnet writes or production config changes. Test containers and Surfpool stopped after account cleanup."
+  ]
+}
