@@ -31,7 +31,7 @@ The agent also guides you through RPC access, the Jupiter pricing key required b
 
 ## 2. Ask your AI to set it up
 
-Give your coding agent this repository and the [setup prompt](README.md#ask-your-agent-to-set-it-up). The agent follows our [setup checklist](docs/AGENT-SETUP.md), handles installation and registration, verifies the result and leaves commands for running it.
+Give your coding agent this repository and the [setup prompt](README.md#let-an-agent-do-the-setup). The agent follows our [setup checklist](docs/AGENT-SETUP.md), handles installation and registration, verifies the result and leaves commands for running it.
 
 You choose the host, fee and funding. Supply credentials through private storage. [Remote signing](docs/SIGNING.md) through Kora's solana-keychain integration is an optional recommendation for stronger key isolation; a dedicated local keypair also works.
 

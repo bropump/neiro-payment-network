@@ -4,7 +4,7 @@
 
 ## Start with the user's task
 
-Operator installation has one canonical guide: [main README](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/README.md). Install the runner, run `protect` on the actual private Kora config, restart all signer-sharing Kora instances, then supervise one `renew --watch` process. The agent checklist adds verification, not another installer.
+Operator installation has one canonical guide: [main README](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/README.md). Follow its nine steps from host/software installation through signer, funding, protected config, HTTPS, publication, supervised renewal, verified discovery and a direct test payment. Run `protect` on the actual private Kora config before public startup. The agent checklist adds verification, not another installer.
 
 - [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md)
 - [Discovery format and client checks](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/SPL-RECORD-LISTINGS.md)

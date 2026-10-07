@@ -1,10 +1,15 @@
 # Join the NEIRO GAS Network
 
-Follow the [setup guide on the main page](../README.md#set-up-your-operator). It contains the installation and operating commands in order:
+Follow the [zero-to-running setup guide](../README.md#set-up-your-operator) in order:
 
-1. Install the Node listing script alongside stock Kora.
-2. Run `protect` to add your listing address to `kora.toml`.
-3. Restart every Kora instance using that key.
-4. Run `renew --watch` as one persistent service.
+1. Choose the host, HTTPS hostname and RPC.
+2. Install Kora and the listing runner.
+3. Configure the signing wallet, private files and fees.
+4. Fund SOL and prepare the NEIRO fee-receiving account.
+5. Add the listing address to Kora's deny list.
+6. Start Kora, connect HTTPS and verify protection.
+7. Publish the listing and start renewal.
+8. Install service startup, restart both services and verify discovery.
+9. Complete a direct test payment and the finish checks.
 
-There is no central registration service. Each operator publishes its own signed SPL Record listing, and clients discover it through Solana RPC.
+The main guide contains the commands and expected results. There is no central registration service: clients discover operators' signed SPL Record listings through Solana RPC.

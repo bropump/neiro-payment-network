@@ -129,7 +129,7 @@ allowed_tokens = [
 allowed_spl_paid_tokens = ["CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"]
 #allowed_spl_paid_tokens = "All"  # Allow any token to be used for payment,
 # Before publishing an SPL Record listing, add YOUR derived listing account here.
-# Derive it with: neiro-kora-publisher --operator YOUR_PUBLIC_KEY address
+# Add it with: node runner.ts protect --operator YOUR_PUBLIC_KEY --config /PRIVATE/kora.toml
 # Keep existing deny entries, then restart every Kora instance using that signer.
 # See docs/SPL-RECORD-LISTINGS.md. Do not deny the whole Record program.
 disallowed_accounts = [] # Operator-specific; an empty list does not protect a listing.

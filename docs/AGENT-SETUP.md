@@ -1,8 +1,10 @@
 # Agent checklist: complete the README setup
 
-Use the [main README](../README.md#set-up-your-operator) as the single installation guide. Carry it through on the user's chosen host; do not hand back a pile of alternative installers. Use existing permissions, fees and signer choices. Ask only for missing host access, signer, endpoint or spending limits. Keep official Kora and its SDK unchanged.
+Use the [main README](../README.md#set-up-your-operator) as the single installation guide. Carry all nine steps through from an empty host to the finish checks; do not hand back a pile of alternative installers. Use existing permissions, fees and signer choices. Ask only for missing host access, signer, endpoint or spending limits. Keep official Kora and its SDK unchanged.
 
 ## Before publication
+
+For a new host, install official Kora and Node, set up RPC/Jupiter credentials and HTTPS, create or select the dedicated signer, copy private templates, and choose the operator's fees. The main README is the ordered path; do not treat a running Kora service or funded wallet as prerequisites the user must already have.
 
 - Establish whether this is a retained operator or a temporary test. Do not advertise an existing test service as production by assumption.
 - Locate the actual private `kora.toml`, `signers.toml`, signer environment, public signer and HTTPS endpoint. For a new deployment, use the repository templates and upstream Kora installation instructions. Choose the user's fees; do not silently adopt the example 50% margin.
@@ -13,9 +15,9 @@ Use the [main README](../README.md#set-up-your-operator) as the single installat
 
 ## Publish and keep running
 
-Start the README's `renew --watch` command with the existing private signer environment and one private persistent state directory. It handles initial creation and daily renewal; do not add a separate daily signing job. Install it as one supervised service and verify its restart policy. Keep it separate from multi-region Kora replicas.
+Start the README's `renew --watch` command with the existing private signer environment and one private persistent state directory. It handles initial creation and daily renewal; do not add a separate daily signing job. Install it as one supervised service. Verify Kora and the runner restart through their service managers, preserve state, and start after reboot. Configure service-failure, low-SOL and renewal alerts. Keep it separate from multi-region Kora replicas.
 
-Confirm finalized publication (or an authenticated unchanged listing), read the record through RPC, verify its signature and chain anchor, and check direct discovery. Publication is not a payment test: only make a tiny live payment if the user authorized recipient, amount and fee limits; verify the exact transaction, finality and balance changes. Recover eligible test accounts and funds as requested; never close pre-existing ATAs. Keep the operational listing unless the user requested a temporary test or retirement.
+Confirm finalized publication (or an authenticated unchanged listing), read the record through RPC, verify its signature and chain anchor, and check direct discovery. Publication is not a payment test. The finish checks require a tiny direct payment within the user-authorized recipient, amount and fee limits; if authorization or funds are missing, leave that check explicitly incomplete. Verify the exact transaction, finality and balance changes. Recover eligible test accounts and funds as requested; never close pre-existing ATAs. Keep the operational listing unless the user requested a temporary test or retirement.
 
 Before replacing an older Rust worker, stop it everywhere and verify zero old processes before Node uses the same persistent state. Do not delete `pending.json` or `finalized.json`. The implementations have different locks. See [recovery](RENEWAL.md#when-a-check-fails).
 
