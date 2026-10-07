@@ -12,12 +12,12 @@ Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora
 | --- | --- |
 | Wallet can sign without sending | `signTransaction`, Wallet Standard `solana:signTransaction`, or an equivalent provider API that returns a signature/signed transaction. It must support the transaction version and preserve the message, third-party fee payer and existing signatures. `signMessage` alone is insufficient. |
 | App exposes a build step | Instructions or an unsigned transaction that can be assembled with the operator payer and NEIRO reimbursement **before any required signatures**. Look for build/instructions APIs rather than a send-only convenience method. |
-| User needs no SOL | Every rent/account-funding instruction supports the operator as funder. Any SOL used as the asset being traded is separate from gas sponsorship. |
+| User needs no SOL for transaction costs | Inspect the actual instructions for SOL debits from the user. For a new standard ATA, set the operator as its creation payer (tested below); existing accounts need no creation instruction. Check other programs’ funding rules only when this operation uses them. SOL being traded is separate from gas. |
 | Operator accepts this operation | Its live methods, program/token permissions, limits and balance support the completed transaction. A successful quote alone does not establish signing admission. |
 
 If the wallet only signs-and-sends, or a hosted app hides transaction construction, this guide's user-sign-then-Kora flow is not directly available. Check for a documented co-signing/build API; do not assume incompatibility from the brand or claim support without that path. Never modify an already signed message.
 
-For a new combination, build the actual intended operation, verify its quote and simulate it with a zero-user-SOL fixture on Surfpool. Then test the real wallet's sign-only path within authorization: verify its signature and compare message bytes before/after signing. Simulation with signature checks disabled cannot prove wallet compatibility. Finish with a small authorized end-to-end payment before calling that combination tested.
+For an untested integration, validate the actual built transaction and wallet signing result: verify the signature and unchanged message bytes. Surfpool is an optional development test environment, not a requirement for using NPN. Simulation does not establish wallet compatibility or successful settlement; only a confirmed payment establishes that the tested operation executed.
 
 Report the exact wallet API, builder API and operator used, followed by **tested**, **not yet tested**, or the specific blocker. Keep this evidence tied to the operation and software versions; a local-keypair transfer does not establish browser-wallet or swap compatibility.
 
@@ -71,7 +71,11 @@ Persist the expected signature when available and blockhash lifetime before send
 | NEIRO reimbursement recipient | Signed listing’s `payment` address |
 | Additional account signers | Those required by the original program |
 
-For a missing recipient ATA, set the operator as creation payer and the recipient as owner. Preserve swap slippage, minimum output, lookup tables and setup/cleanup instructions. Never replace every user address with the operator. If a program requires the user to fund an account, report that limitation instead of claiming zero-SOL support.
+**Standard ATA creation is supported in our tested flow.** The [Solana ATA instruction](https://github.com/solana-program/associated-token-account/blob/main/interface/src/instruction.rs) takes separate funding and wallet-owner accounts. Our [Surfpool test](test-results/client-practices-surfpool-2026-10-07.json) used the operator as funder and recipient as owner: the operator paid 2,039,280 lamports of account rent plus 10,200 network fees, received NEIRO reimbursement, and the user remained at zero SOL. These are measured test amounts, not constants to hardcode.
+
+Funding an ATA does not give the operator control of it. Test cleanup used the recipient’s signature to close the emptied ATA and return rent to the operator, consistent with [Solana’s close-authority rules](https://solana.com/docs/tokens/basics/close-account).
+
+For another program, inspect its actual instructions and documented account roles. Preserve swap slippage, minimum output, lookup tables and setup/cleanup instructions. Do not infer a funding restriction merely because the app is untested, or replace every user address with the operator.
 
 For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessage` for the completed message plus `getMinimumBalanceForRentExemption(165)`. Priority fees are already included in the network fee. Existing ATAs add no rent. Other account types and program outflows need their own calculation.
 
