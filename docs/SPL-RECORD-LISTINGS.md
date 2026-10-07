@@ -1,15 +1,15 @@
 # Publish an operator listing without changing Kora
 
-The [Rust publisher](../tools/kora-publisher/) creates, renews, updates and closes one operator-owned SPL Record account. It does not replace or patch official Kora, run a public service, or require a router. A separate client can scan the SPL Record program, authenticate the listings and request quotes from operators directly.
+The [Node.js publisher](../tools/kora-publisher/script/) creates, renews, updates and closes one operator-owned SPL Record account. It does not replace or patch official Kora, run a public service, or require a router. A separate client can scan the SPL Record program, authenticate the listings and request quotes from operators directly.
 
 ## Protect the account before publishing
 
-Build the command on the machine where you run Kora, using Rust:
+Install Node.js 24 or newer, then download the locked JavaScript dependencies. No compilation is required:
 
 ```sh
-cd tools/kora-publisher
-cargo build --release --locked
-./target/release/neiro-kora-publisher --operator YOUR_PUBLIC_KEY address
+cd tools/kora-publisher/script
+npm ci --ignore-scripts --registry=https://registry.npmjs.org
+node runner.mjs address --operator YOUR_PUBLIC_KEY
 ```
 
 This reads no private key and creates no onchain account. Copy its printed address into the existing `[validation].disallowed_accounts` array in your private `kora.toml`, preserving other entries. Restart every public Kora instance using this signer **before publication**, and check that the running `getConfig` exposes the address and actual signing requests touching it are rejected.
@@ -37,12 +37,12 @@ Deny the **listing account**, not the entire SPL Record program. Unrelated recor
 Use the same configured signer credentials/environment as your operator deployment; do not put secrets in command arguments. The command reads `kora.toml` and `signers.toml` by default; pass their paths when running elsewhere. `--signer-name` selects a named signer if the file contains more than one.
 
 ```sh
-neiro-kora-publisher --operator YOUR_PUBLIC_KEY publish --url https://your-operator.example/ --journal create.json
-neiro-kora-publisher --operator YOUR_PUBLIC_KEY publish --url https://your-operator.example/ --journal update.json
-neiro-kora-publisher --operator YOUR_PUBLIC_KEY close --journal close.json
+node runner.mjs publish --operator YOUR_PUBLIC_KEY --url https://your-operator.example/ --state-dir /PRIVATE/renewal
+node runner.mjs renew --watch --operator YOUR_PUBLIC_KEY --url https://your-operator.example/ --state-dir /PRIVATE/renewal
+node runner.mjs close --operator YOUR_PUBLIC_KEY --state-dir /PRIVATE/renewal
 ```
 
-`publish` creates, migrates or updates; unchanged v5 terms younger than 24 chain hours send nothing. Changed terms update immediately. Every operator must also run the [renewal worker](RENEWAL.md) with an hourly native timer and persistent private state; it locks the state directory and reconciles pending submissions before a renewal. Restart Kora after changing its pricing, then republish. The command checks the responding endpoint's operator, payment address, NEIRO acceptance, pricing and deny entry before loading the signer. A unique signature journal is flushed before each send. On timeout, reconcile that signature before retrying. Stop the renewal worker before closing. Close returns the record rent to the operator; network fees are not refundable. No ATAs are created or closed by this tool.
+`publish` creates, migrates or updates; unchanged v5 terms younger than 24 chain hours send nothing. Changed terms update immediately. Every operator must also run the [renewal worker](RENEWAL.md) with `renew --watch` or one hourly native timer and persistent private state; it locks the state directory and reconciles pending submissions before a renewal. Restart Kora after changing its pricing, then republish. The command checks the responding endpoint's operator, payment address, NEIRO acceptance, pricing and deny entry before loading the signer. A unique signature journal is flushed before each send. On timeout, reconcile that signature before retrying. Stop the renewal worker before closing. Close returns the record rent to the operator; network fees are not refundable. No ATAs are created or closed by this tool.
 
 ## Discovery and client checks
 
@@ -94,11 +94,9 @@ RPC scan support and completeness vary. Handle RPC errors explicitly; an incompl
 
 ## Platforms and security scope
 
-This is a normal Rust executable: build it on the same platform and with the same native build prerequisites as Kora. Cargo builds for the current machine by default; no project-specific installer, platform matrix or cross-compilation script is required. The locked dependencies and pinned toolchain keep the source build reproducible in version selection. Compatibility still follows the upstream libraries and chosen signing backend.
+The recommended publisher is a portable Node.js 24 script. The same source runs with a suitable Node runtime on macOS, Linux, Windows and supported Raspberry Pi systems; it requires no Rust compiler or native addon build. Dependencies are pinned in package-lock.json and installed with scripts disabled. A container is optional hosting packaging, not required for local operation. Tests and hardware coverage are reported separately; portability is not a claim of tests on every device.
 
-If you specifically need to build for a different machine, Cargo supports `--target TARGET`, with the matching target toolchain, linker and native libraries installed. Cross-compilation is optional; `--target` alone does not supply those prerequisites. The existing mainnet test exercised a macOS-built publisher against Mac and Bunny operators; it did not establish a native build on every operating system.
-
-`address`, `publish`, `renew` and `close` need no Node.js or Python runtime. Discovery and quote verification remain client-side work; this executable has no discovery command. Listings advertise terms but do not enforce fee honesty. Clients must verify record authority/derived address, pricing inputs, quote and exact transaction before signing. Same-key protection depends on every public signer instance keeping the deny entry active. A single `getConfig` cannot prove every replica is safe. Only compatible raw-message Keychain signer backends have been established; other signer types fail closed rather than bypass signature checks.
+`address`, `publish`, `renew`, `check`, `discover` and `close` are provided. `discover` verifies signatures and chain expiry; it does not select the cheapest/fastest quote. Listings advertise terms but do not enforce fee honesty. Clients must verify record authority/derived address, pricing inputs, quote and exact transaction before signing. Same-key protection depends on every public signer instance keeping the deny entry active. A single `getConfig` cannot prove every replica is safe. Only compatible raw-message Keychain signer backends have been established; other signer types fail closed rather than bypass signature checks.
 
 See the [security review](../tools/kora-publisher/SECURITY-REVIEW.md). In the 6 October 2026 Mac/Bunny mainnet test, 10 transactions finalized, all record rent and NEIRO returned, and network fees totaled 60,000 lamports. Both listings from that test were closed afterward. A later bounded test may recreate and retain a listing at the same address when explicitly requested; always read current chain state. Those historical receipts do not certify a newly installed operator or every supported platform.
 

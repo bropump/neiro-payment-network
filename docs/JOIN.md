@@ -1,11 +1,11 @@
 # Run Kora and publish your operator
 
-Give your agent the [setup prompt](../README.md#ask-your-agent-to-set-it-up), or follow the [complete setup workflow](AGENT-SETUP.md). The operator uses official Kora and a separate Rust executable for listing administration.
+Give your agent the [setup prompt](../README.md#ask-your-agent-to-set-it-up), or follow the [complete setup workflow](AGENT-SETUP.md). The operator uses official Kora and a separate Node.js script for listing administration.
 
-1. Build or install [official Kora](https://solana.com/docs/tools/kora/operators) on your chosen host. Pin the running revision. Build the publisher with `cargo build --release --locked` from `tools/kora-publisher`.
+1. Build or install [official Kora](https://solana.com/docs/tools/kora/operators) on your chosen host. Pin the running revision. Install Node.js 24+, then run `npm ci --ignore-scripts --registry=https://registry.npmjs.org` in `tools/kora-publisher/script`; no publisher compilation is needed.
 2. Keep private copies of [kora.toml](../examples/operator/kora.toml) and [signers.toml](../examples/operator/signers.toml). Choose the operator's fees, spending policies and local or [remote signer](SIGNING.md). Supply Solana mainnet `RPC_URL` and Jupiter credentials privately.
 3. Fund the operator's SOL sponsorship balance and listing rent; prepare its NEIRO fee-receipt account. There is no fixed token deposit imposed by the listing. NEIRO revenue does not automatically refill SOL.
-4. Derive the listing with `neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY address`. Add that address to the existing `[validation].disallowed_accounts` in every public instance sharing the key, preserving other entries.
+4. Derive the listing with `node runner.mjs address --operator OPERATOR_PUBLIC_KEY`. Add that address to the existing `[validation].disallowed_accounts` in every public instance sharing the key, preserving other entries.
 5. Validate and start Kora with your private files:
 
    ```sh

@@ -12,7 +12,7 @@ Integrated clients and apps can let users pay transaction fees in NEIRO without 
 
 Our testing has included x402, MPP, Jupiter swaps, transfers and trades.
 
-Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for direct discovery. This repository provides configuration, setup guidance and the small listing publisher. Kora itself remains the official upstream software.
+Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for direct discovery. This repository provides configuration, setup guidance and the portable Node.js listing runner. Kora itself remains the official upstream software.
 
 **Start with the [official Kora deployment guide](https://solana.com/docs/tools/kora/operators#deployment).** Follow it to install and run Kora on your chosen host, use our [NEIRO configuration](examples/operator/kora.toml) and [signer template](examples/operator/signers.toml), then follow the [agent setup](docs/AGENT-SETUP.md) to publish and verify your operator.
 
@@ -20,7 +20,7 @@ Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for 
 
 Each operator publishes its own account under the existing SPL Record program using our shared listing format. Clients scan those accounts, verify identity and fee terms, check live SOL balances, and call operators directly. There is no master directory account to create and no required router or central registration API.
 
-The [standalone Rust publisher](docs/SPL-RECORD-LISTINGS.md) creates, updates and closes listings while keeping official Kora unchanged. Protect each operator's listing account in Kora before publishing. Every operator uses anchored v5 listings, renewed after 24 hours and rejected by clients 48 hours after the finalized anchor block time. The account remains onchain until closed; clients still measure availability and verify live quotes.
+The [Node.js 24+ listing runner](docs/RENEWAL.md) creates, renews, updates and closes listings while keeping official Kora unchanged. It uses official JavaScript Solana Keychain packages and requires no native compilation; the Rust implementation remains an optional reference. Protect each operator's listing account in Kora before publishing. Every operator uses anchored v5 listings, renewed by the runner after 24 chain hours and rejected by clients 48 hours after the finalized anchor block time. The account remains onchain until closed; clients still measure availability and verify live quotes.
 
 ## Ask your agent to set it up
 
@@ -29,11 +29,12 @@ Give your coding agent this repository and paste:
 ```text
 Set up a NEIRO Kora operator on my chosen host using this repository.
 Follow AGENTS.md and docs/AGENT-SETUP.md through to verified operation.
-Build unchanged Kora and the Rust listing publisher, configure my signer,
+Install unchanged Kora and the Node.js 24+ listing runner with npm ci,
+without compiling a publisher. Configure my signer,
 check SOL and NEIRO accounts, derive and deny my listing address in
 kora.toml before starting Kora, then sign and publish my SPL Record terms.
-Install the required daily renewal using my host's hourly service timer,
-with private persistent state; verify the fixed 48-hour client expiry.
+Install the required daily renewal using renew --watch or my host's
+hourly service timer, with private persistent state; verify the fixed 48-hour client expiry.
 Verify direct discovery, the loaded deny rule and independent quote checks.
 Use my existing permissions and payment limits for any live test, recover
 test funds as requested, and report receipts and costs. Keep an operational
@@ -48,10 +49,20 @@ You can name a host or let your agent help choose one. The agent handles configu
 
 ## Publish your operator
 
-1. Build Kora and the publisher, configure signing and funding, and expose HTTPS.
+1. Install stock Kora and Node.js 24+, install the runner dependencies below, configure signing and funding, and expose HTTPS.
 2. Derive the listing address, deny it in every public Kora instance sharing the signer, restart and verify protection.
 3. Sign and publish the operator's terms, then verify chain discovery and direct quotes.
-4. Install the [hourly renewal check](docs/RENEWAL.md) with private persistent state; unchanged terms renew only when 24 chain hours have elapsed.
+4. Install the [hourly renewal check](docs/RENEWAL.md) using `renew --watch` or a native timer with private persistent state; unchanged terms renew only when 24 chain hours have elapsed.
+
+From this repository:
+
+```sh
+cd tools/kora-publisher/script
+npm ci --ignore-scripts --registry=https://registry.npmjs.org
+node runner.mjs --help
+```
+
+Use `SOLANA_RPC_URL` for chain RPC and the existing private `kora.toml`, `signers.toml` and signer environment. The runner supports official Keychain memory, Turnkey, Privy, Vault and Openfort adapters. Mapping tests cover all five; live signer evidence is limited to memory. This is not a claim that every remote provider has been integrated or that a new Node deployment is already running.
 
 [Publication commands](docs/REGISTRATION.md) · [Complete agent workflow](docs/AGENT-SETUP.md)
 

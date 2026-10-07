@@ -1,4 +1,10 @@
-# NEIRO Kora listing publisher
+# NEIRO operator listing tools
+
+**Recommended: [portable Node.js runner](script/README.md).** No Rust build is required. It creates, updates, renews, discovers and closes listings using the same v5 format and official JavaScript Solana Keychain. Install its locked dependencies with install scripts disabled, then run `node runner.mjs`.
+
+The Rust implementation below is retained as a tested reference and optional alternative. Never run both workers concurrently for one operator. See [migration](../../docs/RENEWAL.md).
+
+## Optional Rust reference
 
 A standalone operator-only executable. The running official Kora server and its CLI are unchanged. This package reuses the pinned upstream `kora-lib` configuration/signer builders, Solana Keychain and official SPL Record instruction builders; it exposes no HTTP endpoint and uses no Kora global state. The dependency is substantial even though the custom code is small.
 

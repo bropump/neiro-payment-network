@@ -10,19 +10,19 @@ The current publisher derives each listing from the operator public key and the 
 
 ## Publish
 
-Follow the [agent setup](AGENT-SETUP.md) or [manual setup](JOIN.md) to build stock Kora and the standalone Rust publisher, configure signing and funding, and expose a stable HTTPS endpoint.
+Follow the [agent setup](AGENT-SETUP.md) or [manual setup](JOIN.md) to install stock Kora and the portable Node.js publisher, configure signing and funding, and expose a stable HTTPS endpoint.
 
 1. Derive your listing address without loading a signer:
 
    ```sh
-   neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY address
+   node runner.mjs address --operator OPERATOR_PUBLIC_KEY
    ```
 
 2. Append the printed **listing address (not your wallet address)** to `[validation].disallowed_accounts` in your private `kora.toml`, preserving other entries. Restart **every public Kora instance sharing the signer**. Verify the loaded settings and that signing requests touching this account are rejected. Block your listing account, not the entire SPL Record program.
 3. From the private deployment directory, using the operator's configured signer environment, publish:
 
    ```sh
-   neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY publish --url https://OPERATOR_HOST/ --journal listing-create.json
+   node runner.mjs publish --operator OPERATOR_PUBLIC_KEY --url https://OPERATOR_HOST/ --state-dir /PRIVATE/renewal
    ```
 
 The command also migrates older listings in the same derived account to mandatory v5. It obtains a finalized block anchor; operators do not choose expiry timestamps. The command checks the live operator identity, payment address, NEIRO acceptance, pricing and deny entry before signing. It then creates the account and writes the advertised terms in an onchain transaction. Publication costs a transaction fee and a refundable rent deposit. Keep signing credentials private. If submission times out, reconcile the signature in the journal before retrying.
@@ -37,14 +37,14 @@ Test publication is distinct from operating a production provider. Close disposa
 
 ## Change terms or leave
 
-After changing fees or the endpoint, restart Kora as needed, verify the running configuration, and run `publish` again with a fresh journal path. The same listing address is updated. Clients must reject mismatches during the changeover. Unchanged v5 terms younger than 24 chain hours send no transaction; changed terms update immediately.
+After changing fees or the endpoint, restart Kora as needed, verify the running configuration, and run `publish` again using the same private state directory. The same listing address is updated. Clients must reject mismatches during the changeover. Unchanged v5 terms younger than 24 chain hours send no transaction; changed terms update immediately.
 
-Every operator must enable [automatic renewal](RENEWAL.md). An hourly native timer invokes `renew --url https://OPERATOR_HOST/ --state-dir /PRIVATE/PERSISTENT/PATH`; the worker locks its state and reconciles pending sends before proceeding. It renews after 24 chain hours, while clients reject a listing at 48 hours from the finalized anchor block time. The signed fields are `anchor_slot` and `anchor_blockhash`, not an operator-selected expiry. Expired accounts remain onchain until closed. Clients also skip unreachable operators and reject invalid quotes. Timers cannot guarantee uninterrupted eligibility during outages.
+Every operator must enable [automatic renewal](RENEWAL.md). `renew --watch` checks hourly, or an hourly native timer invokes `renew --url https://OPERATOR_HOST/ --state-dir /PRIVATE/PERSISTENT/PATH`; the worker locks its state and reconciles pending sends before proceeding. It renews after 24 chain hours, while clients reject a listing at 48 hours from the finalized anchor block time. The signed fields are `anchor_slot` and `anchor_blockhash`, not an operator-selected expiry. Expired accounts remain onchain until closed. Clients also skip unreachable operators and reject invalid quotes. Timers cannot guarantee uninterrupted eligibility during outages.
 
 To retire the listing and recover its rent, disable the sole renewal worker first, wait for it to stop and reconcile any pending submission. Otherwise it can recreate a closed listing. Then run:
 
 ```sh
-neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY close --journal listing-close.json
+node runner.mjs close --operator OPERATOR_PUBLIC_KEY --state-dir /PRIVATE/renewal
 ```
 
 Confirm finalized closure. Network fees are not refundable. No token accounts are created or closed by the publisher. Leave a production listing open while the operator is available.
