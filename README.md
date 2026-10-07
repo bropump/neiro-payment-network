@@ -2,9 +2,13 @@
   <a href="https://bropump.com"><img src="https://images.bropump.com/neiro_logo_small.png" alt="NEIRO" width="120"></a>
 </p>
 
-# NEIRO GAS Network
+# NEIRO Payment Network
 
-Run a Kora operator that pays Solana transaction fees in SOL and receives NEIRO. Clients find your signed URL and fee terms onchain and request quotes directly. No router registration is required.
+NEIRO Payment Network lets people, apps and agents pay Solana transaction costs in NEIRO. Independent operators supply the SOL needed for gas and receive NEIRO reimbursement plus their chosen markup. Users keep their existing Solana wallets and can make payments, swap tokens and interact with Solana programs through a sponsored transaction. Transactions settle directly on Solana.
+
+Operators publish their signed URLs and fee terms in onchain SPL Records. Clients discover operators through Solana RPC, read their current SOL balances and request quotes directly. They can compare price and response time, verify charges against the signed terms and approve the exact transaction before signing. Routers can help with discovery and selection, but the network does not require a central router or router registration.
+
+Run an operator using official Kora and the NEIRO listing runner on a compatible host of your choice. You choose your signer, funding, markup or other supported fee model. This repository provides the configuration, installation guide, listing tools and client verification guidance to get connected and keep your operator running.
 
 ## Set up your operator
 
