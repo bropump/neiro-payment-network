@@ -2,7 +2,7 @@
   <a href="https://bropump.com"><img src="https://images.bropump.com/neiro_logo_small.png" alt="NEIRO" width="120"></a>
 </p>
 
-# NEIRO Payment Network
+# NEIRO Payment Network (NPN)
 
 NEIRO Payment Network lets people, apps and agents pay Solana transaction costs in NEIRO. Independent operators supply the SOL needed for gas and receive NEIRO reimbursement plus their chosen markup. Users keep their existing Solana wallets and can make payments, swap tokens and interact with Solana programs through a sponsored transaction. Transactions settle directly on Solana.
 
