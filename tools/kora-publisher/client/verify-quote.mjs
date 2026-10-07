@@ -26,7 +26,7 @@ export function validatePrice(price) {
   if (price.type === 'margin') decimal(price.margin);
   return price;
 }
-export function verifyQuote({listing,config,quote,costLamports,oracle,currentSlot,maxAgeSlots=150,maxFeeRaw=5_000_000}) {
+export function verifyQuote({listing,config,quote,costLamports,oracle,currentSlot,maxAgeSlots=0,maxFeeRaw=5_000_000}) {
   const price=validatePrice(listing.price);
   assert.equal(listing.mint,NEIRO,'listing mint');
   assert.equal(quote.signer_pubkey,listing.operator,'quote signer');
@@ -46,8 +46,11 @@ export function verifyQuote({listing,config,quote,costLamports,oracle,currentSlo
     config.validation_config.allowed_spl_paid_tokens?.includes(NEIRO),'NEIRO not accepted');
   assert.equal(oracle?.source,listing.oracle,'independent oracle source');
   const slot=uint(currentSlot,'current slot'), priceSlot=uint(oracle.blockId,'price slot');
-  const maxAge=uint(maxAgeSlots,'max age'); assert.ok(maxAge>0n,'finite freshness limit required');
-  assert.ok(priceSlot<=slot && slot-priceSlot<=maxAge,'stale or future price');
+  // Client policy: 0 accepts oracle age, matching the operator template.
+  // Never inherit this decision from an untrusted operator response.
+  const maxAge=uint(maxAgeSlots,'max age');
+  assert.ok(priceSlot<=slot,'future price');
+  assert.ok(maxAge===0n || slot-priceSlot<=maxAge,'stale price');
   // NEIRO has six decimals: lamports per raw unit = SOL/token * 10^9 / 10^6.
   const [p,d]=decimal(oracle.tokenPriceSol); assert.ok(p>0n,'positive token price required');
   const n=p*1000n;

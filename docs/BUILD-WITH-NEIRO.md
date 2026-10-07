@@ -14,6 +14,8 @@ Keep your Solana app. Let an independent Kora operator supply SOL for the transa
 
 For an authenticated **free** listing, omit `fee_token` from `estimateTransactionFee`: expect zero lamports and a null/absent token fee, which means no NEIRO reimbursement instruction. Asking Kora to convert even a zero fee into NEIRO can invoke the oracle and reject a stale price unnecessarily. The transfer itself can still use NEIRO. For fixed or margin pricing, request and verify the NEIRO quote normally; never silently fall back to free pricing.
 
+The reference `client/verify-quote.mjs` uses `maxAgeSlots: 0` by default, matching the operator template's acceptance of Jupiter prices without an age cutoff. This does not prove price freshness. Set a positive client-owned limit if required; never let an operator choose or relax it for the client. Signature, fee calculation, recipient, fee cap and future-slot checks still apply.
+
 If the user asks only for a quote, stop before signing or submitting. If no usable operator is discovered, report it; do not invent a quote or silently switch to spending the user's SOL.
 
 ## Give an agent a wallet
