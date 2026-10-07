@@ -76,6 +76,7 @@ In the existing `[validation]` section:
 
 ```toml
 max_allowed_lamports = 250000000
+max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee
 ```
 
 The recommendation is **0.25 SOL per transaction**. Choose your own limit. A lower limit rejects more expensive transactions; a higher one permits larger sponsored costs. Quote the complete transaction, including sponsored rent. This allowance does not guarantee every launch will be supported or put a hard cap on every possible loss; Kora models network fees separately from fee-payer outflow. See [configuration details](CONFIGURATION.md).

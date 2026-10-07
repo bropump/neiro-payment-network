@@ -103,6 +103,7 @@ get_version = true # Return the Kora version string; not proof of the exact main
 # from what you charge. The SOL allowance is per transaction, not per day,
 # and is not a guarantee that every possible loss is capped at that amount.
 max_allowed_lamports = 250000000 # 0.25 SOL per transaction; operator may choose another allowance
+max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee per transaction
 max_signatures = 10 # Maximum transaction signatures, including the sponsor.
 price_source = "Jupiter" # Converts sponsored costs to token prices; needs your Jupiter key.
 max_price_staleness_slots = 0 # Use Jupiter pricing without an oracle-age cutoff.

@@ -46,7 +46,7 @@ For a new operator, copy these files into your private deployment directory:
 
 The supplied signer template uses `KORA_PRIVATE_KEY`: put the dedicated wallet's key material in that private environment variable through your secret manager. It expects the key value, **not a file path**. For a remote signer, replace that entry with the provider configuration and credential references. Give Kora and the runner access to the same selected signer. Never paste keys into chat or commit them to Git.
 
-In `kora.toml`, choose your fee under `[validation.price]`: **margin**, **fixed NEIRO** or **free**. The template's **50% margin is an example**. Also choose `max_allowed_lamports`, the per-transaction spending allowance; it is not a daily budget. Keep the NEIRO mint and required API methods enabled. See [fee examples](TUTORIAL.md#3-set-your-fees) and [spending permissions](CONFIGURATION.md).
+In `kora.toml`, choose your fee under `[validation.price]`: **margin**, **fixed NEIRO** or **free**. The template's **50% margin is an example**. Also choose `max_allowed_lamports`, the per-transaction spending allowance; it is not a daily budget. The template also caps priority fees at `100000` lamports (0.0001 SOL) per transaction using `max_priority_fee_lamports`; callers may request less, but higher amounts are rejected before signing. Keep the NEIRO mint and required API methods enabled. See [fee examples](TUTORIAL.md#3-set-your-fees) and [spending permissions](CONFIGURATION.md).
 
 Set these in the services' private environment:
 

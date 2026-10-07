@@ -10,6 +10,7 @@ For broad program compatibility, the [stock Kora template](examples/operator/kor
 [validation]
 allowed_programs = "All"
 max_allowed_lamports = 250000000 # 0.25 SOL
+max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee
 ```
 
 These are configuration fragments, not complete startup files. Retain the required methods, NEIRO reimbursement mint, chosen pricing, signer configuration and fee-payer policies. The template uses a 50% margin example; each operator chooses its fee. This recommendation does not change an existing operator’s markup. Validate the complete file with `kora --config kora.toml config validate` before restarting.
@@ -17,6 +18,8 @@ These are configuration fragments, not complete startup files. Retain the requir
 `All` removes the program-ID allowlist, including for unknown programs and routed venues. It does not make arbitrary programs safe for the sponsor. Stock Kora still applies its other validation and payment checks, but its existing fee-payer permissions do not establish a general arbitrary-program safety boundary. This gap is tracked in [upstream #683](https://github.com/solana-foundation/kora/issues/683).
 
 0.25 SOL is the selected per-transaction lamport allowance, not a daily budget, a universal cost requirement or a guarantee of total loss being capped at that amount. Kora validates estimated network fees separately from modeled fee-payer outflow. Applications must quote the complete transaction, including sponsored rent, and obtain approval for the final payment. See [upstream fee calculation](https://github.com/solana-foundation/kora/blob/v2.2.0-beta.8/crates/lib/src/transaction/versioned_transaction.rs).
+
+The priority-fee cap is separate from the overall lamport allowance and operator markup. Callers set their priority fee before requesting a quote. `max_priority_fee_lamports = 0` forbids priority fees; leaving the setting unset removes this specific cap. After changing it, restart every Kora instance and verify `getConfig.result.validation_config.max_priority_fee_lamports` and rejection of an above-cap request. The estimate endpoint can still return a quote above this cap; enforcement happens before signing. This is a per-transaction limit, not a daily spending budget.
 
 This recommendation does not claim measured 90% signing success, compatibility with every transaction, or protection against users signing wallet-draining transactions. Application preparation, payer funding, parsers, token policies, signatures and other Kora limits still affect acceptance.
 
@@ -28,6 +31,7 @@ This recommendation does not claim measured 90% signing success, compatibility w
 | Operator fee | Operator chooses margin, fixed or free; template example is cost plus 50% |
 | Signing methods | `sign_transaction = true` and `sign_and_send_transaction = true` by default |
 | Sponsor allowance | Recommended 0.25 SOL per transaction; operator may choose another allowance |
+| Priority-fee cap | 100,000 lamports (0.0001 SOL) per transaction; higher requested priority fees are rejected before signing |
 | Current program policy | `allowed_programs = "All"` |
 | Sponsor permissions | Account creation and reimbursed launch-funding SOL transfers enabled; sponsor token spending disabled |
 
@@ -58,6 +62,7 @@ allowed_programs = [
 ]
 sponsor_only_programs = "All"
 max_allowed_lamports = 250000000 # 0.25 SOL
+max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee
 ```
 
 Under the proposal, arbitrary outer and inner program IDs can run, but an unapproved program's top-level instruction cannot include Kora's fee-payer account. Jupiter stays in the trusted list because an observed sponsored Jupiter build includes the sponsor in the Jupiter instruction. The trusted list is therefore a list of programs allowed to receive the sponsor account, rather than an inventory of every routed venue. Keep the existing role-specific fee-payer policies as well.
