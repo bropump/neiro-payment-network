@@ -10,6 +10,8 @@ Operators publish their signed URLs and fee terms in onchain SPL Records. Client
 
 Run an operator using official Kora and the NEIRO listing runner on a compatible host of your choice. You choose your signer, funding, markup or other supported fee model. This repository provides the configuration, installation guide, listing tools and client verification guidance to get connected and keep your operator running.
 
+**Making a payment or integrating an app?** Start with [wallet/app compatibility and the payment flow](docs/BUILD-WITH-NEIRO.md#check-your-wallet-and-app-first). You use an existing operator; you do not need to install one.
+
 ## Set up your operator
 
 **Start here with an empty host. Finish with a funded, reachable operator, a verified onchain listing and automatic renewal.** You will run two services: Kora handles payments; the listing runner publishes and renews your terms.

@@ -4,6 +4,23 @@ NEIRO Payment Network (NPN) lets a user pay transaction costs in NEIRO while an 
 
 Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora endpoint** for quotes and sponsorship. They are different endpoints.
 
+## Check your wallet and app first
+
+**NPN sponsors ordinary Solana transactions. A wallet does not need a NEIRO-specific integration, but the app must let you assemble the sponsored transaction before signing.** Check the installed wallet/provider and builder APIs, not the brand name. Reuse the existing wallet; do not create another wallet or run an operator just to make a payment.
+
+| Check | Evidence to look for |
+| --- | --- |
+| Wallet can sign without sending | `signTransaction`, Wallet Standard `solana:signTransaction`, or an equivalent provider API that returns a signature/signed transaction. It must support the transaction version and preserve the message, third-party fee payer and existing signatures. `signMessage` alone is insufficient. |
+| App exposes a build step | Instructions or an unsigned transaction that can be assembled with the operator payer and NEIRO reimbursement **before any required signatures**. Look for build/instructions APIs rather than a send-only convenience method. |
+| User needs no SOL | Every rent/account-funding instruction supports the operator as funder. Any SOL used as the asset being traded is separate from gas sponsorship. |
+| Operator accepts this operation | Its live methods, program/token permissions, limits and balance support the completed transaction. A successful quote alone does not establish signing admission. |
+
+If the wallet only signs-and-sends, or a hosted app hides transaction construction, this guide's user-sign-then-Kora flow is not directly available. Check for a documented co-signing/build API; do not assume incompatibility from the brand or claim support without that path. Never modify an already signed message.
+
+For a new combination, build the actual intended operation, verify its quote and simulate it with a zero-user-SOL fixture on Surfpool. Then test the real wallet's sign-only path within authorization: verify its signature and compare message bytes before/after signing. Simulation with signature checks disabled cannot prove wallet compatibility. Finish with a small authorized end-to-end payment before calling that combination tested.
+
+Report the exact wallet API, builder API and operator used, followed by **tested**, **not yet tested**, or the specific blocker. Keep this evidence tied to the operation and software versions; a local-keypair transfer does not establish browser-wallet or swap compatibility.
+
 ## Start with a payment
 
 You need a signing wallet with NEIRO, a Solana RPC that supports listing discovery, and your existing transaction builder. NEIRO’s mint is `CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump` (6 decimals).
