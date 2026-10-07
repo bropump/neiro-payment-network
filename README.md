@@ -14,6 +14,8 @@ Follow the steps in order. If you already run Kora, reuse your signer, funding a
 
 ### 1. Choose the host and connection details
 
+You choose the host and region: a Mac, Linux server or VPS, Windows with WSL, or a compatible cloud container service. The requirement is a supported Kora installation plus Node.js 24+ for the listing runner, not a particular hosting company. Check OS and CPU support for both; ARM machines such as Raspberry Pi need a compatible Kora build or image.
+
 Choose a machine or cloud host that stays online, a public HTTPS hostname for Kora, a **Solana mainnet RPC endpoint**, and a [Jupiter API key](https://portal.jup.ag/). The RPC must support finalized block/account reads and `getProgramAccounts` for listing discovery. Provide persistent storage for the runner's state.
 
 Keep a short deployment note with the host, hostname, config paths and chosen fee. Store credentials in the host's secret manager or private service environment, outside this repository.
@@ -46,7 +48,7 @@ For a new operator, copy these files into your private deployment directory:
 
 The supplied signer template uses `KORA_PRIVATE_KEY`: put the dedicated wallet's key material in that private environment variable through your secret manager. It expects the key value, **not a file path**. For a remote signer, replace that entry with the provider configuration and credential references. Give Kora and the runner access to the same selected signer. Never paste keys into chat or commit them to Git.
 
-In `kora.toml`, choose your fee under `[validation.price]`: **margin**, **fixed NEIRO** or **free**. The template's **50% margin is an example**. Also choose `max_allowed_lamports`: Kora checks modeled sponsor SOL outflow (including account rent) and network fees separately against this limit. It is not a combined cap or daily budget. The template also caps priority fees at `100000` lamports (0.0001 SOL) per transaction using `max_priority_fee_lamports`; callers may request less, but higher amounts are rejected before signing. Keep the NEIRO mint and required API methods enabled. See [fee examples](TUTORIAL.md#3-set-your-fees) and [spending permissions](CONFIGURATION.md).
+In `kora.toml`, choose your fee under `[validation.price]`: **margin**, **fixed NEIRO** or **free**. The template's **50% margin is an example, not a network-set fee**. For margin pricing, `margin = 0.05` means 5% markup, `0.50` means 50%, and `1.0` means 100% on Kora's calculated reimbursable cost. This is the operator's charge, not a guaranteed profit. Choose it explicitly before publishing. Also choose `max_allowed_lamports`: Kora checks modeled sponsor SOL outflow (including account rent) and network fees separately against this limit. It is not a combined cap or daily budget. The template also caps priority fees at `100000` lamports (0.0001 SOL) per transaction using `max_priority_fee_lamports`; callers may request less, but higher amounts are rejected before signing. Keep the NEIRO mint and required API methods enabled. See [fee examples](TUTORIAL.md#3-set-your-fees) and [spending permissions](CONFIGURATION.md).
 
 **Failed transactions still cost the operator SOL.** If a submitted transaction executes and fails, its network fee remains charged while the NEIRO reimbursement and rent transfers roll back. Caps bound accepted costs; they do not guarantee reimbursement or profit. Size the outflow allowance for your workload, including launch rent.
 

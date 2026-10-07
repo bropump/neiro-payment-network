@@ -27,6 +27,8 @@ There is no shared master directory account. Scan the Record program with the do
 
 The runner provides protect, address, check, publish, renew, discover and close. Every operator must use v5 with signed anchor_slot and anchor_blockhash, renew after 24 chain hours, and be rejected at 48 hours from the trusted finalized anchor block time. Reject all older listing versions without fallback. `renew --watch` checks hourly with private persistent state; unchanged terms before 24 hours require no signing or transaction. Stop the sole renewal worker before closure. Do not infer production readiness from a test listing. Close test listings unless the user explicitly requests retention. Skip dead endpoints and reject mismatched terms.
 
+For fast and safe selection, follow the [client selection checklist](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md#fast-verified-operator-selection): batch balances, race a bounded shortlist, independently verify fees before ranking, return the first verified result immediately for fastest, state the comparison scope for cheapest, and reconcile uncertain sends before retrying.
+
 ## Signing and operation
 
 The template caps priority fees at 100,000 lamports and checks modeled sponsor outflow and network fees separately against `max_allowed_lamports = 250000000`. Preserve chosen operator overrides, validate the live settings and verify signing rejects above-cap requests. Quotes alone do not enforce admission. Landed failures still cost network fees while the NEIRO reimbursement rolls back; these limits do not guarantee zero losses.
