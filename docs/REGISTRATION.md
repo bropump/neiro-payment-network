@@ -25,7 +25,7 @@ Follow the [agent setup](AGENT-SETUP.md) or [manual setup](JOIN.md) to build sto
    neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY publish --url https://OPERATOR_HOST/ --journal listing-create.json
    ```
 
-The command checks the live operator identity, payment address, NEIRO acceptance, pricing and deny entry before signing. It then creates the account and writes the advertised terms in an onchain transaction. Publication costs a transaction fee and a refundable rent deposit. Keep signing credentials private. If submission times out, reconcile the signature in the journal before retrying.
+The command also migrates older listings in the same derived account to mandatory v5. It obtains a finalized block anchor; operators do not choose expiry timestamps. The command checks the live operator identity, payment address, NEIRO acceptance, pricing and deny entry before signing. It then creates the account and writes the advertised terms in an onchain transaction. Publication costs a transaction fee and a refundable rent deposit. Keep signing credentials private. If submission times out, reconcile the signature in the journal before retrying.
 
 ## Check discovery and quotes
 
@@ -37,11 +37,11 @@ Test publication is distinct from operating a production provider. Close disposa
 
 ## Change terms or leave
 
-After changing fees or the endpoint, restart Kora as needed, verify the running configuration, and run `publish` again with a fresh journal path. The same listing address is updated. Clients must reject mismatches during the changeover. Unchanged terms send no transaction.
+After changing fees or the endpoint, restart Kora as needed, verify the running configuration, and run `publish` again with a fresh journal path. The same listing address is updated. Clients must reject mismatches during the changeover. Unchanged v5 terms younger than 24 chain hours send no transaction; changed terms update immediately.
 
-Listings have no expiry or daily renewal. An offline operator's record can remain onchain; clients skip unreachable operators and reject invalid quotes. Being listed is not a guarantee of availability or safety.
+Every operator must enable [automatic renewal](RENEWAL.md). An hourly native timer invokes `renew --url https://OPERATOR_HOST/ --state-dir /PRIVATE/PERSISTENT/PATH`; the worker locks its state and reconciles pending sends before proceeding. It renews after 24 chain hours, while clients reject a listing at 48 hours from the finalized anchor block time. The signed fields are `anchor_slot` and `anchor_blockhash`, not an operator-selected expiry. Expired accounts remain onchain until closed. Clients also skip unreachable operators and reject invalid quotes. Timers cannot guarantee uninterrupted eligibility during outages.
 
-To retire the listing and recover its rent:
+To retire the listing and recover its rent, disable the sole renewal worker first, wait for it to stop and reconcile any pending submission. Otherwise it can recreate a closed listing. Then run:
 
 ```sh
 neiro-kora-publisher --operator OPERATOR_PUBLIC_KEY close --journal listing-close.json

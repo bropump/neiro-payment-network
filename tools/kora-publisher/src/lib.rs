@@ -10,6 +10,7 @@ use solana_transaction::versioned::VersionedTransaction;
 use spl_record::instruction::{close_account, initialize, write};
 use std::{io::Write, path::Path};
 pub mod guard;
+pub mod renewal;
 
 pub const PROGRAM: Pubkey = solana_sdk::pubkey!("recr1L3PCGKLbckBqMNcJhuuyU1zgo8nBhfLVsJNwr5");
 pub const SEED: &str = "neiro-kora-fees";
@@ -34,6 +35,19 @@ pub async fn publish(
     genesis: &str,
     journal: &Path,
 ) -> Result<Option<Signature>> {
+    publish_with_min_slot(rpc, config, signer, op, url, genesis, journal, 0).await
+}
+/// For unattended renewal, reject account reads older than the last durable receipt.
+pub async fn publish_with_min_slot(
+    rpc: &RpcClient,
+    config: &Config,
+    signer: &impl SolanaSigner,
+    op: Pubkey,
+    url: Option<&str>,
+    genesis: &str,
+    journal: &Path,
+    min_slot: u64,
+) -> Result<Option<Signature>> {
     ensure!(!journal.exists(), "journal exists; reconcile before retrying");
     ensure!(signer.pubkey() == op, "signer mismatch");
     ensure!(rpc.get_genesis_hash().await?.to_string() == genesis, "wrong RPC network");
@@ -41,7 +55,9 @@ pub async fn publish(
     let denied = config.validation.disallowed_accounts.contains(&record.to_string());
     ensure!(url.is_none() || denied, "deny {record} in running Kora before publishing");
     let header = [vec![1], op.to_bytes().to_vec()].concat();
-    let mut current = rpc.get_account_with_commitment(&record, rpc.commitment()).await?.value;
+    let response = rpc.get_account_with_commitment(&record, rpc.commitment()).await?;
+    ensure!(response.context.slot >= min_slot, "RPC account read predates finalized receipt");
+    let mut current = response.value;
     let mut ixs = vec![];
     let mut attestation = None;
     // Anyone can pre-fund this address; recover that SOL before atomically creating the record.
@@ -78,11 +94,29 @@ pub async fn publish(
             "NEIRO not accepted"
         );
         let mut terms = serde_json::json!({
-            "v":4, "url":parsed.as_str(), "operator":op.to_string(),
+            "v":5, "url":parsed.as_str(), "operator":op.to_string(),
             "payment":config.kora.get_payment_address(&op)?.to_string(), "mint":MINT,
             "genesis":genesis,
             "price":validation.price, "oracle":validation.price_source
         });
+        let anchor = renewal::latest_anchor(rpc).await?;
+        let now_time = renewal::chain_time(rpc, anchor.slot).await?;
+        ensure!(
+            now_time >= anchor.time && now_time - anchor.time <= 60,
+            "latest finalized anchor is stale or in the future"
+        );
+        ensure!(anchor.time <= now_time, "latest anchor ahead of finalized Clock");
+        if let Some(a) = &current {
+            if renewal::unchanged_and_fresh_at(
+                rpc, &a.data, &record, &op, genesis, &terms, &anchor, now_time,
+            )
+            .await?
+            {
+                return Ok(None);
+            }
+        }
+        terms["anchor_slot"] = serde_json::json!(anchor.slot);
+        terms["anchor_blockhash"] = serde_json::json!(anchor.hash);
         terms.sort_all_objects();
         let data = serde_json::to_vec(&terms)?;
         ensure!(data.len() + 8 + 2 + 64 <= SPACE - 33, "listing too large");
@@ -90,16 +124,6 @@ pub async fn publish(
         let mut payload = [MAGIC.as_slice(), &(data.len() as u16).to_le_bytes(), &data].concat();
         let signature_offset = payload.len();
         payload.resize(SPACE - 33, 0);
-        if let Some(a) = &current {
-            let existing = &a.data[33..];
-            let sig = Signature::try_from(&existing[signature_offset..signature_offset + 64])?;
-            if existing[..signature_offset] == payload[..signature_offset]
-                && existing[signature_offset + 64..].iter().all(|b| *b == 0)
-                && sig.verify(op.as_ref(), &message)
-            {
-                return Ok(None);
-            }
-        }
         attestation = Some((message, signature_offset));
         if current.is_none() {
             let rent = rpc.get_minimum_balance_for_rent_exemption(SPACE).await?;
@@ -144,7 +168,7 @@ pub async fn publish(
     )?;
     log.sync_all()?;
     let parent = journal.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(Path::new("."));
-    std::fs::File::open(parent)?.sync_all()?;
+    renewal::sync_directory(parent)?;
     println!("Record {record}; transaction {signature}. Reconcile this signature before retrying.");
     let sent = rpc
         .send_and_confirm_transaction(&tx)

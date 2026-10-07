@@ -4,7 +4,7 @@ use kora_lib::{
     signer::{SignerConfig, SignerPoolConfig},
     Config,
 };
-use neiro_kora_publisher::{address, guard::verify_live, publish};
+use neiro_kora_publisher::{address, guard::verify_live, publish_with_min_slot, renewal};
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_commitment_config::CommitmentConfig;
 use solana_sdk::pubkey::Pubkey;
@@ -40,6 +40,14 @@ enum Action {
         #[arg(long)]
         journal: PathBuf,
     },
+    /// Required periodic operation: renew after 24 chain hours or when terms change.
+    Renew {
+        #[arg(long)]
+        url: String,
+        /// Persistent private directory, reused on every run; never an ephemeral /tmp.
+        #[arg(long)]
+        state_dir: PathBuf,
+    },
     /// Close the listing and return its rent to the operator.
     Close {
         #[arg(long)]
@@ -53,10 +61,26 @@ async fn run(a: Args) -> Result<()> {
         println!("{record}");
         return Ok(());
     }
+    let rpc = RpcClient::new_with_timeout_and_commitment(
+        a.rpc_url.clone(),
+        Duration::from_secs(30),
+        CommitmentConfig::finalized(),
+    );
+    let mut lock = None;
+    let mut min_slot = 0;
+    let pending;
+    if let Action::Renew { state_dir, .. } = &a.action {
+        lock = Some(renewal::lock_state(state_dir)?);
+        min_slot = renewal::reconcile(&rpc, state_dir, &record, &a.genesis).await?;
+    }
     let config = Config::load_config(&a.config)?;
     let (url, journal) = match &a.action {
         Action::Publish { url, journal } => (Some(url.as_str()), journal),
         Action::Close { journal } => (None, journal),
+        Action::Renew { url, state_dir } => {
+            pending = state_dir.join("pending.json");
+            (Some(url.as_str()), &pending)
+        }
         Action::Address => unreachable!(),
     };
     ensure!(!journal.exists(), "journal already exists; reconcile its signature first");
@@ -111,14 +135,16 @@ async fn run(a: Args) -> Result<()> {
         .collect();
     ensure!(candidates.len() == 1, "select exactly one configured signer with --signer-name");
     let signer = SignerConfig::build_signer_from_config(candidates[0]).await?;
-    let rpc = RpcClient::new_with_timeout_and_commitment(
-        a.rpc_url,
-        Duration::from_secs(30),
-        CommitmentConfig::finalized(),
-    );
-    if publish(&rpc, &config, &signer, a.operator, url, &a.genesis, journal).await?.is_none() {
+    if publish_with_min_slot(&rpc, &config, &signer, a.operator, url, &a.genesis, journal, min_slot)
+        .await?
+        .is_none()
+    {
         println!("Unchanged; no transaction sent");
     }
+    if let Action::Renew { state_dir, .. } = &a.action {
+        renewal::reconcile(&rpc, state_dir, &record, &a.genesis).await?;
+    }
+    drop(lock);
     Ok(())
 }
 

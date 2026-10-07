@@ -117,6 +117,15 @@ async fn capture(account: Value, url: Option<&str>, s: &Signer, c: &Config) -> V
         "succeeds".into(),
         HashMap::from([
             (RpcRequest::GetGenesisHash, json!(GENESIS)),
+            (RpcRequest::GetSlot, json!(1)),
+            (RpcRequest::GetBlock, json!({"blockhash":GENESIS,"blockTime":1000})),
+            (
+                RpcRequest::GetMultipleAccounts,
+                json!({"context":{"slot":1},"value":[{
+                    "owner":"Sysvar1111111111111111111111111111111111111","lamports":1,"executable":false,"rentEpoch":0,
+                    "data":[STANDARD.encode({ let mut d = [0u8;40]; d[..8].copy_from_slice(&1u64.to_le_bytes()); d[32..].copy_from_slice(&1000i64.to_le_bytes()); d }),"base64"]
+                }]}),
+            ),
             (RpcRequest::GetAccountInfo, json!({"context":{"slot":1},"value":account})),
             (RpcRequest::GetMinimumBalanceForRentExemption, json!(4_373_880)),
             (RpcRequest::GetFeeForMessage, json!({"context":{"slot":1},"value":5000})),
@@ -207,13 +216,24 @@ async fn legacy_marker_migration_only_writes_new_payload_without_changing_author
     let len = u16::from_le_bytes(instruction.data[21..23].try_into().unwrap()) as usize;
     let bytes = &instruction.data[23..23 + len];
     let body: Value = serde_json::from_slice(bytes).unwrap();
-    assert_eq!(body["v"], 4);
-    assert_eq!(body.as_object().unwrap().len(), 8);
+    assert_eq!(body["v"], 5);
+    assert_eq!(body.as_object().unwrap().len(), 10);
     assert!(body.get("expires_at").is_none());
     let names: Vec<_> = body.as_object().unwrap().keys().map(String::as_str).collect();
     assert_eq!(
         names,
-        vec!["genesis", "mint", "operator", "oracle", "payment", "price", "url", "v"]
+        vec![
+            "anchor_blockhash",
+            "anchor_slot",
+            "genesis",
+            "mint",
+            "operator",
+            "oracle",
+            "payment",
+            "price",
+            "url",
+            "v"
+        ]
     );
     let sig = Signature::try_from(&instruction.data[23 + len..23 + len + 64]).unwrap();
     assert!(sig.verify(
@@ -247,6 +267,15 @@ async fn unchanged_valid_attestation_needs_no_signing_or_transaction() {
         "succeeds".into(),
         HashMap::from([
             (RpcRequest::GetGenesisHash, json!(GENESIS)),
+            (RpcRequest::GetSlot, json!(1)),
+            (RpcRequest::GetBlock, json!({"blockhash":GENESIS,"blockTime":1000})),
+            (
+                RpcRequest::GetMultipleAccounts,
+                json!({"context":{"slot":1},"value":[{
+                    "owner":"Sysvar1111111111111111111111111111111111111","lamports":1,"executable":false,"rentEpoch":0,
+                    "data":[STANDARD.encode({ let mut d = [0u8;40]; d[..8].copy_from_slice(&1u64.to_le_bytes()); d[32..].copy_from_slice(&1000i64.to_le_bytes()); d }),"base64"]
+                }]}),
+            ),
             (RpcRequest::GetAccountInfo, json!({"context":{"slot":1},"value":a})),
         ]),
     );

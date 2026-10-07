@@ -19,9 +19,21 @@ neiro-kora-publisher --operator PUBLIC_KEY --config kora.toml --signers-config s
 neiro-kora-publisher --operator PUBLIC_KEY --config kora.toml --signers-config signers.toml close --journal close.json
 ```
 
-`publish` creates or updates; identical terms cause no transaction. After changing server terms, restart Kora before republishing. Each send needs a **new journal path**; the signature is saved and synced before submission. On timeout, inspect that signature's status and the account before a new invocation. Do not blindly retry with a different journal. Run one administrator at a time. SDK rebroadcast of the same signed transaction is safe from duplicate execution.
+`publish` creates, migrates or updates; identical v5 terms younger than 24 chain hours cause no transaction. Changed terms update immediately; due terms receive a fresh finalized block anchor. After changing server terms, restart Kora before republishing. Each send needs a **new journal path**; the signature is saved and synced before submission. On timeout, inspect that signature's status and the account before a new invocation. Do not blindly retry with a different journal. Run one administrator at a time, and stop the renewal worker before manual publication or closure. SDK rebroadcast of the same signed transaction is safe from duplicate execution.
 
 Mainnet genesis is pinned by default. `--rpc-url` or `SOLANA_RPC_URL` selects the RPC; `--genesis` explicitly selects another network. Address derivation needs no signer/config credentials. Closing can work with an offline Kora endpoint or removed deny entry so funds are recoverable; it still needs the local config, correct signer and RPC network.
+
+## Required automatic renewal
+
+Invoke this one-shot command hourly through the host's service manager:
+
+```sh
+neiro-kora-publisher --operator PUBLIC_KEY --config /PRIVATE/kora.toml --signers-config /PRIVATE/signers.toml renew --url https://operator.example/ --state-dir /PRIVATE/PERSISTENT/renewal
+```
+
+The worker locks its private persistent state directory and reconciles any pending transaction before proceeding. Reuse the same directory across runs and restarts; do not use `/tmp`, an ephemeral container filesystem or a new directory to bypass an unresolved send. Use one worker per signer across all hosts: a local lock does not coordinate separate machines. Unchanged terms before 24 hours cause no signing or transaction; the hourly timer is a wake-up interval, not the validity clock. Changed configuration is published immediately once the live endpoint matches it. Network fees apply to each actual renewal.
+
+Follow the [macOS, Linux and container scheduling guide](../../docs/RENEWAL.md). Disable the worker and reconcile pending state before `close`, or it may recreate the listing. Timer delays, RPC/signer failures and insufficient SOL can interrupt eligibility; monitor successful finalized renewals before the fixed 48-hour deadline.
 
 ## Security boundaries
 
@@ -29,9 +41,9 @@ Publication checks the responding Kora's operator, listing deny entry, price/ora
 
 The command checks record owner/layout/authority, expected signer/network, HTTPS URL without credentials/query/fragment, payload size, 7,000,000-lamport rent cap, 10,000-lamport network fee cap, transaction size and returned signature. Prefunded seeded addresses are recovered atomically before account creation. Closing returns all record lamports to the operator. It creates no token accounts and never transfers tokens.
 
-The signed v4 payload contains only the eight public term fields and a separate Ed25519 signature binding their exact bytes to the record and network. Create/update automatically uses the same fixed format through Keychain; old listings migrate in place, and unchanged valid v4 listings require no signing or transaction. There is no expiry or extra signature metadata. See the [shared format and migration](../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-v4).
+The signed v5 payload contains the eight public term fields plus `anchor_slot` and `anchor_blockhash`. A separate Ed25519 signature binds their exact bytes to the record and network. Old listings migrate in place. All operators renew after 24 chain hours; readers reject a listing at 48 hours from its trusted finalized anchor block time. No operator-selected timestamp, expiry or renewal interval is supported. Strict clients reject legacy versions, including persistent v4. See the [shared format and migration](../../docs/SPL-RECORD-LISTINGS.md#operator-attestation-v5).
 
-Only public advertised terms are stored: endpoint, operator/payment address, NEIRO mint, genesis, pricing and oracle. No expiry or automatic renewal. This is an operator declaration, not enforcement of economic honesty. Clients must authenticate the derived account, authority and detached operator signature, verify quotes independently and inspect the exact transaction before signing. Discovery URL handling, spam limits, RPC trust and price freshness remain client concerns. No audit or general loss-prevention guarantee is implied.
+This is an operator declaration, not enforcement of economic honesty. Clients authenticate the derived account, authority and detached signature, fetch the finalized anchor and chain time independently, verify live quotes and inspect the exact transaction before signing. SPL Record does not delete expired listings or enforce the client validity rule. RPC trust, discovery URL handling, spam limits and price freshness remain client concerns.
 
 The backend must sign both raw attestation bytes and raw Solana transaction-message bytes through Keychain. Hardware envelope-signing, modifying or sending-only backends are not established compatible; signature verification fails closed. No custom secret parser or key copies are added.
 
@@ -45,4 +57,4 @@ This is a normal Rust executable. `cargo build --release --locked` builds for th
 
 Cross-compilation is optional: use Cargo's `--target TARGET` with the appropriate target toolchain, linker and native libraries. An executable built for one OS/architecture is not a universal binary. Compatibility follows the upstream dependencies and signing backend; only the recorded macOS mainnet run has been verified so far.
 
-The executable needs neither Python nor Node.js at runtime. `address`, `publish` (create/update) and `close` are provided. Discovery and quote verification remain client-side code, not commands in this executable.
+The executable needs neither Python nor Node.js at runtime. `address`, `publish` (create/update), `renew` (one shot) and `close` are provided. Discovery and quote verification remain client-side code, not commands in this executable.

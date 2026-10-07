@@ -41,7 +41,11 @@ export function recordAddress(operator) {
     keybytes(operator),Buffer.from(SEED),keybytes(PROGRAM)
   ])).digest());
 }
-export function readRecord(record,account,expectedGenesis) {
+// Obtain this context independently from trusted finalized chain data on
+// expectedGenesis: current UNIX seconds plus the signed slot's block hash/time.
+// Never use operator-provided timestamps or treat a missing block as unexpired.
+// Legacy persistent records are not accepted by renewal-network discovery.
+export function readRecord(record,account,expectedGenesis,trustedChainContext) {
   assert.ok(account && account.owner===PROGRAM && account.executable===false,'owner/account');
   assert.equal(account.data?.[1],'base64','encoding');
   const data=Buffer.from(account.data[0],'base64');
@@ -56,8 +60,20 @@ export function readRecord(record,account,expectedGenesis) {
   const bytes=data.subarray(43,end),sig=data.subarray(end,end+64);
   assert.ok(verifyAttestation(authority,attestationMessage(record,expectedGenesis,bytes),sig),'invalid operator attestation');
   const body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
-  assert.deepEqual(Object.keys(body).sort(),['genesis','mint','operator','oracle','payment','price','url','v']);
-  assert.equal(body.v,4,'signed schema');
+  assert.equal(body.v,5,'signed schema; anchored v5 required');
+  assert.deepEqual(Object.keys(body).sort(),['anchor_blockhash','anchor_slot','genesis','mint','operator','oracle','payment','price','url','v'],'signed fields');
+  assert.ok(Number.isSafeInteger(body.anchor_slot) && body.anchor_slot>=0,'anchor_slot integer');
+  keybytes(body.anchor_blockhash);
+  assert.ok(trustedChainContext && typeof trustedChainContext==='object','trusted finalized chain context required');
+  const {nowUnixSeconds,anchorSlot,anchorBlockhash,anchorBlockTime}=trustedChainContext;
+  for(const [field,value] of Object.entries({nowUnixSeconds,anchorSlot,anchorBlockTime})) {
+    assert.ok(Number.isSafeInteger(value) && value>=0,`trusted ${field} integer required`);
+  }
+  keybytes(anchorBlockhash);
+  assert.equal(body.anchor_slot,anchorSlot,'anchor slot mismatch');
+  assert.equal(body.anchor_blockhash,anchorBlockhash,'anchor blockhash mismatch');
+  assert.ok(anchorBlockTime<=nowUnixSeconds,'anchor block time in future');
+  assert.ok(nowUnixSeconds-anchorBlockTime<172800,'listing expired');
   assert.equal(body.operator,authority,'operator authority');
   assert.equal(body.mint,MINT,'mint');
   assert.equal(body.genesis,expectedGenesis,'network');

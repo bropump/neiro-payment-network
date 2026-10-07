@@ -20,7 +20,7 @@ Run Kora, accept NEIRO for transaction fees, and publish an onchain listing for 
 
 Each operator publishes its own account under the existing SPL Record program using our shared listing format. Clients scan those accounts, verify identity and fee terms, check live SOL balances, and call operators directly. There is no master directory account to create and no required router or central registration API.
 
-The [standalone Rust publisher](docs/SPL-RECORD-LISTINGS.md) creates, updates and closes listings while keeping official Kora unchanged. Protect each operator's listing account in Kora before publishing. Listings persist until updated or closed; clients measure availability and quote speed themselves.
+The [standalone Rust publisher](docs/SPL-RECORD-LISTINGS.md) creates, updates and closes listings while keeping official Kora unchanged. Protect each operator's listing account in Kora before publishing. Every operator uses anchored v5 listings, renewed after 24 hours and rejected by clients 48 hours after the finalized anchor block time. The account remains onchain until closed; clients still measure availability and verify live quotes.
 
 ## Ask your agent to set it up
 
@@ -32,6 +32,8 @@ Follow AGENTS.md and docs/AGENT-SETUP.md through to verified operation.
 Build unchanged Kora and the Rust listing publisher, configure my signer,
 check SOL and NEIRO accounts, derive and deny my listing address in
 kora.toml before starting Kora, then sign and publish my SPL Record terms.
+Install the required daily renewal using my host's hourly service timer,
+with private persistent state; verify the fixed 48-hour client expiry.
 Verify direct discovery, the loaded deny rule and independent quote checks.
 Use my existing permissions and payment limits for any live test, recover
 test funds as requested, and report receipts and costs. Keep an operational
@@ -49,6 +51,7 @@ You can name a host or let your agent help choose one. The agent handles configu
 1. Build Kora and the publisher, configure signing and funding, and expose HTTPS.
 2. Derive the listing address, deny it in every public Kora instance sharing the signer, restart and verify protection.
 3. Sign and publish the operator's terms, then verify chain discovery and direct quotes.
+4. Install the [hourly renewal check](docs/RENEWAL.md) with private persistent state; unchanged terms renew only when 24 chain hours have elapsed.
 
 [Publication commands](docs/REGISTRATION.md) · [Complete agent workflow](docs/AGENT-SETUP.md)
 

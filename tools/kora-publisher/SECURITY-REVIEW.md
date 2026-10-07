@@ -1,3 +1,32 @@
+# Renewal review — 7 October 2026
+
+The historical v4 review below is superseded by mandatory anchored v5 for current discovery. The signature framing remains the same; v5 signs `anchor_slot` and `anchor_blockhash` alongside the terms. Readers independently obtain finalized block metadata and chain time, and reject age >=172800 seconds. Our publisher renews unchanged terms at >=86400 seconds and changed terms immediately after the live guard passes.
+
+The independent renewal review approved the core with notes: trusted finalized RPC data and one private persistent state directory per signer are required. Eleven review tests cover lock exclusion, ambiguous/failed receipts, finalized reconciliation and slot-floor persistence, rollback reads before signing, daily thresholds, forged anchors, a framed-length/legacy-parser collision, and finalized Clock validation. The reader and quote suite has 101 passing tests. Ordinary Rust tests also preserve signer, mint, fee/rent/size, authority, and live configuration checks.
+
+Two findings were fixed: a lagging finalized account response could previously cause duplicate paid renewal after reconciliation; and a 379-byte framed body could be mistaken for legacy JSON. Persistent `finalized.json` prevents the first; unambiguous legacy detection prevents the second.
+
+The `renew` command holds an OS lock throughout reconciliation, endpoint verification, signing and finality. It journals before broadcasting; unknown, failed or nonfinalized sends remain pending and prevent further signing. Successful receipts are archived, and their finalized slot is durably recorded before removing the pending receipt. Do not delete state to bypass an error. Keep one worker across hosts; local locks do not coordinate different hosts. Unix directory fsync is used; power-loss durability on other filesystems/platforms is not claimed.
+
+A valid renewal proves a recent signature bound to a record/network and known finalized block. It does not prove continuous endpoint availability or honest live pricing: verify live quotes. The existing public Kora listing deny remains mandatory. Operator-key compromise and dishonest/stale trusted RPCs are outside this protection. No independent audit or universal security guarantee is claimed.
+
+## Surfpool integration evidence
+
+The isolated Surfpool run loaded the actual SPL Record program and used a newly generated, local-only wallet. It passed creation, unchanged no-op with no fee, renewal after a chain-time jump beyond 24 hours, immediate URL update, rejection after a jump beyond 48 hours, and closure. All 5,992,560 test rent lamports returned; four local transactions cost 20,000 test lamports. The initial 1-lamport prefunding was recovered as well. No token account was used.
+
+The companion Node verifier authenticated both fresh snapshots and rejected the expired snapshot using Surfpool Clock data. Separate injected-context boundary checks accept 172799 seconds and reject 172800 exactly; replacing `Date.now` with a throwing function did not affect verification. These are accelerated local tests, not a claim that 48 real hours elapsed. Measured Rust create/renew calls, including observed finality, took 12.674s/12.628s on Surfpool with 400ms slots; these are not mainnet latency guarantees.
+
+To reproduce, start a private Surfpool (normal signature/blockhash checks enabled), provide the SPL Record program via its mainnet fork or snapshot, and allow its finalized block history to initialize. Then run:
+
+```sh
+SURFPOOL_RPC=http://127.0.0.1:8899 SURFPOOL_EVIDENCE=/ABS/evidence cargo test --locked --test surfpool -- --ignored --nocapture
+node client/verify-surfpool.mjs /ABS/evidence
+```
+
+The integration test refuses non-loopback RPC addresses and never reads a funded operator key. Surfpool's time-travel changes its chain clock; wait for newly produced finalized blocks after each jump. The test reads current rent rather than assuming mainnet and Surfpool rent match.
+
+## Historical review (superseded format)
+
 # Independent publisher security review
 
 Verdict: **APPROVE WITH NOTES** for bounded Mac/Bunny mainnet testing. This is an evidence-based source review, not a security audit or a guarantee against loss. The completed standalone mainnet evidence was subsequently independently verified as described below.

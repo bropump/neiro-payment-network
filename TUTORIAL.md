@@ -94,4 +94,4 @@ The current template uses `allowed_programs = "All"` for broad program compatibi
 
 ## Publish and verify
 
-Follow the [publication guide](docs/REGISTRATION.md): derive your listing address, deny it in every public Kora instance sharing the signer, then sign and publish your terms to SPL Record. Verify direct discovery and quotes. After changing advertised terms, republish. Publication pays a network fee and deposits refundable rent. There is no daily renewal or automatic expiry.
+Follow the [publication guide](docs/REGISTRATION.md): derive your listing address, deny it in every public Kora instance sharing the signer, then sign and publish your terms to SPL Record. Verify direct discovery and quotes. After changing advertised terms, republish. Publication pays a network fee and deposits refundable rent. Every operator must run the [renewal worker](docs/RENEWAL.md): an hourly check renews unchanged terms after 24 chain hours. Clients reject listings at 48 hours after their finalized block anchor. Each renewal pays a network fee; missing renewal does not close the account or refund rent.

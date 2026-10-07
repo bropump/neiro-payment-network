@@ -15,6 +15,7 @@ Give your agent the [setup prompt](../README.md#ask-your-agent-to-set-it-up), or
 
 6. Expose a stable [HTTPS endpoint](HTTPS.md). Verify `getConfig`, `getPayerSigner`, the loaded deny rule and actual signing rejection for the listing account.
 7. [Publish the SPL Record](REGISTRATION.md), confirm finality, then verify independent discovery and direct quotes. No router or hosted verification file is required.
+8. Install the [required renewal worker](RENEWAL.md) with an hourly native timer and private persistent state. It renews after 24 chain hours; clients reject the listing after 48 hours without a fresh finalized block anchor.
 
 Kora's `RPC_URL` must be a Solana RPC endpoint. Keep signer credentials out of public requests and listings. Retain transaction policies and request limits.
 

@@ -55,6 +55,15 @@ fn rpc(account: Value, rent: u64, fee: u64) -> RpcClient {
         "succeeds".into(),
         HashMap::from([
             (RpcRequest::GetGenesisHash, json!(GENESIS)),
+            (RpcRequest::GetSlot, json!(1)),
+            (RpcRequest::GetBlock, json!({"blockhash":GENESIS,"blockTime":1000})),
+            (
+                RpcRequest::GetMultipleAccounts,
+                json!({"context":{"slot":1},"value":[{
+                    "owner":"Sysvar1111111111111111111111111111111111111","lamports":1,"executable":false,"rentEpoch":0,
+                    "data":[STANDARD.encode({ let mut d = [0u8;40]; d[..8].copy_from_slice(&1u64.to_le_bytes()); d[32..].copy_from_slice(&1000i64.to_le_bytes()); d }),"base64"]
+                }]}),
+            ),
             (RpcRequest::GetAccountInfo, json!({"context":{"slot":1},"value":account})),
             (RpcRequest::GetMinimumBalanceForRentExemption, json!(rent)),
             (RpcRequest::GetFeeForMessage, json!({"context":{"slot":1},"value":fee})),
