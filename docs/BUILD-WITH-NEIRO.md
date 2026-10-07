@@ -2,7 +2,7 @@
 
 NEIRO Payment Network (NPN) lets a user pay transaction costs in NEIRO while an independent Kora operator supplies the SOL. Keep your existing Solana library, wallet and program instructions. Discover operators onchain and request quotes directly; no router registration or NPN SDK is required.
 
-Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora endpoint** for quotes and sponsorship. They are different endpoints.
+Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora endpoint** for quotes and sponsorship. They are different endpoints. Kora accepts HTTP JSON-RPC: keep your existing transaction library and wallet API. Installing Kora’s SDK, Solana Kit or Keychain is optional for payment clients.
 
 ## Check your wallet and app first
 
@@ -33,9 +33,20 @@ Each listing supplies the operator, payment destination, URL and pricing terms. 
 
 ### 2. Build and request quotes
 
-Build the intended operation for each candidate, using its signer as network fee payer. Keep the user’s wallet as transfer/swap authority. Follow the [official Kora transaction walkthrough](https://solana.com/docs/tools/kora/guides/full-demo) to estimate costs and add NEIRO reimbursement.
+Build the intended operation for each candidate, using its signer as network fee payer. Keep the user’s wallet as transfer/swap authority. Include account creation and compute-budget instructions, then obtain a fresh blockhash before the final quote.
 
-Include account creation and compute-budget instructions before requesting the final quote. Changing instructions changes costs. See the payer rules below to ensure the user needs no SOL.
+POST JSON-RPC to the selected operator URL using your existing HTTP library:
+
+| Method | Parameters / result |
+| --- | --- |
+| `getConfig` | `{}` → live configuration; compare with signed terms. |
+| `getPayerSigner` | `{}` → available payer/payment identity; match the selected listing. |
+| `estimateTransactionFee` | `{transaction, fee_token, signer_key}` → quoted `fee_in_token` and `payment_address`. |
+| `signTransaction` | `{transaction, signer_key}` → `signed_transaction`; use only after approval and user signing. |
+
+Here `transaction` is the **base64 serialized Solana transaction**, `fee_token` is the NEIRO mint and `signer_key` is the selected operator public key. `fee_in_token` is an integer in raw NEIRO units: 1,000,000 units = 1 NEIRO. Use the JSON-RPC envelope `{"jsonrpc":"2.0","id":1,"method":"…","params":{…}}`; handle both HTTP errors and JSON-RPC `error`. These are Kora methods, not Solana RPC methods. The [official walkthrough](https://solana.com/docs/tools/kora/guides/full-demo) also shows the optional SDK path.
+
+For paid modes, append a normal NEIRO token transfer to the verified payment address’s token account. Kora SDK `getPaymentInstruction` is an optional **local helper**, not a server RPC method; its amount is provisional. Quote and independently verify the completed transaction. If its reimbursement differs, replace that transfer’s amount and re-quote before signing. Bound retries (for example, three attempts); stop if no verified amount stabilizes. Do not append another reimbursement each time.
 
 ### 3. Verify and select
 
@@ -51,7 +62,7 @@ The [reference quote checker](../tools/kora-publisher/client/README.md) covers t
 
 Re-read the chosen listing; if its terms changed, get a new quote. Decode the completed transaction, including lookup tables. Check fee payer, recipients, amounts, account authorities, reimbursement and compute budget. Show the operation and full NEIRO charge to the user, then sign within their authorization.
 
-Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
+If the blockhash expires before broadcast, rebuild and repeat quote verification, message inspection and approval before collecting fresh signatures. Never edit an already signed message. Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
 
 ### 5. Submit and confirm
 
@@ -96,3 +107,5 @@ Measure discovery, quote/verification, selected-result delivery and confirmation
 ## Surfpool verification — 7 October 2026
 
 The [test report and timings](test-results/client-practices-surfpool-2026-10-07.md) cover two operators, verified fastest/cheapest selection, rejection checks, and a NEIRO payment with **zero user SOL**, including new ATA rent and cleanup. This proves the tested transfer flow; it does not establish arbitrary-program compatibility or mainnet latency. Landed failures can still charge the operator network fees.
+
+Fresh-agent findings and wallet coverage: [7 October uptake tests](test-results/agent-uptake-2026-10-07.md).

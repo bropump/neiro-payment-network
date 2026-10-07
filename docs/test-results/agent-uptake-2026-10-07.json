@@ -1,0 +1,53 @@
+{
+  "scope": "Real PaySponge remote signing; local Surfpool settlement; Turnkey/Privy service signing untested; all conversion inputs synthetic Mock fixture.",
+  "independentFinalizedReceiptChecks": [
+    {
+      "name": "privy-local-fallback",
+      "signature": "ttZcfKBjZPS3MdQjhf2aLQDiYoEpfpkNBVkba8wjiwLrWD96zeHekaK1PncMw1qPyEtzsX2dnExVKirXcBJuwQA",
+      "finalized": true,
+      "slot": 454315862,
+      "allSignaturesValid": true,
+      "networkFee": 10000,
+      "sponsorOutflow": 2049280,
+      "reimbursementRaw": 2254208
+    },
+    {
+      "name": "turnkey-local-fallback",
+      "signature": "2TaYauqcPKKU7KMR7GzSsTnBjcJUaVmx7k8PJJnAEgUNCCnGVe3T4PqkAPf724gFFgybqYew3sspt4fTpnUGhtvE",
+      "finalized": true,
+      "slot": 454316008,
+      "allSignaturesValid": true,
+      "networkFee": 10000,
+      "sponsorOutflow": 10000,
+      "reimbursementRaw": 10500
+    },
+    {
+      "name": "paysponge-service",
+      "signature": "3pDb2WjRtkwzb7xfDSxAf9pfGVukkubkGAMuQ6pLULf8bZ8eYZozwrsuPQMC4fJaHPabWCwXvLHh8JBkF3VRo6tU",
+      "finalized": true,
+      "slot": 454316053,
+      "allSignaturesValid": true,
+      "networkFee": 15000,
+      "sponsorOutflow": 3515880,
+      "reimbursementRaw": 3691674
+    }
+  ],
+  "cleanup": {
+    "listings": [
+      {
+        "record": "5bVDqaEbSdG9vw2ainPzPhCNpugULLW2dWgfjy8AyDeV",
+        "status": "finalized",
+        "signature": "RfX4W4pj6d7xiHEBgvVzwBvAbfNQ7bZ3TYKfpdsoMbew3eMyQ5jHwYGfUZWG7CaCpiGxxExiAq4WCFg5weKPMJi",
+        "fee": 5000
+      },
+      {
+        "record": "Gp6T7gNY1kgkyYgFW5Ck5k59rj5ZERJEP83zWQPwrHWp",
+        "status": "finalized",
+        "signature": "5x5NEoAyNedP2ygKNiKPARyZdyrfBWwnbdwmYkjxhbWJWzi3TdTXJaH5qn6Un7RixrEGveFN6EE6WXMdhVtrFD6G",
+        "fee": 5000
+      }
+    ],
+    "finalizedAccountsAbsent": true,
+    "localServicesStopped": true
+  }
+}
