@@ -145,7 +145,7 @@ node runner.ts discover
 
 Use a separate customer wallet and the [direct-client payment flow](docs/BUILD-WITH-NEIRO.md#start-with-a-payment). Discover the operator onchain, request a quote, verify the fee against its signed terms, and inspect the exact transaction. Send one small payment within the agreed amount, recipient and fee limits.
 
-Paid NEIRO quotes require a sufficiently fresh oracle price. If Kora reports stale data, keep the configured freshness limit and report the paid-payment check blocked; do not silently disable the check or change the operator's fee mode. Free sponsorship is a separately chosen mode with no reimbursement.
+The supplied config uses `max_price_staleness_slots = 0`: Jupiter prices are accepted without an age cutoff. This avoids blocking NEIRO quotes solely because its reference price has not recently updated, but accepts stale-price risk. Confirm the live value through `getConfig`; see [pricing policy](CONFIGURATION.md#pricing-service) before choosing a stricter limit. Verify the paid quote against the signed terms and current pricing inputs. A free-sponsored payment does not prove paid pricing works.
 
 **Check:** the transaction finalized successfully, the recipient received the intended amount, and the operator's SOL cost and NEIRO reimbursement match the approved transaction. Save its signature and balance changes. Return test funds and close only eligible temporary test accounts; keep the operator's fee-receiving account and operational listing.
 
