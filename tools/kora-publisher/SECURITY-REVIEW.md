@@ -1,3 +1,18 @@
+# Portable Node runner review — 7 October 2026
+
+The recommended Node implementation is `script/`, source [7f88948](https://github.com/bropump/neiro-payment-network-core/commit/7f88948d6cbbd0ce420b26a75fa13ddf96eab998). Independent review: **APPROVE WITH NOTES**, no outstanding material security regression found. This is testing and engineering review, not a formal audit.
+
+- [CI](https://github.com/bropump/neiro-payment-network-core/actions/runs/37600960099) passed 126 tests on Linux, macOS and Windows, using `npm ci --ignore-scripts`; no Rust or native compilation. npm reported install times of 3s, 4s and 6s respectively.
+- Actual SPL Record execution in offline Surfpool passed create, no-op, accelerated daily renewal, config update, expiry rejection, close and rent/prefund recovery. Generated local signer only; normal signature/blockhash checks enabled. Four transaction fees total20,000lamports; all5,992,560rent lamports and the prefunded1lamport recovered.
+- Review covered exact wire instructions, signatures, malformed config, price comparison, chain/authority binding, fee/rent caps, journal-before-send, unknown-send reconciliation, finalized slot floor and concurrency/crash behavior. Discovery checks fresh finalized Clock per candidate.
+- Official JavaScript Keychain provides signatures. Only memory has integration signature evidence; remote providers have adapter/deadline/error tests, not live credentialed verification. Unsupported backend options fail closed.
+- Official npm audit reported zero known dependency vulnerabilities. Lockfile tarballs use the official registry and installation disables dependency scripts. Neither fact guarantees absence of vulnerabilities.
+- Bunny switched to the same Node script after the old Rust worker reached zero pods. One private worker retains the same state volume and credentials; no public endpoint. The switch leaves the same signed v5 record and client format. Its first real daily renewal under Node is not yet due; no full unattended24h soak is claimed.
+
+Operational conditions: one worker per signer, trusted finalized RPC, private durable state, deny entry active on every public Kora replica, and independent client quote/transaction verification. Node's atomic directory lock intentionally stays after a crash; verify the previous worker is dead and reconcile pending state before removing an orphan lock. Windows does not provide directory fsync through Node; sudden-power-loss durability is not claimed there. Pi hardware has not been tested.
+
+---
+
 # Renewal review — 7 October 2026
 
 The historical v4 review below is superseded by mandatory anchored v5 for current discovery. The signature framing remains the same; v5 signs `anchor_slot` and `anchor_blockhash` alongside the terms. Readers independently obtain finalized block metadata and chain time, and reject age >=172800 seconds. Our publisher renews unchanged terms at >=86400 seconds and changed terms immediately after the live guard passes.
