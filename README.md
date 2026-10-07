@@ -145,6 +145,8 @@ node runner.ts discover
 
 Use a separate customer wallet and the [direct-client payment flow](docs/BUILD-WITH-NEIRO.md#start-with-a-payment). Discover the operator onchain, request a quote, verify the fee against its signed terms, and inspect the exact transaction. Send one small payment within the agreed amount, recipient and fee limits.
 
+Paid NEIRO quotes require a sufficiently fresh oracle price. If Kora reports stale data, keep the configured freshness limit and report the paid-payment check blocked; do not silently disable the check or change the operator's fee mode. Free sponsorship is a separately chosen mode with no reimbursement.
+
 **Check:** the transaction finalized successfully, the recipient received the intended amount, and the operator's SOL cost and NEIRO reimbursement match the approved transaction. Save its signature and balance changes. Return test funds and close only eligible temporary test accounts; keep the operator's fee-receiving account and operational listing.
 
 **Setup is finished when all of these are true:**

@@ -12,6 +12,8 @@ Keep your Solana app. Let an independent Kora operator supply SOL for the transa
 6. Show the payment amount, recipient, NEIRO reimbursement including the operator tip, and any account deposits. Obtain wallet approval before signing the final message.
 7. Submit the wallet-signed transaction through the same operator using the documented signing/submission flow. Follow confirmation with Solana RPC and return an [Orb](https://orbmarkets.io) transaction link.
 
+For an authenticated **free** listing, omit `fee_token` from `estimateTransactionFee`: expect zero lamports and a null/absent token fee, which means no NEIRO reimbursement instruction. Asking Kora to convert even a zero fee into NEIRO can invoke the oracle and reject a stale price unnecessarily. The transfer itself can still use NEIRO. For fixed or margin pricing, request and verify the NEIRO quote normally; never silently fall back to free pricing.
+
 If the user asks only for a quote, stop before signing or submitting. If no usable operator is discovered, report it; do not invent a quote or silently switch to spending the user's SOL.
 
 ## Give an agent a wallet
