@@ -6,7 +6,7 @@
 
 ## Start here with your agent
 
-- **[Use NPN as a client →](docs/BUILD-WITH-NEIRO.md)** Pay transaction costs in NEIRO using your existing wallet and app.
+- **[Client / builder →](docs/BUILD-WITH-NEIRO.md)** Use NPN or build apps where users pay transaction costs in NEIRO.
 - **[Run an operator →](AGENTS.md)** Set up on a Mac, Raspberry Pi, PC or in the cloud and choose your fees.
 
 ---
