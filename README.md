@@ -4,6 +4,10 @@
 
 # NEIRO Payment Network (NPN)
 
+**Get your agent to help you run an operator on a Mac, Raspberry Pi, PC or in the cloud using [AGENTS.md](AGENTS.md).**
+
+Give your agent this link: **https://github.com/bropump/neiro-payment-network-core/blob/main/AGENTS.md**. It walks through installing current upstream Kora, choosing your markup, protecting your listing, publishing onchain and proving a payment works. Your host needs to support Kora and Node.js 24+.
+
 **Pay Solana transaction costs in NEIRO.** Your wallet signs the transaction; an independent Kora operator supplies SOL and receives NEIRO at its advertised price. Transactions settle on Solana.
 
 **[Use NPN](#use-npn-in-five-steps)** · **[Run an operator](#set-up-your-operator)** · **[See what has been tested](docs/FEATURE-MAP.md)**
