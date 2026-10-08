@@ -44,7 +44,7 @@ Choose your host, signing wallet and markup. Run **official Kora from latest ups
 4. **Publish and renew.** Run one supervised `renew --watch` service with persistent state. It publishes the signed listing and renews it automatically.
 5. **Verify it works.** Discover the listing through RPC, complete a paid test, check fees and balances, and verify restart and monitoring.
 
-**[Open the installation guide with commands →](docs/OPERATOR-SETUP.md)** · [RPC setup options](docs/OPERATOR-SETUP.md#free-rpc-options)
+**[Agent: follow the setup procedure →](AGENTS.md)** · [Detailed installation commands](docs/OPERATOR-SETUP.md) · [RPC setup options](docs/OPERATOR-SETUP.md#free-rpc-options)
 
 Operators supply SOL and choose their own prices. A failed onchain transaction can still cost the operator network fees; reimbursement is not guaranteed on failure.
 

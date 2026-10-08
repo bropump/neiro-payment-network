@@ -8,7 +8,7 @@ For “use NEIRO Payment Network,” start with [wallet and app compatibility](h
 
 Kora must track latest official upstream main, not a stable crates.io release or a historical test image. Resolve and verify the source SHA before installation; configure the host to check for main updates every five minutes. The listing runner does not upgrade Kora.
 
-Operator installation has one canonical guide: [operator setup guide](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/OPERATOR-SETUP.md). Follow its five steps from host/software installation through signer, funding, protected config, HTTPS, publication, supervised renewal, verified discovery and a direct test payment. Run `protect` on the actual private Kora config before public startup. The agent checklist adds verification, not another installer.
+Agents setting up an operator must follow [AGENTS.md](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/AGENTS.md) in order. It contains the five stages, commands, pass criteria and known failure recovery. [Host details](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/OPERATOR-SETUP.md) expand that procedure. Inspect and reuse existing resources; create missing configuration yourself. Report PASS / FAIL / NOT RUN with evidence, never infer success from a quote or a running process.
 
 - [Feature map and test coverage](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/FEATURE-MAP.md)
 - [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md)
