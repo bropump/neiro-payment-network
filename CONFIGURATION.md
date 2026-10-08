@@ -1,6 +1,8 @@
-# NEIRO configuration
+# NPN operator configuration
 
-This repository owns the Kora operator template and recommendation. Use a private copy of the templates and the [registration guide](docs/REGISTRATION.md). Kora and the listing publisher are separate executables; clients discover operators onchain.
+**[Client / builder guide](docs/BUILD-WITH-NEIRO.md)** · **[Agent operator setup](AGENTS.md)**
+
+This page explains the operator template. For installation and required checks, follow [AGENTS.md](AGENTS.md). Use private copies of the Kora and signer templates. Official Kora serves quotes and sponsorship; the Node.js listing runner publishes and renews the operator's signed onchain terms.
 
 ## Current recommendation
 
@@ -13,11 +15,11 @@ max_allowed_lamports = 250000000 # 0.25 SOL
 max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee
 ```
 
-These are configuration fragments, not complete startup files. Retain the required methods, NEIRO reimbursement mint, chosen pricing, signer configuration and fee-payer policies. The template uses a 50% margin example; each operator chooses its fee. This recommendation does not change an existing operator’s markup. Validate the complete file with `kora --config kora.toml config validate` before restarting.
+These are configuration fragments, not complete startup files. Retain the required methods, NEIRO reimbursement mint, chosen pricing, signer configuration and fee-payer policies. The template uses a 50% margin example; each operator chooses its fee. This recommendation does not change an existing operator’s markup. Validate the complete private files with `kora --config /PRIVATE/kora.toml config validate --signers-config /PRIVATE/signers.toml` before restarting.
 
 `All` removes the program-ID allowlist, including for unknown programs and routed venues. It does not make arbitrary programs safe for the sponsor. Stock Kora still applies its other validation and payment checks, but its existing fee-payer permissions do not establish a general arbitrary-program safety boundary. This gap is tracked in [upstream #683](https://github.com/solana-foundation/kora/issues/683).
 
-0.25 SOL is the selected per-transaction lamport allowance, not a daily budget, a universal cost requirement or a guarantee of total loss being capped at that amount. Kora validates estimated network fees separately from modeled fee-payer outflow. Applications must quote the complete transaction, including sponsored rent, and obtain approval for the final payment. See [upstream fee calculation](https://github.com/solana-foundation/kora/blob/v2.2.0-beta.8/crates/lib/src/transaction/versioned_transaction.rs).
+0.25 SOL is the selected per-transaction lamport allowance, not a daily budget, a universal cost requirement or a guarantee of total loss being capped at that amount. Kora validates estimated network fees separately from modeled fee-payer outflow. Applications must quote the complete transaction, including sponsored rent, and obtain approval for the final payment. See the [upstream validation source inspected on 8 October 2026](https://github.com/solana-foundation/kora/blob/4b683edacb11955cc4a9b854d6bc5e47c35d6b2a/crates/lib/src/validator/transaction_validator.rs); this evidence revision is not an installation pin.
 
 The priority-fee cap is separate from the overall lamport allowance and operator markup. Callers set their priority fee before requesting a quote. `max_priority_fee_lamports = 0` forbids priority fees; leaving the setting unset removes this specific cap. After changing it, restart every Kora instance and verify `getConfig.result.validation_config.max_priority_fee_lamports` and rejection of an above-cap request. The estimate endpoint can still return a quote above this cap; enforcement happens before signing. This is a per-transaction limit, not a daily spending budget.
 
@@ -26,22 +28,28 @@ This recommendation does not claim measured 90% signing success, compatibility w
 
 | Setting | Included template |
 | --- | --- |
-| Kora | Latest successfully published official upstream main build; resolve on install/update and pin its digest |
+| Kora | Current official upstream main SHA; use a matching image digest or native build |
 | Operator reimbursement token | NEIRO, six decimals; application transactions can involve other tokens |
 | Operator fee | Operator chooses margin, fixed or free; template example is cost plus 50% |
 | Signing methods | `sign_transaction = true` and `sign_and_send_transaction = true` by default |
 | Sponsor allowance | Recommended 0.25 SOL per transaction; operator may choose another allowance |
 | Priority-fee cap | 100,000 lamports (0.0001 SOL) per transaction; higher requested priority fees are rejected before signing |
 | Current program policy | `allowed_programs = "All"` |
-| Sponsor permissions | Account creation and reimbursed launch-funding SOL transfers enabled; sponsor token spending disabled |
+| Sponsor permissions | Account creation and SOL transfers enabled; sponsor token spending disabled |
 
 [Kora configuration](examples/operator/kora.toml) · [Signer example](examples/operator/signers.toml)
 
 `signTransaction` returns a signed transaction for the client to submit; `signAndSendTransaction` signs and submits through Kora. Both are part of the NEIRO default and apply the configured validation and payment policies. Existing deployments using the older `sign_transaction = false` preset should set it to `true`, validate their configuration, restart Kora, and check that `getConfig.result.enabled_methods.sign_transaction` is `true`.
 
-Operators follow the latest successfully built official upstream main revision and pin each deployment. Use upstream Kora and your host's update tools; the NEIRO listing runner is a separate script and does not replace Kora. Retain the previous build for rollback. Kora and its SDK remain unchanged. See [setup and updates](docs/JOIN.md).
+Resolve current official upstream main on installation and during the host's five-minute update checks. Verify the image's source SHA matches it; if edge lags, wait for the matching image or build that revision natively. Pin the verified deployment and retain the previous build for rollback. A rollback is out of date, not a successful update. The listing runner does not upgrade Kora. Follow the commands and rollout checks in [AGENTS.md](AGENTS.md).
 
 Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
+
+## Protect the listing and apply changes
+
+Before serving requests, run `node runner.ts protect --operator YOUR_OPERATOR_PUBLIC_KEY --config /PRIVATE/kora.toml` from `tools/kora-publisher/script`. It derives the operator's listing address and adds it to `validation.disallowed_accounts`. Restart every Kora instance sharing that signer and verify a harmless sign-only request touching the listing is rejected specifically for that account. A file edit alone does not prove protection. The [setup procedure](AGENTS.md#3-protect-the-listing-then-start-kora) includes the checks.
+
+When fees or advertised settings change, validate and restart all Kora instances, then restart the sole renewal worker with the same private config and persistent state. It republishes changed terms when live Kora agrees. Verify discovery and a matching quote; do not wait for the next daily renewal to advertise changed fees. See [operations and recovery](docs/RENEWAL.md).
 
 ## Failed transactions and launch costs
 
@@ -53,7 +61,7 @@ If the operator requires failed-transaction fees to be covered in advance, that 
 
 ## Prepared recommendation after #683 ships
 
-As checked on 7 October 2026, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not merged into official main. Keep the current configuration until it merges and passes compatibility checks in a published main image. A tagged release is not required. Do not patch Kora or assume an unknown TOML field activates the proposed protection.
+As checked on **8 October 2026**, [PR #692](https://github.com/solana-foundation/kora/pull/692) is open and is not merged into official main (`4b683edacb11955cc4a9b854d6bc5e47c35d6b2a` at that check). Recheck upstream status during setup. Keep the current configuration until the feature merges and passes compatibility checks in an official main build. A tagged release is not required. Do not patch Kora or assume an unknown TOML field activates the proposed protection.
 
 After the feature ships, replace the current program setting with the following fragment and retain the 0.25 SOL allowance:
 
