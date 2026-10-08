@@ -8,6 +8,7 @@ For “use NEIRO Payment Network,” start with [wallet and app compatibility](h
 
 Operator installation has one canonical guide: [main README](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/README.md). Follow its nine steps from host/software installation through signer, funding, protected config, HTTPS, publication, supervised renewal, verified discovery and a direct test payment. Run `protect` on the actual private Kora config before public startup. The agent checklist adds verification, not another installer.
 
+- [Feature map and test coverage](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/FEATURE-MAP.md)
 - [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md)
 - [Discovery format and client checks](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/SPL-RECORD-LISTINGS.md)
 - [Set up an operator](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/README.md)

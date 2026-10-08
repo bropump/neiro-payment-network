@@ -1,5 +1,7 @@
 # Build with NEIRO
 
+[Feature map: what works and what has been tested](FEATURE-MAP.md)
+
 NEIRO Payment Network (NPN) lets a user pay transaction costs in NEIRO while an independent Kora operator supplies the SOL. Keep your existing Solana library, wallet and program instructions. Discover operators onchain and request quotes directly; no router registration or NPN SDK is required.
 
 Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora endpoint** for quotes and sponsorship. They are different endpoints. Kora accepts HTTP JSON-RPC: keep your existing transaction library and wallet API. Installing Kora’s SDK, Solana Kit or Keychain is optional for payment clients.
