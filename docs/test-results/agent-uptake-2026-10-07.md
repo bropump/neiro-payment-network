@@ -1,5 +1,7 @@
 # Fresh-agent uptake tests — 7 October 2026
 
+Historical test evidence for the versions and environment below. For current instructions, use the [client / builder guide](../BUILD-WITH-NEIRO.md) or [operator setup](../../AGENTS.md).
+
 Three agents started without conversation history, worked on separate wallet paths and chose operations, and worked from the public guide and its links. No new NPN SDK or CLI was built. The parent supplied shared Surfpool, two unchanged Kora instances, synthetic funds and an explicit local endpoint map. This is an assisted integration study, not a measurement of fully independent infrastructure setup.
 
 ## What actually worked

@@ -1,6 +1,6 @@
 # Build with NEIRO
 
-[Feature map: what works and what has been tested](FEATURE-MAP.md)
+**Client / builder guide** · [Tested features](FEATURE-MAP.md) · [Run an operator](../AGENTS.md)
 
 NEIRO Payment Network (NPN) lets a user pay transaction costs in NEIRO while an independent Kora operator supplies the SOL. Keep your existing Solana library, wallet and program instructions. Discover operators onchain and request quotes directly; no router registration or NPN SDK is required.
 
@@ -42,13 +42,15 @@ POST JSON-RPC to the selected operator URL using your existing HTTP library:
 | Method | Parameters / result |
 | --- | --- |
 | `getConfig` | `{}` → live configuration; compare with signed terms. |
-| `getPayerSigner` | `{}` → available payer/payment identity; match the selected listing. |
+| `getPayerSigner` | `{}` → the endpoint's recommended payer/payment identity; a pool may recommend a different signer. |
 | `estimateTransactionFee` | `{transaction, fee_token, signer_key}` → quoted `fee_in_token` and `payment_address`. |
 | `signTransaction` | `{transaction, signer_key}` → `signed_transaction`; use only after approval and user signing. |
 
 Here `transaction` is the **base64 serialized Solana transaction**, `fee_token` is the NEIRO mint and `signer_key` is the selected operator public key. `fee_in_token` is an integer in raw NEIRO units: 1,000,000 units = 1 NEIRO. Use the JSON-RPC envelope `{"jsonrpc":"2.0","id":1,"method":"…","params":{…}}`; handle both HTTP errors and JSON-RPC `error`. These are Kora methods, not Solana RPC methods. The [official walkthrough](https://solana.com/docs/tools/kora/guides/full-demo) also shows the optional SDK path.
 
-For paid modes, append a normal NEIRO token transfer to the verified payment address’s token account. Kora SDK `getPaymentInstruction` is an optional **local helper**, not a server RPC method; its amount is provisional. Quote and independently verify the completed transaction. If its reimbursement differs, replace that transfer’s amount and re-quote before signing. Bound retries (for example, three attempts); stop if no verified amount stabilizes. Do not append another reimbursement each time.
+Require the selected operator in `getConfig.fee_payers`. Pin `signer_key` in every quote/sign request and require the quote's `signer_pubkey` and `payment_address` to match the authenticated listing. `getPayerSigner` takes no signer selector; its recommendation must not silently replace your selected operator. The publisher has a stricter [pool limitation](SIGNING.md#listing-runner-compatibility).
+
+For paid modes, append a normal NEIRO token transfer to the verified payment address’s token account. Kora SDK `getPaymentInstruction` is an optional **local helper**, not a server RPC method; its amount is provisional. Quote and independently verify the completed transaction. If its reimbursement differs, replace that transfer’s amount and re-quote before signing. Bound retries (for example, three attempts); stop if no verified amount stabilizes. Sum the completed message's reimbursement transfers and require exact equality with the verified fee: a leftover placeholder plus the corrected transfer is an overpayment, even when the quote itself is valid.
 
 ### 3. Verify and select
 
@@ -62,7 +64,11 @@ The [reference quote checker](../tools/kora-publisher/client/README.md) covers t
 
 ### 4. Approve and sign
 
-Re-read the chosen listing; if its terms changed, get a new quote. Decode the completed transaction, including lookup tables. Check fee payer, recipients, amounts, account authorities, reimbursement and compute budget. Show the operation and full NEIRO charge to the user, then sign within their authorization.
+Re-read the chosen listing; if its terms changed, get a new quote. Decode the completed transaction, including lookup tables. Check fee payer, recipients, amounts, account authorities, reimbursement and compute budget.
+
+Before collecting signatures, call Solana RPC `simulateTransaction` on the completed base64 transaction with `encoding: "base64"`, `sigVerify: false` and `replaceRecentBlockhash: false`. Reject a non-null `result.value.err`. This tests execution without submitting or collecting operator signatures; it does not verify signatures or guarantee later execution. If simulation reveals a needed instruction, account, fee or blockhash change, rebuild and repeat the quote and message checks.
+
+Show the operation and full NEIRO charge to the user, then sign within their authorization. Verify the user and other application signatures while preserving the approved message. The operator signature is added in step 5.
 
 If the blockhash expires before broadcast, rebuild and repeat quote verification, message inspection and approval before collecting fresh signatures. Never edit an already signed message. Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
 
@@ -104,7 +110,7 @@ For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessag
 
 Cache authenticated listings, batch balance reads and quote a bounded shortlist in parallel. Rotate candidates and temporarily back off from dead endpoints. Recheck selected terms before approval. A shortlist cannot prove globally cheapest, and fast quotes do not guarantee fast finality.
 
-For fastest, race **verified successes**, not raw HTTP responses (`Promise.any()` with per-task deadlines is one option). Do not await every remaining task before returning. Treat HTTP failures and JSON-RPC errors as failures. Restrict untrusted listing URLs, private/local destinations and redirects; bound response sizes. Send wallet signatures only to the selected operator.
+For fastest, each parallel task must finish its own quote/correction/verification loop; return the first verified success to the caller (`Promise.any()` with per-task deadlines is one option). Do not await all tasks before returning or printing that result. Merely recording an early completion timestamp does not demonstrate early delivery. For cheapest, collect verified successes until the deadline, tolerating failed candidates. Restrict untrusted listing URLs, private/local destinations and redirects; bound response sizes. Send wallet signatures only to the selected operator.
 
 Measure discovery, quote/verification, selected-result delivery and confirmation separately with a monotonic timer. Distinguish cold discovery from cached selection.
 

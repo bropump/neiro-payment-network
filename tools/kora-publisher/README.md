@@ -2,7 +2,7 @@
 
 Publish your Kora operator’s URL and signed fee terms on Solana, and renew the listing daily so clients can discover it and verify its terms.
 
-**[Install and register your operator](../../README.md#set-up-your-operator)**
+**[Agent operator setup](../../AGENTS.md)** · **[Installation details](../../docs/OPERATOR-SETUP.md)**
 
 The setup guide covers installation, adding the listing to your Kora deny list, restarting Kora and running automatic renewal.
 

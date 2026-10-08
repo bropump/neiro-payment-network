@@ -1,6 +1,11 @@
-# Set up an NPN operator
+# Work with NPN
 
-Follow these five steps in order. This is the agent setup procedure; [host and installation details](docs/OPERATOR-SETUP.md) expand it. Keep official Kora, its SDK and our runner unchanged. Do not build another installer, router or SDK to complete setup.
+- **Client / builder:** follow [Build with NEIRO](docs/BUILD-WITH-NEIRO.md) to use an existing wallet or integrate an app. Operator installation is not required.
+- **Operator:** follow the five setup steps below. [Host and installation details](docs/OPERATOR-SETUP.md) expand them.
+
+## Operator setup
+
+Keep official Kora, its SDK and our runner unchanged. Do not build another installer, router or SDK to complete setup.
 
 ## Before starting
 
@@ -47,7 +52,7 @@ Run subsequent `node runner.ts` commands from this directory. `/PRIVATE/...` and
 
 Use [kora.toml](examples/operator/kora.toml) and [signers.toml](examples/operator/signers.toml) for a new operator; preserve deliberate settings in existing deployments. Configure the user's fee—margin, fixed NEIRO or free—and SOL/priority limits. The example margin is not the user's choice. `max_allowed_lamports` checks modeled outflow and network fees separately; it is not a daily budget or a guarantee against failed-transaction losses.
 
-Use the selected [signer backend](docs/SIGNING.md) in both services. Verify their public keys agree. A remote adapter's existence does not prove its transaction and attestation signing work; test the selected backend. Never export a remote key or substitute a local wallet to bypass a problem. Use `--signer-name NAME` for the runner when selecting from multiple entries.
+Use the selected [signer backend](docs/SIGNING.md) in both services. Verify their public keys agree. A remote adapter's existence does not prove its transaction and attestation signing work; test the selected backend. Never export a remote key or substitute a local wallet to bypass a problem. Check the [runner's signer and pool limitations](docs/SIGNING.md#listing-runner-compatibility) before choosing a deployment; `--signer-name` selects the local entry, not the endpoint's pool response.
 
 Load `RPC_URL` for Kora, `SOLANA_RPC_URL` for the runner, `JUPITER_API_KEY` and the signer's credentials from private storage. Reuse working RPC access; [RPC setup options](docs/OPERATOR-SETUP.md#free-rpc-options) apply when none exists. Verify mainnet genesis, finalized account/block reads and discovery scans. Live Kora checks follow protected startup in step 3; verify its paid quote in step 5. Redact credential-bearing URLs and keys from subprocess errors **before** returning logs.
 

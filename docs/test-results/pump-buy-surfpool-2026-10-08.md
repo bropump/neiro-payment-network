@@ -1,5 +1,7 @@
 # Pump.fun buy with NPN — Surfpool, 8 October 2026
 
+Historical test evidence for the versions and environment below. For current instructions, use the [client / builder guide](../BUILD-WITH-NEIRO.md) or [operator setup](../../AGENTS.md).
+
 **Passed:** a buyer with NEIRO and **zero SOL** initialized its pump buyer account and bought 1,000 tokens from a fresh pump.fun bonding curve. Both transactions finalized on a local mainnet fork through unchanged Kora. The buyer paid NEIRO, retained the purchased tokens and finished each transaction at zero SOL.
 
 The earlier statement that the buyer must supply about 0.0018 SOL for its first pump account was too broad. Pump's `init_user_volume_accumulator` accepts a separate `payer`. We tested the operator paying that rent while preserving the buyer as `user`. The [official pump interface](https://github.com/pump-fun/pump-public-docs/blob/main/idl/pump.json) defines those separate roles.

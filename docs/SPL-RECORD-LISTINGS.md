@@ -4,7 +4,7 @@ The [Node.js publisher](../tools/kora-publisher/script/) creates, renews, update
 
 ## Operator setup
 
-Follow the [main setup guide](../README.md#set-up-your-operator): install the script, run `protect` on your private Kora config, restart every Kora instance sharing the key, then run one supervised `renew --watch` process. That command handles creation and renewal. `protect` adds the individual listing account to `validation.disallowed_accounts`; it does not restart Kora or block unrelated SPL Records such as NEIRO ID names.
+Follow the [operator setup steps](../AGENTS.md): install the script, run `protect` on your private Kora config, restart every Kora instance sharing the key, then run one supervised `renew --watch` process. That command handles creation and renewal. `protect` adds the individual listing account to `validation.disallowed_accounts`; it does not restart Kora or block unrelated SPL Records such as NEIRO ID names.
 
 Use [operations](RENEWAL.md) for updates, recovery and closure. The rest of this page specifies the onchain format for client implementers.
 
@@ -58,9 +58,9 @@ RPC scan support and completeness vary. Handle RPC errors explicitly; an incompl
 
 ## Platforms and security scope
 
-Use the [setup guide](../README.md#set-up-your-operator) to install the publisher. It requires Node.js 24 or newer. Dependencies are pinned in `package-lock.json` and installed with scripts disabled. See the security review for tested platforms and signing backends.
+Use the [operator setup steps](../AGENTS.md) to install the publisher. It requires Node.js 24 or newer. Dependencies are pinned in `package-lock.json` and installed with scripts disabled. See the security review for tested platforms and signing backends.
 
-`address`, `publish`, `renew`, `check`, `discover` and `close` are provided. `discover` verifies signatures and chain expiry; it does not select the cheapest/fastest quote. Listings advertise terms but do not enforce fee honesty. Clients must verify record authority/derived address, pricing inputs, quote and exact transaction before signing. Same-key protection depends on every public signer instance keeping the deny entry active. A single `getConfig` cannot prove every replica is safe. Only compatible raw-message Keychain signer backends have been established; other signer types fail closed rather than bypass signature checks.
+`protect`, `address`, `publish`, `renew`, `check`, `discover` and `close` are provided. `discover` verifies signatures and chain expiry; it does not select the cheapest/fastest quote. Listings advertise terms but do not enforce fee honesty. Clients must verify record authority/derived address, pricing inputs, quote and exact transaction before signing. Same-key protection depends on every public signer instance keeping the deny entry active. A single `getConfig` cannot prove every replica is safe. The runner requires raw-message signatures that verify against the operator. Memory signing has integration evidence; remote adapters have local tests but are not all live-tested. See [signer compatibility and pool limitations](SIGNING.md#listing-runner-compatibility).
 
 See the [security review](../tools/kora-publisher/SECURITY-REVIEW.md). In the 6 October 2026 Mac/Bunny mainnet test, 10 transactions finalized, all record rent and NEIRO returned, and network fees totaled 60,000 lamports. Both listings from that test were closed afterward. A later bounded test may recreate and retain a listing at the same address when explicitly requested; always read current chain state. Those historical receipts do not certify a newly installed operator or every supported platform.
 

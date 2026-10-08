@@ -1,8 +1,12 @@
 # Rust reference publisher
 
+**Developer reference.** Operator installation uses the [Node.js runner and current-main Kora](../../AGENTS.md). This optional Rust package pins `kora-lib` at historical revision `e77089ee00eaef212740fe24f534155c13a7bbb6`; that dependency is not the Kora server installation target. Its configuration parser may not support newer upstream fields. Its CLI and locking differ from the Node runner. Use one implementation at a time.
+
 A standalone operator-only executable. The running official Kora server and its CLI are unchanged. This package reuses the pinned upstream `kora-lib` configuration/signer builders, Solana Keychain and official SPL Record instruction builders; it exposes no HTTP endpoint and uses no Kora global state. The dependency is substantial even though the custom code is small.
 
-## Build and operate
+## Build the reference
+
+Run from `tools/kora-publisher`:
 
 ```
 cargo build --release --locked
@@ -23,7 +27,7 @@ neiro-kora-publisher --operator PUBLIC_KEY --config kora.toml --signers-config s
 
 Mainnet genesis is pinned by default. `--rpc-url` or `SOLANA_RPC_URL` selects the RPC; `--genesis` explicitly selects another network. Address derivation needs no signer/config credentials. Closing can work with an offline Kora endpoint or removed deny entry so funds are recoverable; it still needs the local config, correct signer and RPC network.
 
-## Required automatic renewal
+## Reference renewal command
 
 Invoke this one-shot command hourly through the host's service manager:
 

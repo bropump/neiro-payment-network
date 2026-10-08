@@ -1,5 +1,7 @@
 # Client integration: Surfpool test results
 
+Historical test evidence for the versions and environment below. For current instructions, use the [client / builder guide](../BUILD-WITH-NEIRO.md) or [operator setup](../../AGENTS.md).
+
 7 October 2026. [Back to the integration guide](../BUILD-WITH-NEIRO.md).
 
 These checks executed against two isolated, unchanged Kora instances and a Surfpool mainnet fork, using fresh local-only keys, synthetic balances and a deterministic Mock oracle. The signed listing URLs were mapped to loopback test endpoints; this does not test public HTTPS or live Jupiter price quality. It is not a mainnet benchmark. [Machine-readable results](client-practices-surfpool-2026-10-07.json).

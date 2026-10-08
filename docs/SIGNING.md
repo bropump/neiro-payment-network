@@ -33,7 +33,15 @@ The agent should use [Kora's signer examples](https://github.com/solana-foundati
 
 ## Listing runner compatibility
 
-The listing runner has adapters for **memory, Turnkey, Privy, Vault and Openfort**, using the same `signers.toml` and credential references as Kora. Memory has live signing evidence; the remote adapters have configuration and timeout tests but need verification with your chosen provider credentials. Para and other Kora backends are not currently supported by this runner.
+The listing runner has adapters for **memory, Turnkey, Privy, Vault and Openfort**, using compatible entries from Kora's `signers.toml` and credential references. Memory has live signing evidence; the remote adapters have configuration and timeout tests but need verification with your chosen provider credentials. Para and other Kora backends are not currently supported by this runner.
+
+Check these constraints before deployment:
+
+- **Custom HTTP options:** the runner rejects nonempty `http_config`, even where Kora supports it. Do not silently remove required provider settings to pass validation.
+- **Vault field names:** use `vault_addr_env`, `vault_token_env`, `key_name_env` and `pubkey_env`. The upstream example's older `addr_env` / `token_env` names do not match the inspected Kora parser or this runner. Validate against the deployed build.
+- **Signer pools:** `--signer-name NAME` selects the runner's local entry. The runner also requires the endpoint's unparameterized `getPayerSigner` response to name that operator and payment address. A rotating pool can return another signer and block publication or renewal. Use an endpoint consistently selecting the listed signer; do not bypass this guard or assume the flag controls Kora's pool.
+
+The [adapter source](../tools/kora-publisher/script/signer.ts) defines the accepted fields. Validate both services and test the selected backend's attestation and transaction signatures before claiming compatibility.
 
 Select a backend that both services support before funding a new deployment. Unsupported options fail closed. Keep the same public signer in Kora and the runner; changing custody does not require changing the public key if your provider supports that migration. Never move an existing key or change custody without the operator's instruction.
 

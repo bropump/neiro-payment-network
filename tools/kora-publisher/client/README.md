@@ -21,7 +21,7 @@ NEIRO has six decimals. `oracle.tokenPriceSol` is an independently obtained **pl
 
 `verifyQuote({listing, config, quote, costLamports, oracle, currentSlot, maxAgeSlots, maxFeeRaw})` returns verified `feeRaw` and `feeLamports` as BigInts. `listing` is the already authenticated record JSON; `config` is the `getConfig` result; `quote` is the `estimateTransactionFee` result. Free mode does not require cost/oracle/slot inputs. Fixed non-strict pricing does not require a cost input; strict fixed and margin do. `strict = true` rejects when the fixed lamport value cannot cover independently calculated costs. It does not mean a larger fee can silently be charged.
 
-The helper requires exact agreement with its independently supplied price, with no automatic tolerance. Kora's f64-to-Decimal oracle conversion, price movement between requests, or precision-boundary differences can cause conservative rejection. The caller must reproduce and verify the pinned oracle normalization; passing the operator's own price back to this helper is not independent verification. This is not yet a complete specification/verifier for every Kora-supported transaction shape: rent, priority fees, payer outflow, missing payment instructions and Token-2022 fees require a transaction-aware cost calculation by the caller. The live payment harness has only established the ordinary classic-SPL transfer shape.
+The helper requires exact agreement with its independently supplied price, with no automatic tolerance. Kora's f64-to-Decimal oracle conversion, price movement between requests, or precision-boundary differences can cause conservative rejection. The caller must reproduce and verify the pinned oracle normalization; passing the operator's own price back to this helper is not independent verification. This is not yet a complete specification/verifier for every Kora-supported transaction shape: rent, priority fees, payer outflow, missing payment instructions and Token-2022 fees require a transaction-aware cost calculation by the caller. The original mainnet payment harness established the ordinary classic-SPL transfer shape. Later program-specific Surfpool tests are listed in the [feature map](../../../docs/FEATURE-MAP.md); they do not make this helper a general transaction-cost calculator.
 
 See [using existing builders, security, speed and retry practices](../../../docs/BUILD-WITH-NEIRO.md#use-your-existing-program-or-transaction-builder) for the complete integration flow. The [7 October Surfpool results](../../../docs/BUILD-WITH-NEIRO.md#surfpool-verification--7-october-2026) exercise two margin operators, a paid transfer with new ATA rent, exact-message checks and fastest/cheapest selection.
 
@@ -31,7 +31,7 @@ Client tests cover free/fixed/margin calculations, fixed strictness, rounding, c
 
 On 6 October 2026, isolated loopback instances of Mac's unchanged Kora image using mainnet RPC returned a verified free zero-fee quote and rejected a fixed quote for stale oracle data. The existing Mac margin instance rejected stale pricing too. Positive fixed/margin calculations passed deterministic tests; these checks are **not successful mainnet fixed/free transfers or published fixed/free listings**. No transaction was broadcast. Request a free quote without `fee_token` to avoid Kora's otherwise unnecessary token-price lookup for zero.
 
-The isolated free/fixed signing endpoints rejected a one-lamport sponsor withdrawal with `allow_transfer = false`. The pinned library also confirms such a transfer is allowed when that permission is true and other limits permit it. Public Mac/Bunny configurations, including `allow_transfer = true` for the user's DBC flow, were not changed. Temporary instances and credential copies were removed. Upcoming `sponsor_only_programs` protection (#683 / PR #692) restricts untrusted-program access to the sponsor; it does not override explicitly allowed System transfers or make fixed/free pricing reimburse every cost.
+The isolated free/fixed signing endpoints rejected a one-lamport sponsor withdrawal with `allow_transfer = false`. The pinned library also confirms such a transfer is allowed when that permission is true and other limits permit it. Public Mac/Bunny configurations, including `allow_transfer = true` for the user's DBC flow, were not changed. Temporary instances and credential copies were removed. For the dated upstream status and limits of `sponsor_only_programs` (#683 / PR #692), see [configuration security](../../../CONFIGURATION.md). It must not be assumed present merely because an upstream proposal exists.
 
 ## Authenticate RPC-returned listing terms
 
@@ -42,6 +42,9 @@ The pure reader authenticates the exact v5 schema, operator/derived address, sig
 ### Reproduce the live Bunny signature check
 
 With Node.js 20 or later, this standalone check uses only built-in modules and Solana RPC. It includes the reader logic directly; it does not import repository files, fetch GitHub, load keys or install packages. Each RPC must return an anchored v5 listing, its finalized anchor block and finalized Clock data. A closed, unmigrated or expired Bunny listing is expected to fail; historical v4 verification does not establish present eligibility. Replace the public record address to inspect another operator.
+
+<details>
+<summary>Standalone RPC verification command</summary>
 
 ```sh
 node --input-type=module <<'JS'
@@ -212,6 +215,8 @@ for(const rpc of ['https://api.mainnet-beta.solana.com','https://solana-rpc.publ
 }
 JS
 ```
+
+</details>
 
 This only reads public data and sends no transactions. [`getBlock`](https://solana.com/docs/rpc/http/getblock) must supply the matching finalized blockhash and a non-null block time. Errors and missing history fail closed. The Clock account is read after the anchor with a minimum context slot; no local wall clock is substituted. Agreement between two RPCs is useful evidence, not cryptographic proof that either serves current chain state.
 

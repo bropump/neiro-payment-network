@@ -2,7 +2,7 @@
 
 Publish your Kora operator's URL and signed fee terms onchain, then keep the listing renewed automatically.
 
-**[Install and register your operator](../../../docs/OPERATOR-SETUP.md).** The guide covers prerequisites, protecting your listing in `kora.toml`, restarting Kora and starting the runner.
+**[Agent operator setup](../../../AGENTS.md)** · **[Installation details](../../../docs/OPERATOR-SETUP.md)**
 
 ## Commands
 
@@ -18,7 +18,9 @@ Run `node runner.ts COMMAND` with the relevant options:
 | `discover` | Scans and verifies onchain listings through your RPC. Does not select quotes. |
 | `close` | Closes the listing and returns its rent to the operator. Stop the worker first. |
 
-`renew`, `publish` and `check` take the operator, URL, config, signer-config and state-directory options shown in the main guide. `close` needs operator, signer config and the same state directory; it can work while Kora is offline. `--signer-name` selects one entry when your signer file contains several. Use `SOLANA_RPC_URL` for chain RPC and the existing private Kora signer environment for credentials.
+`renew` and `publish` take the operator, URL, config, signer-config and state-directory options shown in the setup guide. `check` needs operator, URL, config and the same state directory, but no signer configuration or credentials. It takes the local lock and can reconcile/archive a previously finalized receipt; it does not sign or write to the chain. Stop the worker before a manual check.
+
+`close` needs operator, signer config and the same state directory; it can work while Kora is offline. `--signer-name` selects a local entry, not the endpoint's pool response; see [signer compatibility](../../../docs/SIGNING.md#listing-runner-compatibility). Use `SOLANA_RPC_URL` for chain RPC and the existing private Kora signer environment for signing commands.
 
 ## Essential operating rules
 

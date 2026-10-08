@@ -1,7 +1,6 @@
 # Set up your NPN operator
 
-[Back to the network overview](../README.md)
-
+**[Agent operator procedure](../AGENTS.md)** · **[Client / builder guide](BUILD-WITH-NEIRO.md)**
 
 **Start here with an empty host. Finish with a funded, reachable operator, a verified onchain listing and automatic renewal.** The two core services are Kora, which handles payments, and the listing runner, which publishes and renews your terms. The optional Quicknode x402 route also needs a private RPC adapter.
 
@@ -137,7 +136,7 @@ Set these in the services' private environment:
 | `JUPITER_API_KEY` | Kora | Your Jupiter credential |
 | Signer variables from `signers.toml` | Both | Local key or remote-provider credentials |
 
-**Check:** both services select the intended public key. If the signer file contains multiple entries, select the runner's entry with `--signer-name NAME`; the Kora endpoint must select that same payer.
+**Check:** both services select the intended public key. `--signer-name NAME` selects only the runner's local entry. A rotating Kora pool can return another payer and block publication or renewal; check the [pool and backend limitations](SIGNING.md#listing-runner-compatibility).
 
 ## 2. Fund the operator and prepare NEIRO receipts
 
@@ -146,7 +145,7 @@ Send SOL to the operator's public wallet for listing rent, network fees and the 
 Validate the configuration, then use Kora to create any missing fee-receiving token account:
 
 ```sh
-kora --config /PRIVATE/kora.toml config validate
+kora --config /PRIVATE/kora.toml config validate --signers-config /PRIVATE/signers.toml
 kora --config /PRIVATE/kora.toml rpc initialize-atas --signers-config /PRIVATE/signers.toml --fee-payer-key YOUR_OPERATOR_PUBLIC_KEY
 ```
 
@@ -231,7 +230,7 @@ node runner.ts discover
 
 Use a separate customer wallet and the [direct-client payment flow](BUILD-WITH-NEIRO.md#start-with-a-payment). Discover the operator onchain, request a quote, verify the fee against its signed terms, and inspect the exact transaction. Send one small payment within the agreed amount, recipient and fee limits.
 
-The supplied config uses `max_price_staleness_slots = 0`: Jupiter prices are accepted without an age cutoff. This avoids blocking NEIRO quotes solely because its reference price has not recently updated, but accepts stale-price risk. Confirm the live value through `getConfig`; see [pricing policy](../CONFIGURATION.md#pricing-service) before choosing a stricter limit. Verify the paid quote against the signed terms and current pricing inputs. A free-sponsored payment does not prove paid pricing works.
+The supplied config uses `max_price_staleness_slots = 0`: Jupiter prices are accepted without an age cutoff. This avoids blocking NEIRO quotes solely because its reference price has not recently updated, but accepts stale-price risk. Confirm the live value through `getConfig`; see [pricing policy](../CONFIGURATION.md#pricing-service) before choosing a stricter limit. Verify the paid quote against the signed terms and current pricing inputs. A free-sponsored payment does not prove paid pricing works. For an explicitly free deployment, verify zero reimbursement and report free-only evidence; do not change its pricing to force a paid test.
 
 **Check:** the transaction finalized successfully, the recipient received the intended amount, and the operator's SOL cost and NEIRO reimbursement match the approved transaction. Save its signature and balance changes. Return test funds and close only eligible temporary test accounts; keep the operator's fee-receiving account and operational listing.
 

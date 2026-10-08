@@ -37,7 +37,7 @@ Check the charge against the signed fee terms, independently calculated costs an
 
 ### 5. Sign, send and confirm
 
-Approve the full transaction, sign with your wallet and request Kora's signature. Verify the returned message and signatures, send through Solana RPC and confirm the recipient and balance changes. [Signing and submission →](docs/BUILD-WITH-NEIRO.md#4-approve-and-sign)
+Simulate the completed transaction and reject errors. Approve it, sign with your wallet and request Kora's signature. Verify the returned message and signatures, send through Solana RPC and confirm the recipient and balance changes. [Simulation, signing and submission →](docs/BUILD-WITH-NEIRO.md#4-approve-and-sign)
 
 **Starting with zero SOL?** Tested paths include NEIRO transfers, account creation and a pump.fun buy. A SOL-priced purchase needs an explicit operator advance or conversion in addition to gas sponsorship. Our pump test included the advance: the buyer started and finished at zero SOL and paid only NEIRO. [Tested paths and limits →](docs/FEATURE-MAP.md)
 
@@ -49,7 +49,7 @@ Choose your host, signing wallet and markup. Run **official Kora from latest ups
 2. **Fund it.** Add SOL and prepare the NEIRO receiving account.
 3. **Protect and start.** Run `protect` to add your listing address to `kora.toml`; load it in every Kora instance sharing the key. Start HTTPS and verify public signing cannot modify the listing.
 4. **Publish and renew.** Run one supervised `renew --watch` service with persistent state. It publishes the signed listing and renews it automatically.
-5. **Verify it works.** Discover the listing through RPC, complete a paid test, check fees and balances, and verify restart and monitoring.
+5. **Verify it works.** Discover the listing through RPC, complete a payment using your chosen pricing mode, check fees and balances, and verify restart and monitoring.
 
 **[Agent: follow the setup procedure →](AGENTS.md)** · [Detailed installation commands](docs/OPERATOR-SETUP.md) · [RPC setup options](docs/OPERATOR-SETUP.md#free-rpc-options)
 
