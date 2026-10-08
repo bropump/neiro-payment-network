@@ -16,7 +16,7 @@ Run an operator using official Kora and the NEIRO listing runner on a compatible
 
 ## Set up your operator
 
-**Start here with an empty host. Finish with a funded, reachable operator, a verified onchain listing and automatic renewal.** You will run two services: Kora handles payments; the listing runner publishes and renews your terms.
+**Start here with an empty host. Finish with a funded, reachable operator, a verified onchain listing and automatic renewal.** The two core services are Kora, which handles payments, and the listing runner, which publishes and renews your terms. The optional Quicknode x402 route also needs a private RPC adapter.
 
 Follow the steps in order. If you already run Kora, reuse your signer, funding and private configuration; check the relevant steps rather than replacing them.
 
@@ -24,9 +24,28 @@ Follow the steps in order. If you already run Kora, reuse your signer, funding a
 
 You choose the host and region: a Mac, Linux server or VPS, Windows with WSL, or a compatible cloud container service. The requirement is a supported Kora installation plus Node.js 24+ for the listing runner, not a particular hosting company. Check OS and CPU support for both; ARM machines such as Raspberry Pi need a compatible Kora build or image.
 
-Choose a machine or cloud host that stays online, a public HTTPS hostname for Kora, a **Solana mainnet RPC endpoint**, and a [Jupiter API key](https://portal.jup.ag/). The RPC must support finalized block/account reads and `getProgramAccounts` for listing discovery. Provide persistent storage for the runner's state.
+Choose a machine or cloud host that stays online, a public HTTPS hostname for Kora, a **Solana mainnet RPC endpoint**, and a [Jupiter API key](https://developers.jup.ag/portal). The RPC must support finalized block/account reads and `getProgramAccounts` for listing discovery. Provide persistent storage for the runner's state.
 
 Keep a short deployment note with the host, hostname, config paths and chosen fee. Store credentials in the host's secret manager or private service environment, outside this repository.
+
+#### Free RPC options
+
+You can start with free RPC access. These are provider allowances, not free Solana transactions: the operator still funds SOL fees, account rent and hosting. Limits below were checked on **8 October 2026**; check the linked provider documentation during setup.
+
+| Provider | Free access | How to connect |
+|---|---|---|
+| **Helius** | 1 million credits/month; 10 requests/second and 1 `sendTransaction`/second | [Sign up for the free plan](https://dashboard.helius.dev/signup?plan=free), create an API key and copy the mainnet RPC URL from the dashboard. Use that private URL for both services. |
+| **Quicknode x402** | Up to 1 million credits per wallet/month through its test-token faucet route | An agent can generate a wallet, authenticate and obtain credits without email signup or a provider API key. Stock Kora needs a private RPC adapter for this route; it is not a bare URL replacement. |
+
+**Helius is the direct setup path.** The free dashboard signup is separate from Helius's agent signup, which currently requires 1 USDC and approximately 0.001 SOL. Use the full mainnet RPC URL, not the Sender transaction-submission endpoint. See [Helius pricing](https://www.helius.dev/pricing) and [agent signup](https://www.helius.dev/agents).
+
+**For agent-managed Quicknode access:** follow the provider's [x402 instructions](https://x402.quicknode.com/llms.txt). Generate and privately persist a dedicated Base Sepolia wallet; sign in through `/auth`, claim `/drip`, and exchange faucet test USDC for credits. The current faucet grants 10 test USDC; 1 buys 100,000 credits. Send authenticated RPC requests to `https://x402.quicknode.com/solana-mainnet`. The funding chain is separate from the RPC network: this route was tested against real Solana mainnet.
+
+The faucet can be claimed again each UTC calendar month, subject to its daily budget. The shared free usage cap resets at 00:00 UTC on the first; credits do not refill merely because the date changes. Automate authentication refresh, credit purchases from test tokens and monthly faucet claims. Do not switch to real-money payments without an authorized budget.
+
+The agent must install and supervise a private adapter that adds the Bearer token and handles that lifecycle, then point `RPC_URL` and `SOLANA_RPC_URL` at it. Keep wallet secrets and tokens private, preserve RPC response bytes (including large integers), and expose the adapter only to the two services. **This repository does not currently ship that adapter.** Our isolated adapter tests passed mainnet discovery, unsigned simulations and Kora NEIRO quoting; signed settlement, unattended monthly replenishment and production reliability through this route remain unverified. Complete the installation checks below before declaring an operator ready.
+
+**Jupiter remains separate.** The tested stock Kora build with `price_source = "Jupiter"` requires `JUPITER_API_KEY`. Jupiter's public price API and MCP work keylessly, but they do not replace that setting in unchanged Kora. Obtain a [free Jupiter key](https://developers.jup.ag/docs/portal/setup); keep Kora and its SDK unchanged.
 
 ### 2. Install Kora and the listing runner
 
