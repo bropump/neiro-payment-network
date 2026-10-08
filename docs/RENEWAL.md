@@ -1,6 +1,6 @@
 # Run and maintain your listing
 
-For installation, use the [main README](../README.md#set-up-your-operator). The recommended setup is **one supervised `renew --watch` process per operator signer**. It creates the listing on its first run, then checks hourly. Unchanged terms renew after 24 chain hours; clients reject them after 48 hours. The host clock only schedules checks.
+For installation, use the [operator setup guide](OPERATOR-SETUP.md). The recommended setup is **one supervised `renew --watch` process per operator signer**. It creates the listing on its first run, then checks hourly. Unchanged terms renew after 24 chain hours; clients reject them after 48 hours. The host clock only schedules checks.
 
 ## Keep the worker running
 

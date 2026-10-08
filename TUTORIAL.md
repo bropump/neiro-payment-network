@@ -8,7 +8,7 @@ You run official **Kora**, Solana's payment sponsorship software, with our **NEI
 
 Help people use Solana without keeping SOL in their wallets, and charge for providing that service. You choose where to run it and what to charge. You keep control of your operator wallet.
 
-This is a service you operate, not staking or a guaranteed return. You receive fees when customers use your operator. You fund hosting and the SOL your operator spends; RPC access can start on a [free provider allowance](README.md#free-rpc-options). Publishing a listing does not guarantee traffic or profit.
+This is a service you operate, not staking or a guaranteed return. You receive fees when customers use your operator. You fund hosting and the SOL your operator spends; RPC access can start on a [free provider allowance](docs/OPERATOR-SETUP.md#free-rpc-options). Publishing a listing does not guarantee traffic or profit.
 
 ## How you get paid
 
@@ -27,7 +27,7 @@ Tell your agent which machine or host to use: your Mac, a server or a cloud cont
 
 Have a dedicated operator wallet funded with SOL and a NEIRO token account for reimbursement. Keep enough SOL for your intended workload. Your agent can help prepare the accounts; an SPL Record listing does not impose a fixed SOL or NEIRO deposit beyond its rent.
 
-The agent also guides you through [RPC access](README.md#free-rpc-options)—Helius with free signup, or Quicknode x402 through an agent-managed adapter—the Jupiter pricing key required by the current Kora configuration, and a public HTTPS endpoint. Keep credentials in secret storage, never in the repository or a chat message.
+The agent also guides you through [RPC access](docs/OPERATOR-SETUP.md#free-rpc-options)—Helius with free signup, or Quicknode x402 through an agent-managed adapter—the Jupiter pricing key required by the current Kora configuration, and a public HTTPS endpoint. Keep credentials in secret storage, never in the repository or a chat message.
 
 ## 2. Ask your AI to set it up
 

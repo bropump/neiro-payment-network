@@ -2,7 +2,7 @@
 
 Publish your Kora operator's URL and signed fee terms onchain, then keep the listing renewed automatically.
 
-**[Install and register your operator](../../../README.md#set-up-your-operator).** The guide covers prerequisites, protecting your listing in `kora.toml`, restarting Kora and starting the runner.
+**[Install and register your operator](../../../docs/OPERATOR-SETUP.md).** The guide covers prerequisites, protecting your listing in `kora.toml`, restarting Kora and starting the runner.
 
 ## Commands
 

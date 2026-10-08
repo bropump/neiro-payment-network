@@ -1,6 +1,6 @@
 # Publish your operator
 
-Use the [main setup guide](../README.md#set-up-your-operator). Its `renew --watch` command creates your listing on the first run and maintains it afterward. You do not need a separate registration step.
+Use the [operator setup guide](OPERATOR-SETUP.md). Its `renew --watch` command creates your listing on the first run and maintains it afterward. You do not need a separate registration step.
 
 Each operator has its own account under the existing SPL Record program. There is no shared directory account to create or central router to contact. `protect` derives that individual listing address and adds it to the operator's Kora deny list. Restart Kora before publishing.
 

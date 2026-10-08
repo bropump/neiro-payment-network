@@ -1,12 +1,12 @@
 # Agent checklist: complete the README setup
 
-Use the [main README](../README.md#set-up-your-operator) as the single installation guide. Carry all nine steps through from an empty host to the finish checks; do not hand back a pile of alternative installers. Use existing permissions, fees and signer choices. Ask only for missing host access, signer, endpoint or spending limits. Keep official Kora and its SDK unchanged.
+Use the [operator setup guide](OPERATOR-SETUP.md) as the single installation guide. Carry all five steps through from an empty host to the finish checks; do not hand back a pile of alternative installers. Use existing permissions, fees and signer choices. Ask only for missing host access, signer, endpoint or spending limits. Keep official Kora and its SDK unchanged.
 
 ## Before publication
 
-For a new host, install official Kora and Node, set up RPC/Jupiter credentials and HTTPS, create or select the dedicated signer, copy private templates, and choose the operator's fees. The main README is the ordered path; do not treat a running Kora service or funded wallet as prerequisites the user must already have.
+For a new host, install official Kora and Node, set up RPC/Jupiter credentials and HTTPS, create or select the dedicated signer, copy private templates, and choose the operator's fees. The operator setup guide is the ordered path; do not treat a running Kora service or funded wallet as prerequisites the user must already have.
 
-- Record the README's required inputs before starting. Use the [standard RPC path](../README.md#free-rpc-options): reuse working access, otherwise Helius if the user has not chosen another provider. Complete any required login/verification, store the full mainnet RPC URL privately, and obtain or reuse the Jupiter key required by stock Kora. A public keyless Jupiter response does not prove Kora can quote without a key.
+- Record the setup guide's required inputs before starting. Use the [standard RPC path](OPERATOR-SETUP.md#free-rpc-options): reuse working access, otherwise Helius if the user has not chosen another provider. Complete any required login/verification, store the full mainnet RPC URL privately, and obtain or reuse the Jupiter key required by stock Kora. A public keyless Jupiter response does not prove Kora can quote without a key.
 - Treat Quicknode x402 as an advanced integration when requested or already available. This repository supplies no adapter installer. Verify mainnet genesis, finalized block/account reads, `getProgramAccounts`, unsigned simulation and Kora NEIRO quoting through the actual adapter. Supervise it, preserve its wallet/session state, and verify authentication refresh and credit replenishment within the authorized budget. Include it in restart, monitoring and end-to-end payment checks. Report monthly renewal as unverified until observed.
 - Establish whether this is a retained operator or a temporary test. Do not advertise an existing test service as production by assumption.
 - Locate the actual private `kora.toml`, `signers.toml`, signer environment, public signer and HTTPS endpoint. For a new deployment, use the repository templates and upstream Kora installation instructions. Choose the user's fees; do not silently adopt the example 50% margin.
@@ -27,7 +27,7 @@ Before replacing an older Rust worker, stop it everywhere and verify zero old pr
 
 ## Finish with a short operating note
 
-For each README finish check, report **PASS**, **FAIL** or **NOT RUN**, with the command/result or finalized transaction receipt that supports it. A quote or unsigned simulation is not a completed payment; a running terminal is not a supervised service.
+For each operator setup finish check, report **PASS**, **FAIL** or **NOT RUN**, with the command/result or finalized transaction receipt that supports it. A quote or unsigned simulation is not a completed payment; a running terminal is not a supervised service.
 
 Give the user the public signer, listing and endpoint; first publication signature/cost; checks that passed; any remaining issue; and their exact service start/status/stop commands. Record private config/state paths without credential values. Link the [update instructions](RENEWAL.md#change-fees-or-update-the-script).
 
