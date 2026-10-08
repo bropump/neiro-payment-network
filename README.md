@@ -4,11 +4,10 @@
 
 # NEIRO Payment Network (NPN)
 
-## Run an operator with your agent
+## Start here with your agent
 
-Mac · Raspberry Pi · PC · Cloud
-
-**[Give your agent these setup instructions →](AGENTS.md)**
+- **[Use NPN as a client →](docs/BUILD-WITH-NEIRO.md)** Pay transaction costs in NEIRO using your existing wallet and app.
+- **[Run an operator →](AGENTS.md)** Set up on a Mac, Raspberry Pi, PC or in the cloud and choose your fees.
 
 ---
 
