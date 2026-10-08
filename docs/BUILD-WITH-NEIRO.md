@@ -88,6 +88,8 @@ Persist the expected signature when available and blockhash lifetime before send
 
 Funding an ATA does not give the operator control of it. Test cleanup used the recipient’s signature to close the emptied ATA and return rent to the operator, consistent with [Solana’s close-authority rules](https://solana.com/docs/tokens/basics/close-account).
 
+**Pump.fun buy from a zero-SOL wallet is also tested.** Use the operator as `payer` in `init_user_volume_accumulator` while keeping the buyer as `user`; use the operator to fund the buyer's token ATA. In the buy transaction, explicitly advance the required SOL from the operator to the buyer and reimburse the operator in NEIRO for the advance, rent and network fee under its advertised pricing. Our buyer started and ended at zero SOL and received the purchased tokens. This requires an operator that permits and quotes the advance; Kora does not add it automatically. [Exact tested sequence, amounts and limits](test-results/pump-buy-surfpool-2026-10-08.md).
+
 For another program, inspect its actual instructions and documented account roles. Preserve swap slippage, minimum output, lookup tables and setup/cleanup instructions. Do not infer a funding restriction merely because the app is untested, or replace every user address with the operator.
 
 For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessage` for the completed message plus `getMinimumBalanceForRentExemption(165)`. Priority fees are already included in the network fee. Existing ATAs add no rent. Other account types and program outflows need their own calculation.

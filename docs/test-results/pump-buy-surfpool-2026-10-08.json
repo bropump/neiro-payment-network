@@ -1,0 +1,121 @@
+{
+  "environment": "Surfpool mainnet fork, synthetic keys/balances, Mock NEIRO price 0.001 SOL",
+  "operator": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE",
+  "buyer": "qN9GDdaoGLTNYTiAXmQ8rSdovtrYZhU7RjYjWprkW8P",
+  "mint": "Hyhhp8UyzTLUacFn8r7KAAZekmBqBWJmjSQabSGbJmbe",
+  "transactions": [
+    {
+      "label": "sponsored-buyer-account",
+      "signature": "5NoSKQLt6vNieEyqHUoLhvtL6VAeRz2MufMHUBhhT5W5R3VQY4Rc1RubimLSt5UXhc4kTbBkps1bT4dopCf1NVpq",
+      "costLamports": 1854400,
+      "networkFee": 10000,
+      "quote": {
+        "fee_in_lamports": 1947120,
+        "fee_in_token": 1947120,
+        "signer_pubkey": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE",
+        "payment_address": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE"
+      },
+      "before": {
+        "operatorSol": 19994002440,
+        "buyerSol": 0,
+        "operatorNeiro": "0",
+        "buyerNeiro": "1000000000"
+      },
+      "after": {
+        "operatorSol": 19992148040,
+        "buyerSol": 0,
+        "operatorNeiro": "1947120",
+        "buyerNeiro": "998052880"
+      },
+      "signToFinalizedMs": 33.5712080000003
+    },
+    {
+      "label": "sponsored-buy",
+      "signature": "35pFp2CwE7AJ6NwLbGdpqHQAEot1RhRHRXZwEhvsJS7H9kEXmnydXK1Wx9WvymZBPKJizM4oL4fpdciDxRt8BKvb",
+      "costLamports": 3003270,
+      "networkFee": 10000,
+      "quote": {
+        "fee_in_lamports": 3153434,
+        "fee_in_token": 3153434,
+        "signer_pubkey": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE",
+        "payment_address": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE"
+      },
+      "before": {
+        "operatorSol": 19992148040,
+        "buyerSol": 0,
+        "operatorNeiro": "1947120",
+        "buyerNeiro": "998052880"
+      },
+      "after": {
+        "operatorSol": 19989144770,
+        "buyerSol": 0,
+        "operatorNeiro": "5100554",
+        "buyerNeiro": "994899446"
+      },
+      "signToFinalizedMs": 21.393374999999878
+    }
+  ],
+  "listing": {
+    "address": "DpDksfPyr2JxyTHM3xycvMX6t9DA5f7eiJgRbmuGoMLd",
+    "terms": {
+      "anchor_blockhash": "SURFNETxSAFEHASHxxxxxxxxxxxxxxxxxxx1b17x37x",
+      "anchor_slot": 454493040,
+      "genesis": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+      "mint": "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+      "operator": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE",
+      "oracle": "Mock",
+      "payment": "9iFvZ57MWAiMefcysaUwfPEWzXyLVp4wqHWFQH7TyzWE",
+      "price": {
+        "margin": 0.05,
+        "type": "margin"
+      },
+      "url": "https://a.example/",
+      "v": 5
+    },
+    "signatureVerified": true,
+    "localEndpointMapping": "https://a.example/ -> http://127.0.0.1:48210 (test only)"
+  },
+  "baseline": {
+    "error": {
+      "InstructionError": [
+        2,
+        {
+          "Custom": 1
+        }
+      ]
+    }
+  },
+  "purchasePrincipalLamports": "28310",
+  "purchaseAdvanceLamports": 919190,
+  "boughtTokensRaw": "1000000000",
+  "pass": true,
+  "negativeChecks": {
+    "underpaymentRejectedBeforeBroadcast": "{\n  \"code\": -32000,\n  \"message\": \"Invalid transaction: Insufficient token payment. Required 1947120 lamports\",\n  \"data\": {\n    \"error_type\": \"InvalidTransaction\"\n  }\n}",
+    "balancesUnchanged": true,
+    "changedBlockhashInvalidatesOperatorSignature": true
+  },
+  "cleanup": {
+    "signature": "4DgG22m9ry6ivUGmfedqKWP3jetjzZaEH3kLGEWX3n4n9yuPYirJT9L3GMxmVye2mzRKyPtP1g4TtmWMV1R7RbAW",
+    "returnedToOperatorLamports": 3918480,
+    "ataRent": 2074080,
+    "volumeRent": 1844400,
+    "networkFeePaidByFixtureCreator": 10000,
+    "buyerSol": 0,
+    "accountsAbsent": true,
+    "disposableTokensBurned": "1000000000",
+    "listing": {
+      "record": "DpDksfPyr2JxyTHM3xycvMX6t9DA5f7eiJgRbmuGoMLd",
+      "status": "finalized",
+      "signature": "4ZTqfnJM6vzUqCSFPfsewBbbpzyrMuBH8xuiqx1a7vteX7NQ351XoUQuwCsZcaBB4Zj6NXviMvKZVUYpfaAJH6bk",
+      "fee": 5000,
+      "absent": true
+    }
+  },
+  "fixtureCreate": "3k8JXkQcLs7g5gkJBBPi3jir8jrgjM5GG4F4acvAQts8TLr1iQoaxhpYd65SGM4953zPH1maaKwrhNWrq8Dx5dRq",
+  "versions": {
+    "koraImage": "ghcr.io/solana-foundation/kora@sha256:fc465ca4fc97f317f1cdb857dde382ff0ad306af81d287d7805bba67ca35c247",
+    "pumpSdk": "2.0.0",
+    "node": "v24.3.0",
+    "surfpool": "1.5.0"
+  }
+}
