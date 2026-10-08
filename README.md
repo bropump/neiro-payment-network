@@ -20,6 +20,20 @@ Run an operator using official Kora and the NEIRO listing runner on a compatible
 
 Follow the steps in order. If you already run Kora, reuse your signer, funding and private configuration; check the relevant steps rather than replacing them.
 
+**Standard setup:** reuse a working mainnet RPC, or choose Helius's free dashboard plan if none has been chosen. Use a Jupiter API key and official Kora. Quicknode x402 is an advanced integration with additional work; do not select it automatically just because it avoids signup.
+
+Before starting, record these inputs in the private deployment note. Reuse known answers and ask only for what is missing:
+
+| Input | What the agent needs |
+|---|---|
+| Host and HTTPS | Access to the chosen machine/container host and its public hostname or managed ingress |
+| RPC and pricing | Mainnet RPC URL and Jupiter API key, supplied through private storage |
+| Signer | Existing operator identity and custody, or the selected backend for a new dedicated wallet |
+| Fee and funding | User-selected fee, SOL operating budget and transaction limits |
+| Payment test | Customer wallet access and authorized recipient, amount and maximum fee |
+
+An agent can install and configure the services; account login/verification, unavailable hosting access and wallet funding may still require the operator. Never ask for secret values in chat.
+
 ### 1. Choose the host and connection details
 
 You choose the host and region: a Mac, Linux server or VPS, Windows with WSL, or a compatible cloud container service. The requirement is a supported Kora installation plus Node.js 24+ for the listing runner, not a particular hosting company. Check OS and CPU support for both; ARM machines such as Raspberry Pi need a compatible Kora build or image.
@@ -35,15 +49,28 @@ You can start with free RPC access. These are provider allowances, not free Sola
 | Provider | Free access | How to connect |
 |---|---|---|
 | **Helius** | 1 million credits/month; 10 requests/second and 1 `sendTransaction`/second | [Sign up for the free plan](https://dashboard.helius.dev/signup?plan=free), create an API key and copy the mainnet RPC URL from the dashboard. Use that private URL for both services. |
-| **Quicknode x402** | Up to 1 million credits per wallet/month through its test-token faucet route | An agent can generate a wallet, authenticate and obtain credits without email signup or a provider API key. Stock Kora needs a private RPC adapter for this route; it is not a bare URL replacement. |
+| **Quicknode x402 — advanced** | Up to 1 million credits per wallet/month through its test-token faucet route | Agent access was tested. Requires a separately implemented private RPC adapter; no adapter installer is included here. See the integration notes below. |
 
-**Helius is the direct setup path.** The free dashboard signup is separate from Helius's agent signup, which currently requires 1 USDC and approximately 0.001 SOL. Use the full mainnet RPC URL, not the Sender transaction-submission endpoint. See [Helius pricing](https://www.helius.dev/pricing) and [agent signup](https://www.helius.dev/agents).
+**Set up Helius:**
+
+1. Reuse an existing Helius key, or complete the [free dashboard signup](https://dashboard.helius.dev/signup?plan=free), including any login/email verification.
+2. Copy the full **mainnet RPC URL** into private storage. Use that same URL for Kora's `RPC_URL` and the runner's `SOLANA_RPC_URL` in step 3. The Sender endpoint only submits transactions; use the full RPC service.
+3. Obtain or reuse the separate Jupiter API key, then continue to installation step 2 below.
+
+The free dashboard plan is separate from [Helius's agent signup](https://www.helius.dev/agents), which currently requires 1 USDC and approximately 0.001 SOL. [Helius pricing](https://www.helius.dev/pricing).
+
+<details>
+<summary>Quicknode x402: agent bootstrap tested; adapter integration required</summary>
+
+Choose this route when requested, or when a working adapter is already available. These are integration requirements, not a supplied installer. An agent must implement and verify the missing adapter before using it for an operator.
 
 **For agent-managed Quicknode access:** follow the provider's [x402 instructions](https://x402.quicknode.com/llms.txt). Generate and privately persist a dedicated Base Sepolia wallet; sign in through `/auth`, claim `/drip`, and exchange faucet test USDC for credits. The current faucet grants 10 test USDC; 1 buys 100,000 credits. Send authenticated RPC requests to `https://x402.quicknode.com/solana-mainnet`. The funding chain is separate from the RPC network: this route was tested against real Solana mainnet.
 
 The faucet can be claimed again each UTC calendar month, subject to its daily budget. The shared free usage cap resets at 00:00 UTC on the first; credits do not refill merely because the date changes. Automate authentication refresh, credit purchases from test tokens and monthly faucet claims. Do not switch to real-money payments without an authorized budget.
 
 The agent must install and supervise a private adapter that adds the Bearer token and handles that lifecycle, then point `RPC_URL` and `SOLANA_RPC_URL` at it. Keep wallet secrets and tokens private, preserve RPC response bytes (including large integers), and expose the adapter only to the two services. **This repository does not currently ship that adapter.** Our isolated adapter tests passed mainnet discovery, unsigned simulations and Kora NEIRO quoting; signed settlement, unattended monthly replenishment and production reliability through this route remain unverified. Complete the installation checks below before declaring an operator ready.
+
+</details>
 
 **Jupiter remains separate.** The tested stock Kora build with `price_source = "Jupiter"` requires `JUPITER_API_KEY`. Jupiter's public price API and MCP work keylessly, but they do not replace that setting in unchanged Kora. Obtain a [free Jupiter key](https://developers.jup.ag/docs/portal/setup); keep Kora and its SDK unchanged.
 
@@ -194,6 +221,6 @@ Until the payment or protection check passes, describe the setup as incomplete. 
 
 Give it this repository and say:
 
-> Set up a NEIRO operator from zero on my chosen host. Follow all nine README steps through to the finish checks, including Kora installation, signer and funding, protected config, HTTPS, publication, supervised renewal, direct discovery and an authorized test payment. Reuse anything I already have. Ask only for missing choices or access, keep credentials private, and leave exact operating commands and receipts. Report any unfinished check explicitly.
+> Set up a NEIRO operator on my chosen host using all nine README steps and the agent verification checklist. Reuse my existing host access, signer, RPC, Jupiter key and fee choices. If no RPC is chosen, use the standard Helius path; treat Quicknode x402 as a separate integration only when requested. Complete installation, protected config, HTTPS, publication, supervised renewal, discovery and the authorized payment test. Ask only for missing inputs, keep credentials private, and leave exact operating commands and receipts. Mark every finish check PASS, FAIL or NOT RUN with evidence. Do not report the setup complete while a required check is unfinished.
 
 [Agent verification checklist](docs/AGENT-SETUP.md) · [Operations](docs/RENEWAL.md) · [Client integration](docs/BUILD-WITH-NEIRO.md) · [Record format](docs/SPL-RECORD-LISTINGS.md#operator-attestation-v5) · [Security review](tools/kora-publisher/SECURITY-REVIEW.md)
