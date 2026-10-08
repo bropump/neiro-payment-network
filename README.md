@@ -36,7 +36,7 @@ Approve the full transaction, sign with your wallet and request Kora's signature
 
 ## Set up your operator
 
-Choose your host, signing wallet and markup. Run official Kora for payments and the Node.js listing runner for onchain discovery and renewal.
+Choose your host, signing wallet and markup. Run **official Kora from latest upstream `main`**, including merged fixes, plus the Node.js listing runner for onchain discovery and renewal. Use the [verified install commands](docs/OPERATOR-SETUP.md#install-kora-and-the-listing-runner); a stable release or old test image is not the installation target.
 
 1. **Install and configure.** Install Kora and Node.js 24+, select your signer and choose your margin, fixed NEIRO fee or free sponsorship.
 2. **Fund it.** Add SOL and prepare the NEIRO receiving account.

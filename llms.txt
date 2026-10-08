@@ -6,6 +6,8 @@
 
 For “use NEIRO Payment Network,” start with [wallet and app compatibility](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md#check-your-wallet-and-app-first), not operator installation. Inspect the existing wallet's sign-only API and the app's instruction/unsigned-transaction builder. Preserve the user authority, set operator fee/rent payers where supported, and verify the completed quote and message. Use existing Solana libraries and plain Kora JSON-RPC; extra SDKs are optional. Verify the completed transaction’s quote after adding reimbursement, correct that instruction and re-quote within bounded retries before signing. Name the actual APIs and test evidence instead of guessing from wallet/app brands. Do not create a replacement wallet or silently spend user SOL.
 
+Kora must track latest official upstream main, not a stable crates.io release or a historical test image. Resolve and verify the source SHA before installation; configure the host to check for main updates every five minutes. The listing runner does not upgrade Kora.
+
 Operator installation has one canonical guide: [operator setup guide](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/OPERATOR-SETUP.md). Follow its five steps from host/software installation through signer, funding, protected config, HTTPS, publication, supervised renewal, verified discovery and a direct test payment. Run `protect` on the actual private Kora config before public startup. The agent checklist adds verification, not another installer.
 
 - [Feature map and test coverage](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/FEATURE-MAP.md)

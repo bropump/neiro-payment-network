@@ -1,15 +1,11 @@
-# Join the NEIRO GAS Network
+# Join the NEIRO Payment Network (NPN)
 
-Follow the [zero-to-running setup guide](../README.md#set-up-your-operator) in order:
+Follow the [five-step operator setup guide](OPERATOR-SETUP.md):
 
-1. Choose the host, HTTPS hostname and RPC.
-2. Install Kora and the listing runner.
-3. Configure the signing wallet, private files and fees.
-4. Fund SOL and prepare the NEIRO fee-receiving account.
-5. Add the listing address to Kora's deny list.
-6. Start Kora, connect HTTPS and verify protection.
-7. Publish the listing and start renewal.
-8. Install service startup, restart both services and verify discovery.
-9. Complete a direct test payment and the finish checks.
+1. Install latest upstream-main Kora and the listing runner; select your signer and fee.
+2. Fund SOL and prepare the NEIRO receiving account.
+3. Protect your listing address, start Kora and verify HTTPS and signing protection.
+4. Publish and supervise renewal; configure the upstream-main update check.
+5. Verify discovery, a paid transaction, restart and monitoring.
 
-The main guide contains the commands and expected results. There is no central registration service: clients discover operators' signed SPL Record listings through Solana RPC.
+The guide contains the commands and finish checks. There is no central registration service: clients discover signed operator listings through Solana RPC.

@@ -65,7 +65,38 @@ The agent must install and supervise a private adapter that adds the Bearer toke
 
 ### Install Kora and the listing runner
 
-Install [official Kora for your host](https://solana.com/docs/tools/kora/operators#deployment). For container hosting, the upstream main image is `ghcr.io/solana-foundation/kora:edge`; select a successfully published revision and pin its digest in the deployment. The current upstream edge image targets Linux amd64; check your host's architecture before choosing it. For a native installation, build official Kora from the selected upstream `main` commit; reuse an existing executable only when its build revision is known and matches that selection. See the [upstream image workflow](https://github.com/solana-foundation/kora/blob/main/.github/workflows/docker-edge.yml).
+**Kora version: always official upstream `main`, including merged fixes.** Do not install a crates.io release such as `cargo install kora-cli --version 2.0.5`, use a release tag, or copy an old image digest from a test report. The commit SHA identifies the code; the CLI version alone does not.
+
+**Container installation (no local Rust compilation):** use a running Docker-compatible engine and confirm its context is the intended host. The [official edge workflow](https://github.com/solana-foundation/kora/blob/main/.github/workflows/docker-edge.yml) currently publishes Linux amd64; ARM hosts need working amd64 emulation or a native source build. Run this block in `sh`/`bash` on that host:
+
+```sh
+set -eu
+NPN_KORA_SHA="$(git ls-remote https://github.com/solana-foundation/kora.git refs/heads/main | cut -f1)"
+test "${#NPN_KORA_SHA}" -eq 40
+docker pull --platform linux/amd64 ghcr.io/solana-foundation/kora:edge
+NPN_KORA_REVISION="$(docker image inspect ghcr.io/solana-foundation/kora:edge --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+if [ "$NPN_KORA_REVISION" != "$NPN_KORA_SHA" ]; then
+  echo 'Edge does not match current main. Wait for its build and repeat; do not use an older release.' >&2
+  exit 1
+fi
+NPN_KORA_IMAGE="$(docker image inspect ghcr.io/solana-foundation/kora:edge --format '{{index .RepoDigests 0}}')"
+printf 'Kora main: %s\nDeploy image: %s\n' "$NPN_KORA_SHA" "$NPN_KORA_IMAGE"
+docker run --rm --platform linux/amd64 "$NPN_KORA_IMAGE" kora --version
+```
+
+Save that SHA and digest in the deployment note and use the digest for the service. The image command is **`IMAGE kora ...`**, not `IMAGE --config ...`: upstream defines `CMD ["kora"]`, not an entrypoint. Later `kora` commands in this guide run inside that same image with the private config mounts and environment provided by your host.
+
+**Native installation:** when a container is unsuitable, install Rust and upstream's build prerequisites, then build the exact current-main revision into a dedicated installation directory. This is a Kora build; the Node listing runner needs no compilation:
+
+```sh
+set -eu
+NPN_KORA_SHA="$(git ls-remote https://github.com/solana-foundation/kora.git refs/heads/main | cut -f1)"
+test "${#NPN_KORA_SHA}" -eq 40
+cargo install --git https://github.com/solana-foundation/kora.git --rev "$NPN_KORA_SHA" --locked --root "$HOME/.local/share/npn-kora" kora-cli
+"$HOME/.local/share/npn-kora/bin/kora" --version
+```
+
+Use this absolute executable path in the service; an older `kora` elsewhere on `PATH` is not the selected build. Record its source SHA and binary hash. Do not change the supplied security config to accommodate an old binary.
 
 Install [Node.js 24 or newer](https://nodejs.org/en/download) (includes npm) and [Git](https://git-scm.com/downloads) on the runner's host, then:
 
@@ -78,9 +109,9 @@ node runner.ts --help
 
 Keep this directory as the runner's working directory. The following `node runner.ts` commands run here; `kora` commands run on the Kora host or inside its container with the same arguments. Replace `/PRIVATE/...`, `YOUR_OPERATOR_PUBLIC_KEY` and `https://YOUR_OPERATOR_HOST/` throughout with your actual paths and public details. Use absolute paths accessible to each service.
 
-**Use current upstream `main` at setup or upgrade time.** Resolve its commit SHA, check the [edge build](https://github.com/solana-foundation/kora/actions/workflows/docker-edge.yml) succeeded for that same SHA, and pull the matching image. Verify its `org.opencontainers.image.revision` label and deploy the immutable image digest. A cached `edge` image or `kora --version` alone does not establish the source revision. If the latest build is unavailable, report that explicitly rather than calling an older image latest. For a native build, record the checked-out source SHA and built executable hash.
+Repeat main resolution at deployment time if setup took long enough for upstream to change. An unavailable or failing latest build is an update blocker, not permission to silently substitute a stable release.
 
-**Check:** record the source SHA, image digest (or native binary hash), and CLI version of the deployment actually running. `node --version` reports 24 or newer and the runner prints its commands. Existing operators do not automatically update when upstream changes; upgrade deliberately, preserve config/signer/state, and repeat protection and payment checks before declaring the new deployment ready.
+**Check:** record the source SHA, image digest (or native binary hash), and CLI version of the deployment actually running. `node --version` reports 24 or newer and the runner prints its commands. Install the host-managed update check described in step 4 so the service continues to track main. The listing runner does not update Kora.
 
 ### Select the signer and your fee
 
@@ -184,6 +215,8 @@ Install the exact `renew --watch` command above as **one supervised service per 
 
 Stop the foreground runner cleanly before starting its managed service. Preserve `/PRIVATE/renewal` across restarts and updates. Then restart both services through their managers and verify Kora responds and the runner resumes successfully. Record the exact start, stop, status and log commands for your host. See [operation and recovery](RENEWAL.md).
 
+**Keep Kora on upstream main:** configure the host's updater to check upstream every five minutes, resolve the new SHA and matching published image (or native build), and deploy that revision after config validation. Pin each running deployment by digest, not permanently to an old revision. Preserve signer/config/renewal state; verify the running image or executable, listing protection and an authorized payment after rollout. Keep the previous build for rollback and alert when a build or rollout fails. A rollback is degraded/out-of-date status, not “latest.” Record the updater's schedule, last check, deployed SHA and rollout result. This repository does not install that host-specific updater automatically; without it, ongoing main tracking is incomplete.
+
 Configure your host's monitoring to alert on either service failing, SOL falling below your chosen operating reserve, and listing age approaching the 48-hour deadline. Use finalized RPC chain time for listing age; choose an alert threshold with time to fix a failed renewal. Trigger a test alert and confirm it reaches you.
 
 From the runner directory, with `SOLANA_RPC_URL` loaded:
@@ -208,6 +241,7 @@ The supplied config uses `max_price_staleness_slots = 0`: Jupiter prices are acc
 - Clients can discover and verify the signed listing through RPC.
 - A direct sponsored payment finalized with the expected fees and balances.
 - Kora and the single renewal worker restart correctly with their saved state.
+- The host updater checks upstream main every five minutes, and the running Kora revision and update status are recorded.
 - Monitoring alerts you about service failures, low SOL and failed renewal before the 48-hour deadline. Your operating note contains the signer, listing, URL, receipts and exact service commands.
 
 Until the payment or protection check passes, describe the setup as incomplete. The first real daily renewal is a follow-up operating check; record its finalized receipt when due. SOL funding and endpoint availability need ongoing monitoring.
