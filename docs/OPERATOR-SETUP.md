@@ -65,7 +65,7 @@ The agent must install and supervise a private adapter that adds the Bearer toke
 
 ### Install Kora and the listing runner
 
-Install [official Kora for your host](https://solana.com/docs/tools/kora/operators#deployment). For container hosting, the upstream main image is `ghcr.io/solana-foundation/kora:edge`; select a successfully published revision and pin its digest in the deployment. The current upstream edge image targets Linux amd64; check your host's architecture before choosing it. For an existing native Kora installation, use its `kora` executable. See the [upstream image workflow](https://github.com/solana-foundation/kora/blob/main/.github/workflows/docker-edge.yml).
+Install [official Kora for your host](https://solana.com/docs/tools/kora/operators#deployment). For container hosting, the upstream main image is `ghcr.io/solana-foundation/kora:edge`; select a successfully published revision and pin its digest in the deployment. The current upstream edge image targets Linux amd64; check your host's architecture before choosing it. For a native installation, build official Kora from the selected upstream `main` commit; reuse an existing executable only when its build revision is known and matches that selection. See the [upstream image workflow](https://github.com/solana-foundation/kora/blob/main/.github/workflows/docker-edge.yml).
 
 Install [Node.js 24 or newer](https://nodejs.org/en/download) (includes npm) and [Git](https://git-scm.com/downloads) on the runner's host, then:
 
@@ -78,7 +78,9 @@ node runner.ts --help
 
 Keep this directory as the runner's working directory. The following `node runner.ts` commands run here; `kora` commands run on the Kora host or inside its container with the same arguments. Replace `/PRIVATE/...`, `YOUR_OPERATOR_PUBLIC_KEY` and `https://YOUR_OPERATOR_HOST/` throughout with your actual paths and public details. Use absolute paths accessible to each service.
 
-**Check:** record the installed Kora revision; `node --version` reports 24 or newer and the runner prints its commands.
+**Use current upstream `main` at setup or upgrade time.** Resolve its commit SHA, check the [edge build](https://github.com/solana-foundation/kora/actions/workflows/docker-edge.yml) succeeded for that same SHA, and pull the matching image. Verify its `org.opencontainers.image.revision` label and deploy the immutable image digest. A cached `edge` image or `kora --version` alone does not establish the source revision. If the latest build is unavailable, report that explicitly rather than calling an older image latest. For a native build, record the checked-out source SHA and built executable hash.
+
+**Check:** record the source SHA, image digest (or native binary hash), and CLI version of the deployment actually running. `node --version` reports 24 or newer and the runner prints its commands. Existing operators do not automatically update when upstream changes; upgrade deliberately, preserve config/signer/state, and repeat protection and payment checks before declaring the new deployment ready.
 
 ### Select the signer and your fee
 
