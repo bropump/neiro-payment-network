@@ -1,5 +1,31 @@
 # Client verifications
 
+Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge and pay.sh signing**, transfers, naming, token launches, trading and staking. Results below distinguish mainnet payments, Surfpool program execution and wallet-signing support.
+
+## Swaps and payments
+
+| Application or flow | Result / environment | What was verified |
+|---|---|---|
+| Jupiter — NEIRO ↔ USDC | **PASS — mainnet, 29 September** | Two finalized swaps through Bunny Kora: 10 NEIRO → 0.005067 USDC → 9.941756 NEIRO. NEIRO reimbursement included account-creation costs and 5% markup. [Evidence](../docs/test-results/swaps-and-wallets.md#jupiter). |
+| Jupiter — NEIRO → USDC | **PASS — Surfpool, 27 September** | Live Jupiter instructions using a Raydium route executed on a fork; 1,000 NEIRO → 0.512701 USDC, with customer SOL remaining zero. Historical price-source override used. [Scope](../docs/test-results/swaps-and-wallets.md#jupiter). |
+| MiniRouter — NEIRO → USDC deposit swap | **PASS — Surfpool, 29 September** | Adapted MiniRouter orders settled both directly through Kora and through the then-current router. Router run delivered 0.553293 USDC to the destination; customer held zero SOL. Real MiniRouter account credit was not tested. [Evidence and required adaptation](../docs/test-results/swaps-and-wallets.md#minirouter). |
+| USDC transfer, paid in NEIRO | **PASS — Surfpool, 29 September** | Operator funded a new recipient ATA and gas; customer sent USDC and reimbursed in NEIRO while holding zero SOL. [Evidence](../docs/test-results/swaps-and-wallets.md#other-earlier-program-checks). |
+| NEIRO transfer, new or existing recipient ATA | **PASS — Surfpool, 7 October** | Operator-funded account creation where needed; exact reimbursement and zero customer SOL checked. [Results](../docs/test-results/client-practices-surfpool-2026-10-07.md). |
+| NEIRO ID registration, resolution and tipping | **PASS — Surfpool, 7 October** | pay.sh signed registration and two tips, including a new recipient ATA; operator funded rent and gas. Customer stayed at zero SOL. [Results](../docs/test-results/swaps-and-wallets.md#paysh). |
+| Pump bonding-curve buy | **PASS — Surfpool, 8 October** | Buyer started and finished at zero SOL. Operator advanced purchase SOL and funded account setup; buyer paid NEIRO and retained the tokens. [Results](../docs/test-results/pump-buy-surfpool-2026-10-08.md). |
+
+## Wallet signing
+
+| Wallet / signer | Result | Exact supported path tested |
+|---|---|---|
+| PaySponge | **PASS — real wallet API signing, Surfpool execution** | Sign-only API preserved the other signature while creating a classic SPL mint, creating its ATA and minting 123 tokens. Customer held zero SOL. [API, versions and evidence](../docs/test-results/agent-uptake-2026-10-07.md#paysponge-reproducibility). |
+| pay.sh | **PASS — local wallet signing, Surfpool execution** | Local file-keystore signer plus Kora completed NEIRO ID registration, tipping and a Pump `createV2` launch. This was outside stock solOS. [Evidence](../docs/test-results/swaps-and-wallets.md#paysh). |
+| Local Solana Ed25519 keys | **PASS — mainnet and Surfpool** | Used in the swap and program tests on this page, preserving the approved transaction message and collecting customer/operator signatures. |
+
+These results cover the signing paths actually exercised. Privy, Turnkey, Para and browser-wallet integrations still need their own provider tests; local-key fallback does not prove a hosted signer.
+
+September results used earlier router-based integrations. They prove the recorded sponsored operations, not the current signed-listing discovery protocol. Saved evidence was reviewed and consolidated on 9 October; no new payments were sent during this documentation update.
+
 ## Surfpool app checks — 9 October 2026
 
 The flows below completed using an actual official Kora operator connected to a local Surfpool fork. Customer wallets started with NEIRO only and remained at **0 SOL**. The operator supplied SOL and received the customer's NEIRO payment.
@@ -16,7 +42,7 @@ The flows below completed using an actual official Kora operator connected to a 
 | Raydium LaunchLab | PASS | Launched a Token-2022 curve using Raydium’s default platform/config. Operator paid fees and account rent; verified customer creator, platform, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
 | Marinade | PASS — gas sponsorship | Deposited 0.1 SOL through the liquid-staking program and received 0.070873849 mSOL. Operator funded principal, mSOL account rent and gas; customer paid NEIRO and started/finished at 0 SOL. Separate listing-verification failure described below. |
 
-## How NPN paid for the flows
+## How NPN paid for the 9 October app checks
 
 1. Published and authenticated a local NPN operator listing, then checked its live Kora config.
 2. Built the application instructions with the operator as fee payer and the customer as owner or creator. Included the NEIRO reimbursement in the transaction.
@@ -40,7 +66,7 @@ Local Surfpool receipt: `Y28gkWWPdqgvWFbmzwLfHdEb6BsU2ztHNW5z5s9fLZaYykfrec1UNTY
 
 All trial services were stopped and temporary keys, credential copies and fork state removed after independent review. Sanitized evidence remains local. No mainnet funds were used.
 
-## Scope and limits
+## Scope and limits of the 9 October app checks
 
 - These were local program executions with synthetic funds and mock pricing, not mainnet transactions or live price quotes. Operator accounts and lookup tables were test setup.
 - Phoenix onboarding permission was a local fixture. Its SOL collateral went directly into the program-owned trader account; the customer paid NEIRO. Production access was not tested.
