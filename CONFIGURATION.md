@@ -47,7 +47,7 @@ Fees and spending allowances belong to the operator. The example 50% and recomme
 
 ## Protect the listing and apply changes
 
-Before serving requests, run `node runner.ts protect --operator YOUR_OPERATOR_PUBLIC_KEY --config /PRIVATE/kora.toml` from `tools/kora-publisher/script`. It derives the operator's listing address and adds it to `validation.disallowed_accounts`. Restart every Kora instance sharing that signer and verify a harmless sign-only request touching the listing is rejected specifically for that account. A file edit alone does not prove protection. The [setup procedure](AGENTS.md#3-protect-the-listing-then-start-kora) includes the checks.
+Before serving requests, run `node runner.ts protect --operator YOUR_OPERATOR_PUBLIC_KEY --config /PRIVATE/kora.toml` from `tools/kora-publisher/script`. It derives the operator's listing address and adds it to `validation.disallowed_accounts`. Restart every Kora instance sharing that signer and verify an unsigned, non-asset-moving request touching the listing reaches validation and is rejected specifically for that account. Do not customer-sign an asset-moving diagnostic probe; a sign-only endpoint can still broadcast it. If an earlier validation error prevents this check, report it untested. A file edit alone does not prove protection. The [setup procedure](AGENTS.md#3-protect-the-listing-then-start-kora) includes the checks.
 
 When fees or advertised settings change, validate and restart all Kora instances, then restart the sole renewal worker with the same private config and persistent state. It republishes changed terms when live Kora agrees. Verify discovery and a matching quote; do not wait for the next daily renewal to advertise changed fees. See [operations and recovery](docs/RENEWAL.md).
 

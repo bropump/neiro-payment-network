@@ -1,6 +1,6 @@
 # Verify the three Kora pricing modes
 
-`verify-quote.mjs` is a small, pure JavaScript quote checker, not a router, complete payment SDK or replacement for Kora. It has no network, signing or third-party dependencies. Node's built-in assertion failures reject a quote.
+`verify-quote.mjs` is a small, pure JavaScript quote checker, not a router, complete payment SDK or replacement for Kora. It has no network, signing or third-party dependencies. Node's built-in assertion failures reject a quote. For signature release, deadlines and restart recovery, follow the [client flow](../../../docs/BUILD-WITH-NEIRO.md#start-with-a-payment) and [failure-path tests](../../../docs/BUILD-WITH-NEIRO.md#test-your-client-before-use); these pure verification functions do not implement those controls.
 
 ```sh
 node --test tools/kora-publisher/client/*.test.mjs

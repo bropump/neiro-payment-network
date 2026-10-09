@@ -29,7 +29,7 @@ You need a signing wallet with NEIRO, a Solana RPC that supports listing discove
 
 ### 1. Find operators
 
-Follow the [RPC filters and signature checks](SPL-RECORD-LISTINGS.md#discovery-and-client-checks) to discover `NEIRO069` records. Authenticate v5 terms, network, mint and their 48-hour validity using trusted finalized chain data. Reject invalid or expired listings.
+Follow the [RPC filters and signature checks](SPL-RECORD-LISTINGS.md#discovery-and-client-checks) to discover `NEIRO069` records. Authenticate v5 terms, network, mint and their 48-hour validity using trusted finalized chain data. Reject invalid or expired listings individually and continue with other candidates; one bad record must not abort discovery. If none verify, stop without signing.
 
 Each listing supplies the operator, payment destination, URL and pricing terms. Fetch current operator SOL balances with `getMultipleAccounts`; balances are not stored in the listing. Exclude operators unable to cover your transaction.
 
@@ -64,19 +64,23 @@ The [reference quote checker](../tools/kora-publisher/client/README.md) covers t
 
 ### 4. Approve and sign
 
+**Keep discovery, quote comparisons and diagnostic probes unsigned.** Releasing a customer-signed payment to Kora authorizes that operator to complete and broadcast it, even when the method is called `signTransaction`. Only release the one approved payment to the selected operator. Normal clients do not need to run operator rejection probes before each payment; use the [isolated integration checks](#test-your-client-before-use) when developing or validating an integration.
+
 Re-read the chosen listing; if its terms changed, get a new quote. Decode the completed transaction, including lookup tables. Check fee payer, recipients, amounts, account authorities, reimbursement and compute budget.
 
 Before collecting signatures, call Solana RPC `simulateTransaction` on the completed base64 transaction with `encoding: "base64"`, `sigVerify: false` and `replaceRecentBlockhash: false`. Reject a non-null `result.value.err`. This tests execution without submitting or collecting operator signatures; it does not verify signatures or guarantee later execution. If simulation reveals a needed instruction, account, fee or blockhash change, rebuild and repeat the quote and message checks.
 
 Show the operation and full NEIRO charge to the user, then sign within their authorization. Verify the user and other application signatures while preserving the approved message. The operator signature is added in step 5.
 
-If the blockhash expires before broadcast, rebuild and repeat quote verification, message inspection and approval before collecting fresh signatures. Never edit an already signed message. Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
+If the blockhash expires before releasing any customer signature, rebuild and repeat quote verification, message inspection and approval before collecting fresh signatures. After signature release, the operator may already have broadcast; follow step 5 recovery before authorizing a replacement, even if your client has not broadcast anything. Never edit an already signed message. Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
 
 ### 5. Submit and confirm
 
 With Kora’s `signTransaction`, verify the returned message is byte-for-byte what the user approved and verify all required signatures before broadcasting. With `signAndSendTransaction`, Kora broadcasts: reconcile its returned signature and independently check the transaction and effects through RPC.
 
-Persist the expected signature when available and blockhash lifetime before sending. If the response is lost, resolve the original attempt before signing another payment. Rebroadcasting the same signed transaction is different from creating a new one. A timeout alone does not prove failure. Return the confirmed transaction link and actual charge.
+**Save recovery state before sending any customer signature to Kora**, including `signTransaction`, not just before your own RPC broadcast. Durably save the operation ID, exact approved message and customer-signed bytes, selected operator, amounts, fee cap, blockhash and last valid block height. Add the expected transaction signature and fully signed bytes when available, before broadcasting them. Keep signed bytes private; they can authorize execution.
+
+On startup, check for a pending operation **before writing new evidence, requesting another signature or replacing its journal**. Use exclusive ownership for that operation and atomic, durable state writes. Reconcile the saved signature and transaction through RPC. If the operator withheld its fee-payer signature, reconcile the exact saved message against chain history; if that cannot be established reliably, leave the operation unresolved and stop. A timeout or expired blockhash alone does not prove the original transaction never landed. Do not automatically create a replacement payment. Rebroadcasting identical fully signed bytes is different from authorizing a new message. Return the confirmed transaction link and actual charge.
 
 ## Use your existing program or transaction builder
 
@@ -110,9 +114,28 @@ For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessag
 
 Cache authenticated listings, batch balance reads and quote a bounded shortlist in parallel. Rotate candidates and temporarily back off from dead endpoints. Recheck selected terms before approval. A shortlist cannot prove globally cheapest, and fast quotes do not guarantee fast finality.
 
-For fastest, each parallel task must finish its own quote/correction/verification loop; return the first verified success to the caller (`Promise.any()` with per-task deadlines is one option). Do not await all tasks before returning or printing that result. Merely recording an early completion timestamp does not demonstrate early delivery. For cheapest, collect verified successes until the deadline, tolerating failed candidates. Restrict untrusted listing URLs, private/local destinations and redirects; bound response sizes. Send wallet signatures only to the selected operator.
+Set one absolute selection deadline using a monotonic clock, covering every candidate's config fetch, quote/correction loop and verification. Pass its cancellation signal and remaining budget through each HTTP request and body read. A socket inactivity timeout is insufficient: a server can keep sending small chunks. Per-request timeouts must not restart the overall budget. Restrict untrusted listing URLs, private/local destinations and redirects; bound response sizes.
+
+For fastest, return the first **fully verified** success from the selection function immediately. Cancel losing requests and handle their rejections in the background; do not await them in the return path or in `finally`. `Promise.any()` alone does not impose a deadline. For cheapest, retain verified successes received before the cutoff and choose the lowest at the cutoff, or earlier once all candidates finish. At the deadline, return a retained candidate or a no-verified-quote error without waiting for unfinished tasks. Send wallet signatures only after selection, to the selected operator.
 
 Measure discovery, quote/verification, selected-result delivery and confirmation separately with a monotonic timer. Distinguish cold discovery from cached selection.
+
+## Test your client before use
+
+Use disposable wallets and synthetic funds for fault tests. A normal payment client needs no extra signed security probes. The existing listing and quote verifiers check their inputs; they do not enforce your HTTP deadlines, signature custody or journal recovery.
+
+| Boundary | Required test and passing result |
+| --- | --- |
+| Signature release | Capture outbound requests: discovery, losing candidates and diagnostics receive no customer-signed asset-moving transaction. Only the selected operator receives the approved payment. Do not sign a payment just to see whether a server rejects it. |
+| Expected rejection | Use an unsigned, non-asset-moving probe when the endpoint supports that validation path. Match the actual expected RPC error code/reason. A timeout, authentication failure, disabled method or unrelated simulation failure is **inconclusive**, never PASS. If unsigned validation cannot reach the check, report it untested or use a separately authorized isolated fixture. |
+| Absolute deadline | Make one endpoint stream small chunks indefinitely. Selection and response-body reads must stop at the overall deadline; a valid candidate already received remains usable. |
+| Fastest return | Keep a losing candidate pending. Assert the actual selection promise resolves with the verified winner while the loser is still pending. An early log entry is insufficient. |
+| Pending-payment recovery | Stop after saving the customer-signed attempt and before receiving the operator response, then restart. Assert the original journal survives and no new message is signed or sent until reconciliation establishes the outcome. Test concurrent attempts against the same operation ID too. |
+| Discovery isolation | Mix one malformed/expired record with a valid listing. Reject only the bad record and continue with the valid operator. |
+
+For rejection assertions, capture the RPC error first, then check its code/reason **outside** any catch that labels the test PASS. A failing assertion must fail the test. Never interpret “some exception occurred” as proof of the intended security rule.
+
+These checks target the [mistakes found in ten independent client implementations](test-results/ten-independent-clients.md). Passing a payment proves that operation settled; it does not substitute for these failure-path tests.
 
 ## Optional routers and indexers
 

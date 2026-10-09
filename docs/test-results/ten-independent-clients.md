@@ -2,6 +2,8 @@
 
 **All ten agents built working clients: 20/20 payments finalized, with every customer holding zero SOL.** Independent source review also found mistakes that prevent treating all ten implementations as secure production examples.
 
+The client guide now includes [explicit signature-release, selection and recovery requirements and failure-path checks](../BUILD-WITH-NEIRO.md#test-your-client-before-use). This is a documentation correction; these ten historical clients have not been repaired or rerun against it.
+
 ## Review findings
 
 - **High — extra payment authority in rejection probes (01, 04, 07).** These clients customer-signed transactions containing principal and reimbursement transfers, then sent them to `signTransaction` expecting rejection. A malicious operator could co-sign and broadcast them. Kora rejected them in this fixture; independently checked receipts show no extra payments. A sign-only request does not prevent a server broadcasting. Use unsigned or explicitly authorized non-spending probes.
