@@ -4,9 +4,11 @@
 
 # NEIRO Payment Network (NPN)
 
-**Solana gas, paid in NEIRO.**
+**All of Solana. Gas in NEIRO.**
 
-Your wallet signs. Independent operators supply the SOL and receive NEIRO at their advertised price. Everything settles on Solana.
+Send, swap and build on Solana with NEIRO as your gas. NPN connects humans, agents and apps directly with independent operators, powering a peer-to-peer NEIRO economy.
+
+**Unstoppable programmable dog money.**
 
 ## Start here with your agent
 
