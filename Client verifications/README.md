@@ -45,6 +45,12 @@ The flows below completed using an actual official Kora operator connected to a 
 | Raydium LaunchLab | Works | Launched a Token-2022 curve using Raydium’s default platform/config. Operator paid fees and account rent; verified customer creator, platform, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
 | Marinade | Works — gas sponsorship | Deposited 0.1 SOL through the liquid-staking program and received 0.070873849 mSOL. Operator funded principal, mSOL account rent and gas; customer paid NEIRO and started/finished at 0 SOL. Separate listing-verification failure described below. |
 
+## Program compatibility — local signing
+
+| Application | Result | What was verified |
+|---|---|---|
+| star.fun — presale deposit | **Works — deposit with a separate sponsor, Surfpool** | Buyer deposited 25 USDC, paid 10 NEIRO and remained at zero SOL; sponsor paid fees and record rent. Local keys signed directly, without a Kora quote/sign call. The closed vault window was opened only on the fork. [Evidence](../docs/test-results/starfun-deposit-surfpool-2026-10-09.md). |
+
 <details>
 <summary>Verification details and integration requirements</summary>
 
