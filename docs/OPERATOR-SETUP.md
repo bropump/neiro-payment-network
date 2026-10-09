@@ -100,8 +100,8 @@ Use this absolute executable path in the service; an older `kora` elsewhere on `
 Install [Node.js 24 or newer](https://nodejs.org/en/download) (includes npm) and [Git](https://git-scm.com/downloads) on the runner's host, then:
 
 ```sh
-git clone https://github.com/bropump/neiro-payment-network-core.git
-cd neiro-payment-network-core/tools/kora-publisher/script
+git clone https://github.com/bropump/neiro-payment-network.git
+cd neiro-payment-network/tools/kora-publisher/script
 npm ci --ignore-scripts --registry=https://registry.npmjs.org
 node runner.ts --help
 ```

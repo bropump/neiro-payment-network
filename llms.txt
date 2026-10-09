@@ -4,20 +4,20 @@
 
 ## Start with the user's task
 
-- [Client / builder: use NPN or build an app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md). No operator installation is needed to make a payment.
-- [Operator: install, protect, publish and verify](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/AGENTS.md). Follow its five stages in order.
+- [Client / builder: use NPN or build an app](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/BUILD-WITH-NEIRO.md). No operator installation is needed to make a payment.
+- [Operator: install, protect, publish and verify](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/AGENTS.md). Follow its five stages in order.
 
 For a client or builder, inspect the existing wallet's sign-only API and the app's instruction/unsigned-transaction builder. Preserve the user authority, set operator fee/rent payers where supported, and verify the completed quote and message. Use existing Solana libraries and plain Kora JSON-RPC; extra SDKs are optional. Replace the reimbursement instruction and re-quote within bounded retries; check that the transaction's total reimbursement equals the verified fee. Simulate the completed transaction and reject errors before signing, then verify the returned message and all signatures before submitting. Name the actual APIs and test evidence instead of guessing from wallet/app brands. Do not create a replacement wallet or silently spend user SOL.
 
-For an operator, resolve current official upstream Kora main and verify the installed source SHA. Use a matching image or native build; do not substitute a stable release, historical test image or older edge build. Configure the host to check for main updates every five minutes. The listing runner does not upgrade Kora. [Host details](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/OPERATOR-SETUP.md) expand AGENTS.md. Inspect and reuse existing resources; create missing configuration yourself. Report PASS / FAIL / NOT RUN with evidence, never infer success from a quote or a running process.
+For an operator, resolve current official upstream Kora main and verify the installed source SHA. Use a matching image or native build; do not substitute a stable release, historical test image or older edge build. Configure the host to check for main updates every five minutes. The listing runner does not upgrade Kora. [Host details](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/OPERATOR-SETUP.md) expand AGENTS.md. Inspect and reuse existing resources; create missing configuration yourself. Report PASS / FAIL / NOT RUN with evidence, never infer success from a quote or a running process.
 
-- [Feature map and test coverage](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/FEATURE-MAP.md)
-- [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md)
-- [Discovery format and client checks](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/SPL-RECORD-LISTINGS.md)
-- [Operator installation and host details](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/OPERATOR-SETUP.md)
-- [Operator configuration](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/CONFIGURATION.md)
-- [Operator tutorial](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/TUTORIAL.md)
-- [Required renewal worker and recovery](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/RENEWAL.md)
+- [Feature map and test coverage](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/FEATURE-MAP.md)
+- [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/BUILD-WITH-NEIRO.md)
+- [Discovery format and client checks](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/SPL-RECORD-LISTINGS.md)
+- [Operator installation and host details](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/OPERATOR-SETUP.md)
+- [Operator configuration](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/CONFIGURATION.md)
+- [Operator tutorial](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/TUTORIAL.md)
+- [Required renewal worker and recovery](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/RENEWAL.md)
 - [NEIRO ID](https://github.com/bropump/neiro-id): separate naming protocol.
 
 ## Network
@@ -33,7 +33,7 @@ There is no shared master directory account. Scan the Record program with the do
 
 The runner provides protect, address, check, publish, renew, discover and close. Every operator must use v5 with signed anchor_slot and anchor_blockhash, renew after 24 chain hours, and be rejected at 48 hours from the trusted finalized anchor block time. Reject all older listing versions without fallback. `renew --watch` checks hourly with private persistent state; unchanged terms before 24 hours require no signing or transaction. Stop the sole renewal worker before closure. Do not infer production readiness from a test listing. Close test listings unless the user explicitly requests retention. Skip dead endpoints and reject mismatched terms.
 
-For fast and safe selection, follow the [client selection checklist](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/BUILD-WITH-NEIRO.md#fast-verified-operator-selection): batch balances, race a bounded shortlist, independently verify fees before ranking, return the first verified result immediately for fastest, state the comparison scope for cheapest, and reconcile uncertain sends before retrying.
+For fast and safe selection, follow the [client selection checklist](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/BUILD-WITH-NEIRO.md#fast-verified-operator-selection): batch balances, race a bounded shortlist, independently verify fees before ranking, return the first verified result immediately for fastest, state the comparison scope for cheapest, and reconcile uncertain sends before retrying.
 
 ## Signing and operation
 
@@ -43,6 +43,6 @@ Reuse the user's existing wallet or signer. Show the recipient, asset, amount an
 
 Run unchanged Kora and the portable Node.js publisher. Before publishing, deny the operator's derived listing account in every public Kora instance sharing its signer, restart and verify the loaded protection. The publisher requires a compatible raw-message signing backend. Keep an operational listing open; close temporary test listings or retired listings when requested to recover rent.
 
-- [Kora config](https://github.com/bropump/neiro-payment-network-core/blob/main/examples/operator/kora.toml)
-- [Signer template](https://github.com/bropump/neiro-payment-network-core/blob/main/examples/operator/signers.toml)
+- [Kora config](https://github.com/bropump/neiro-payment-network/blob/main/examples/operator/kora.toml)
+- [Signer template](https://github.com/bropump/neiro-payment-network/blob/main/examples/operator/signers.toml)
 - [Official Kora deployment](https://solana.com/docs/tools/kora/operators)

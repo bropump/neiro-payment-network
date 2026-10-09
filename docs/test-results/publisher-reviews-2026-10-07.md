@@ -21,9 +21,9 @@ This section records local checks. CI checks types and tests on Linux, macOS and
 
 # Previous JavaScript release review — 7 October 2026
 
-The previous Node release is source [7f88948](https://github.com/bropump/neiro-payment-network-core/commit/7f88948d6cbbd0ce420b26a75fa13ddf96eab998). Independent review: **APPROVE WITH NOTES**, no outstanding material security regression found. This is testing and engineering review, not a formal audit.
+The previous Node release is source [7f88948](https://github.com/bropump/neiro-payment-network/commit/7f88948d6cbbd0ce420b26a75fa13ddf96eab998). Independent review: **APPROVE WITH NOTES**, no outstanding material security regression found. This is testing and engineering review, not a formal audit.
 
-- [CI](https://github.com/bropump/neiro-payment-network-core/actions/runs/37600960099) passed 126 tests on Linux, macOS and Windows, using `npm ci --ignore-scripts`; no Rust or native compilation. npm reported install times of 3s, 4s and 6s respectively.
+- [CI](https://github.com/bropump/neiro-payment-network/actions/runs/37600960099) passed 126 tests on Linux, macOS and Windows, using `npm ci --ignore-scripts`; no Rust or native compilation. npm reported install times of 3s, 4s and 6s respectively.
 - Actual SPL Record execution in offline Surfpool passed create, no-op, accelerated daily renewal, config update, expiry rejection, close and rent/prefund recovery. Generated local signer only; normal signature/blockhash checks enabled. Four transaction fees total20,000lamports; all5,992,560rent lamports and the prefunded1lamport recovered.
 - Review covered exact wire instructions, signatures, malformed config, price comparison, chain/authority binding, fee/rent caps, journal-before-send, unknown-send reconciliation, finalized slot floor and concurrency/crash behavior. Discovery checks fresh finalized Clock per candidate.
 - Official JavaScript Keychain provides signatures. Only memory has integration signature evidence; remote providers have adapter/deadline/error tests, not live credentialed verification. Unsupported backend options fail closed.
