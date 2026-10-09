@@ -1,0 +1,847 @@
+{
+  "scope": "Ten independent fresh-context agents; supplied shared Surfpool/Kora fixture and isolated synthetic wallets. Local signing, mock oracle, margin pricing. Payment success is distinct from prototype security/robustness review.",
+  "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+  "agents": 10,
+  "payments": 20,
+  "allPaymentChecksPassed": true,
+  "allCustomerSolZero": true,
+  "reviewStatus": "APPROVE WITH NOTES for observed payments; REQUEST CHANGES for production reuse of generated clients",
+  "fixture": {
+    "rpc": "http://127.0.0.1:59389",
+    "operators": [
+      "https://localhost:59510/",
+      "https://localhost:59511/"
+    ],
+    "surfpool": "1.5.0",
+    "koraBinarySha256": "de109cb7dd7a906f960fa7fb62f50324f1b020d8d187be36bab03cf2169eb7f9",
+    "oracle": "constant synthetic 1 NEIRO = 0.001 SOL",
+    "margins": [
+      0.05,
+      0.2
+    ],
+    "injectedDelayMs": {
+      "operatorAQuotes": 500
+    },
+    "funds": "synthetic only"
+  },
+  "checks": "Finalized RPC receipt, all Ed25519 signatures, operator fee payer, exact recipient amount, customer SOL zero, operator SOL cost and exact margin-based NEIRO reimbursement, two successful payments per customer.",
+  "results": [
+    {
+      "id": 1,
+      "customer": "LE65uPs9HpUbykipuibFmq6DEtiNRrVUD1WEm8qe59z",
+      "payments": [
+        {
+          "signature": "5XAbqd4ZX7pTkpBU3L2VQTz94DRAx9vTwo587Ax2eUhgpfCcQpCAg1PQ3UcqgMi8wvM9LYUkmFvg7iLMwXggR9kZ",
+          "slot": 454835964,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "4hj4xXmYPkU5FojPNgeqkqfqAxjodSDU6Torns6mjVpgYCReaTQdsjP7h6gkBsG9vrhN11z2NarEM27Wv35t3w7L",
+          "slot": 454835930,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "3fa556be9955f9cf7caaaa06e8c52623029c8d04e6aef59a6497ec16df3b9809"
+    },
+    {
+      "id": 2,
+      "customer": "EDQpk7xcLjKwdzPjhjF1JknViKZt5XJWyQVzp1XCeoS6",
+      "payments": [
+        {
+          "signature": "5a5njakMC31QEFARaj65T3d4e2wi6jqHm8AfjmaGq6AiaD1yrJTL2k4CAQ4ECtnBxAzocaiVbaUeFnivf8ZqLcs9",
+          "slot": 454836044,
+          "error": null,
+          "feeLamports": 10100,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010605",
+          "operatorNeiroDeltaRaw": "10605",
+          "operatorSolSpentLamports": 10100,
+          "signaturesValid": true,
+          "independentFeeRaw": "10605",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "3gsdV4JC3etWyB2VAD8sJV4waAeTyooSHCbewuuSe7FYDAHZeugySn7teE5aGSKrwPq1R6dZoRbq7Bn2rZHJJZi2",
+          "slot": 454835802,
+          "error": null,
+          "feeLamports": 10100,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459256",
+          "operatorNeiroDeltaRaw": "2459256",
+          "operatorSolSpentLamports": 2049380,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459256",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "109e69d59abee1f966e0655cefff959344be19e579be66a8b31c3f6727ea85c0"
+    },
+    {
+      "id": 3,
+      "customer": "4syjAqkseGdkQKWNVtQe4MwTf66r54PNVSAruhH4K94z",
+      "payments": [
+        {
+          "signature": "zFeKarjgPYy2soWLc783xd41g3Jyzyg36upBYovwfNbgrjhwPGhFb3JLWxK3oASkz3R96LT6nm2q6ZnE2nGowZx",
+          "slot": 454835827,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "3CkfhrE8UdcDK6corcA7SNYmoeTYSDQqAhjgp5uE68fgZpRY5vhx9JWdQC8srxCj9XxVwoMJGS1ykhtMMNgyxTp8",
+          "slot": 454835710,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "388dddab5d26d5610522b86e333f4022158e5d3eb224eef6c502a0536cae8874"
+    },
+    {
+      "id": 4,
+      "customer": "GFZ5s66hKSxJFH89gubwozz8Rd7CQPEo73QJpeNLePbF",
+      "payments": [
+        {
+          "signature": "5e8cSr1uDAThhcB57WyNhxdPEcK1ZTQEWmrRtfSD4rp9P12kAC1yxpv3phoRwALuFnK1h44vGAACBhctKxFKQwQ2",
+          "slot": 454837244,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "3d9VaMj6bqQmePtyCt8rLKJzkuEvCmnu7MHnbtt6NEKmCG7etNwYQmNsgJBAX4zb6jdWXTSEwNynNkfcQUz9Ccgo",
+          "slot": 454837211,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "9abd6c284d3017859c19dc9af96eda66f31a5be88c7dfcf2ae3fdc56b59cbe5d"
+    },
+    {
+      "id": 5,
+      "customer": "AHnftzdXZpmn2swBDjPQS6M1aCj8GgJLziaTKC2KxgzM",
+      "payments": [
+        {
+          "signature": "5AdERvLD9jz4oE1ci3up1wd6hz1iWWe9RkiPUaeaMHANq93dawGAgrh8y4UdSZzVPELG4pqpgiUjVU1bNf2p1m2H",
+          "slot": 454837249,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "5D3NmNw6v8NdLURVmkNZnmBcn9KXENWYUUA5QMuPQZ2uns3bdsJd66EjGzRM9468R11QaM7jyVuK5k3GX8ashrBX",
+          "slot": 454837214,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "49a49ef4206718e0aa4efdfeccbf27e4003ee12aad77760392c333ec1c044db4"
+    },
+    {
+      "id": 6,
+      "customer": "GGRGBV5gBCUP9AyQtAxNwApD1vSRoDz393EKZ2Lw2VpM",
+      "payments": [
+        {
+          "signature": "3eyKkCpwS6ZSEJ1eNkEnwbnubHnFAxvzfUNttpu2WJp9drbreQTPsEJw2oJNgYCcNJ7n4J7nHL2vY4G2igLYJaaw",
+          "slot": 454837138,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "5EqkC6Q6ZVkemzHswb7LZLQhNRDYoQFhnrt11siawJCwnFP3tsrJd4VJMgdC7pwsQ9NQViquTZ3U3Qh47RxxWBBC",
+          "slot": 454837104,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "53d3ec56899238d4ae0c485a13f9d0a2f57cd3c5dcbc1c0572050cbb974278ca"
+    },
+    {
+      "id": 7,
+      "customer": "8Ag2rfm5ATQo1YdNBTY4wKZcF4kHMv8LkyhqxEyEsq57",
+      "payments": [
+        {
+          "signature": "5LDcPz3N6fwgSRPvt2bBhtS3tVVk3uSF5JK18pLTpSYE166ge8wfepx15vWWTDVuH4xdJm4Yvdcg9xHzoSp7QZ5F",
+          "slot": 454838048,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "42f455kMd7vihcqEsEvJGLMuUFEfNzV7b5iPK2FVaunZ28XiGmKnYVW39jdofBMCqBz2oLLLBWbM6FdPJhVAsZ65",
+          "slot": 454838015,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "414c6f76e4518d7666d4e9ba31f49ad093bb147d28dc4bc693bda0217f785a55"
+    },
+    {
+      "id": 8,
+      "customer": "fn8ATtsyq82WtvD7vhTdH36AsGftjk2RZt4AY48gcbz",
+      "payments": [
+        {
+          "signature": "453y5savcHp2cLaJwiSHRdamWdn1Gpv8KzP3ArG3kKTPJ8KkirDKEhV6mQnrbxcaoAYmtA1KAemahbgVma5sRcLr",
+          "slot": 454838118,
+          "error": null,
+          "feeLamports": 10100,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010605",
+          "operatorNeiroDeltaRaw": "10605",
+          "operatorSolSpentLamports": 10100,
+          "signaturesValid": true,
+          "independentFeeRaw": "10605",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "dJBE95jShvdU1ZoPs6JjRSv4zJrLHJsn1LFTYtXXh5y6JjvnsM1QobxFz9Mt1sgK8FiRR7Gm34AVy5ehTMVaQ9T",
+          "slot": 454838085,
+          "error": null,
+          "feeLamports": 10100,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459256",
+          "operatorNeiroDeltaRaw": "2459256",
+          "operatorSolSpentLamports": 2049380,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459256",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "9fd2c246c7e1e3fa4b4f2b41861fddae74f679f141806d3bfadc36f43a943d33"
+    },
+    {
+      "id": 9,
+      "customer": "EqSeoYwQyqBEAWUADoDvvuHwH6ew9SGC8WiSzy2qc6SX",
+      "payments": [
+        {
+          "signature": "4Yn5opWc3hXazzPzm74bhJNrGS8Q1jaPwuZ2VEQnwUhKeX8UtgyCntBAxMKHzT6pVFXm4EdFq9n9FXhH5w41JDnZ",
+          "slot": 454838247,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "3jbHCN9az85F2EShYNh7hCUYKyKZ6obb96XZfsCmPLNCH4miB3GwtaZUH3ej9mTuHh8MVPLWyr1sFwQL5CEjj9pk",
+          "slot": 454838212,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "82652bc28e695128bf2f7240d683fabc3513ff6a2aa6bc4c3ae62a14c3ff0922"
+    },
+    {
+      "id": 10,
+      "customer": "BceYJDXucTMBT9Fw79kkoxJhgUA2mXy3NUYPrSND8afz",
+      "payments": [
+        {
+          "signature": "2niJ6YnVpzyHhRfQ7nF2Csq9g9GE9FQPhsfBPXk2P7vyKwZTUAZxrfyjYSq246WWhkJwAVGM2QywMgaDz2oVirC5",
+          "slot": 454838775,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "49yRj8JTHhkKWLQf4iC21UYLYDZ6AxwdaMG31MDNGLYc",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-1010710",
+          "operatorNeiroDeltaRaw": "10710",
+          "operatorSolSpentLamports": 10200,
+          "signaturesValid": true,
+          "independentFeeRaw": "10710",
+          "exactReimbursement": true,
+          "pass": true
+        },
+        {
+          "signature": "AJh33Y6MJDdpJAyGe2TTx5vT4mwwANge3ak4nkDPueq6ypjT6mw1JzyKJ2rEHGFvpknp59txk4xpaJVZySnxWXW",
+          "slot": 454838741,
+          "error": null,
+          "feeLamports": 10200,
+          "payer": "9NynK2ayZNfRjo67Ee7tzcdFmQq9ENqsYBFzb7b2dxHT",
+          "customerSolBefore": 0,
+          "customerSolAfter": 0,
+          "recipientNeiroDeltaRaw": "1000000",
+          "customerNeiroDeltaRaw": "-3459376",
+          "operatorNeiroDeltaRaw": "2459376",
+          "operatorSolSpentLamports": 2049480,
+          "signaturesValid": true,
+          "independentFeeRaw": "2459376",
+          "exactReimbursement": true,
+          "pass": true
+        }
+      ],
+      "successful": 2,
+      "pass": true,
+      "sourceCommit": "0aa50d6e70339afa03ddcff87b551bf6f097782b",
+      "referenceFilesUnchanged": true,
+      "clientSourceSha256": "cdc16e9dab3183ec15008718122c3eae28d20babfb4ce437bc6dff7f65e7528e"
+    }
+  ],
+  "independentReview": {
+    "checkedAt": "2026-10-09T10:35:01.742Z",
+    "scope": "Read-only RPC recheck clients01-10; no signing, probes, or private key access",
+    "negativeHelperRegression": {
+      "client": 4,
+      "sourceLine": 26,
+      "injectedError": "network timeout; rejection-reason assertion fails",
+      "actualStatus": "PASS",
+      "conclusion": "false positive reproduced offline"
+    },
+    "pureTests": {
+      "command": "node --test client-01/repo/tools/kora-publisher/client/read-record.test.mjs client-01/repo/tools/kora-publisher/client/verify-quote.test.mjs",
+      "passed": 104,
+      "failed": 0
+    },
+    "results": [
+      {
+        "client": 1,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "5XAbqd4ZX7pTkpBU3L2VQTz94DRAx9vTwo587Ax2eUhgpfCcQpCAg1PQ3UcqgMi8wvM9LYUkmFvg7iLMwXggR9kZ",
+            "slot": 454835964,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "4hj4xXmYPkU5FojPNgeqkqfqAxjodSDU6Torns6mjVpgYCReaTQdsjP7h6gkBsG9vrhN11z2NarEM27Wv35t3w7L",
+            "slot": 454835930,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 2,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "5a5njakMC31QEFARaj65T3d4e2wi6jqHm8AfjmaGq6AiaD1yrJTL2k4CAQ4ECtnBxAzocaiVbaUeFnivf8ZqLcs9",
+            "slot": 454836044,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10605",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "3gsdV4JC3etWyB2VAD8sJV4waAeTyooSHCbewuuSe7FYDAHZeugySn7teE5aGSKrwPq1R6dZoRbq7Bn2rZHJJZi2",
+            "slot": 454835802,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459256",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 3,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "zFeKarjgPYy2soWLc783xd41g3Jyzyg36upBYovwfNbgrjhwPGhFb3JLWxK3oASkz3R96LT6nm2q6ZnE2nGowZx",
+            "slot": 454835827,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "3CkfhrE8UdcDK6corcA7SNYmoeTYSDQqAhjgp5uE68fgZpRY5vhx9JWdQC8srxCj9XxVwoMJGS1ykhtMMNgyxTp8",
+            "slot": 454835710,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 4,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "5e8cSr1uDAThhcB57WyNhxdPEcK1ZTQEWmrRtfSD4rp9P12kAC1yxpv3phoRwALuFnK1h44vGAACBhctKxFKQwQ2",
+            "slot": 454837244,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "3d9VaMj6bqQmePtyCt8rLKJzkuEvCmnu7MHnbtt6NEKmCG7etNwYQmNsgJBAX4zb6jdWXTSEwNynNkfcQUz9Ccgo",
+            "slot": 454837211,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 5,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "5AdERvLD9jz4oE1ci3up1wd6hz1iWWe9RkiPUaeaMHANq93dawGAgrh8y4UdSZzVPELG4pqpgiUjVU1bNf2p1m2H",
+            "slot": 454837249,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "5D3NmNw6v8NdLURVmkNZnmBcn9KXENWYUUA5QMuPQZ2uns3bdsJd66EjGzRM9468R11QaM7jyVuK5k3GX8ashrBX",
+            "slot": 454837214,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 6,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "3eyKkCpwS6ZSEJ1eNkEnwbnubHnFAxvzfUNttpu2WJp9drbreQTPsEJw2oJNgYCcNJ7n4J7nHL2vY4G2igLYJaaw",
+            "slot": 454837138,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "5EqkC6Q6ZVkemzHswb7LZLQhNRDYoQFhnrt11siawJCwnFP3tsrJd4VJMgdC7pwsQ9NQViquTZ3U3Qh47RxxWBBC",
+            "slot": 454837104,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 7,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "5LDcPz3N6fwgSRPvt2bBhtS3tVVk3uSF5JK18pLTpSYE166ge8wfepx15vWWTDVuH4xdJm4Yvdcg9xHzoSp7QZ5F",
+            "slot": 454838048,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "42f455kMd7vihcqEsEvJGLMuUFEfNzV7b5iPK2FVaunZ28XiGmKnYVW39jdofBMCqBz2oLLLBWbM6FdPJhVAsZ65",
+            "slot": 454838015,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 8,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "453y5savcHp2cLaJwiSHRdamWdn1Gpv8KzP3ArG3kKTPJ8KkirDKEhV6mQnrbxcaoAYmtA1KAemahbgVma5sRcLr",
+            "slot": 454838118,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10605",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "dJBE95jShvdU1ZoPs6JjRSv4zJrLHJsn1LFTYtXXh5y6JjvnsM1QobxFz9Mt1sgK8FiRR7Gm34AVy5ehTMVaQ9T",
+            "slot": 454838085,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459256",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 9,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "4Yn5opWc3hXazzPzm74bhJNrGS8Q1jaPwuZ2VEQnwUhKeX8UtgyCntBAxMKHzT6pVFXm4EdFq9n9FXhH5w41JDnZ",
+            "slot": 454838247,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "3jbHCN9az85F2EShYNh7hCUYKyKZ6obb96XZfsCmPLNCH4miB3GwtaZUH3ej9mTuHh8MVPLWyr1sFwQL5CEjj9pk",
+            "slot": 454838212,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      },
+      {
+        "client": 10,
+        "exactlyTwoFinalizedPayments": true,
+        "receipts": [
+          {
+            "signature": "2niJ6YnVpzyHhRfQ7nF2Csq9g9GE9FQPhsfBPXk2P7vyKwZTUAZxrfyjYSq246WWhkJwAVGM2QywMgaDz2oVirC5",
+            "slot": 454838775,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "10710",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          },
+          {
+            "signature": "AJh33Y6MJDdpJAyGe2TTx5vT4mwwANge3ak4nkDPueq6ypjT6mw1JzyKJ2rEHGFvpknp59txk4xpaJVZySnxWXW",
+            "slot": 454838741,
+            "validSignatures": true,
+            "recipientRaw": "1000000",
+            "reimbursementRaw": "2459376",
+            "customerSolBefore": 0,
+            "customerSolAfter": 0
+          }
+        ]
+      }
+    ],
+    "reviewedClientSourceSha256": {
+      "client-01/client.mjs": "3fa556be9955f9cf7caaaa06e8c52623029c8d04e6aef59a6497ec16df3b9809",
+      "client-02/client.mjs": "109e69d59abee1f966e0655cefff959344be19e579be66a8b31c3f6727ea85c0",
+      "client-03/client.mjs": "388dddab5d26d5610522b86e333f4022158e5d3eb224eef6c502a0536cae8874",
+      "client-04/client.mjs": "9abd6c284d3017859c19dc9af96eda66f31a5be88c7dfcf2ae3fdc56b59cbe5d",
+      "client-05/client.mjs": "49a49ef4206718e0aa4efdfeccbf27e4003ee12aad77760392c333ec1c044db4",
+      "client-06/client.mjs": "53d3ec56899238d4ae0c485a13f9d0a2f57cd3c5dcbc1c0572050cbb974278ca",
+      "client-07/client.mjs": "414c6f76e4518d7666d4e9ba31f49ad093bb147d28dc4bc693bda0217f785a55",
+      "client-08/client.mjs": "9fd2c246c7e1e3fa4b4f2b41861fddae74f679f141806d3bfadc36f43a943d33",
+      "client-09/client.mjs": "82652bc28e695128bf2f7240d683fabc3513ff6a2aa6bc4c3ae62a14c3ff0922",
+      "client-10/client.mjs": "cdc16e9dab3183ec15008718122c3eae28d20babfb4ce437bc6dff7f65e7528e"
+    }
+  },
+  "cleanup": {
+    "stopped": [
+      {
+        "service": "operators",
+        "pid": 79222
+      },
+      {
+        "service": "fork",
+        "pid": 76544
+      }
+    ],
+    "verifiedClosedPorts": [
+      59389,
+      59390,
+      59410,
+      59411,
+      59420,
+      59421,
+      59510,
+      59511
+    ],
+    "removed": [
+      "client-03/customer.json",
+      "client-04/customer.json",
+      "client-05/customer.json",
+      "client-02/customer.json",
+      "client-10/customer.json",
+      "client-09/customer.json",
+      "client-07/customer.json",
+      "client-01/customer.json",
+      "client-06/customer.json",
+      "client-08/customer.json",
+      "infra/customer.json",
+      "infra/private/"
+    ],
+    "mainnetWrites": false,
+    "note": "In-memory synthetic fork discarded; no mainnet accounts or funds created or consumed. Production services untouched."
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "clients": [
+        1,
+        4,
+        7
+      ],
+      "finding": "Customer-signed asset-moving rejection probes give the operator additional payment authority. No extra payments observed."
+    },
+    {
+      "severity": "medium",
+      "clients": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "finding": "No aggregate selection deadline; most clients use socket inactivity timeouts."
+    },
+    {
+      "severity": "medium",
+      "clients": [
+        4
+      ],
+      "finding": "Negative helper can mark wrong rejection reasons PASS; reproduced offline."
+    },
+    {
+      "severity": "medium",
+      "clients": [
+        10
+      ],
+      "finding": "Startup can overwrite a pending signed journal before uncertain-send reconciliation."
+    },
+    {
+      "severity": "low",
+      "clients": [
+        1,
+        2,
+        5,
+        10
+      ],
+      "finding": "First verified quote logged early but remaining candidates awaited before payment; client10 waits before select returns."
+    },
+    {
+      "severity": "low",
+      "clients": [
+        1,
+        7
+      ],
+      "finding": "One invalid discovery record can abort discovery instead of rejecting only that candidate."
+    }
+  ]
+}

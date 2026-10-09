@@ -2,6 +2,8 @@
 
 Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge and pay.sh signing**, transfers, naming, token launches, trading and staking. Results below distinguish mainnet payments, Surfpool program execution and wallet-signing support.
 
+**Ten independent client trials: 20/20 NEIRO-paid transfers passed on Surfpool, with customers holding 0 SOL.** Review found unsafe rejection probes and reliability gaps in some generated clients. [Results and security review](../docs/test-results/ten-independent-clients.md).
+
 ## Swaps and payments
 
 | Application or flow | Result / environment | What was verified |
