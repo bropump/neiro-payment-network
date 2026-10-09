@@ -11,6 +11,8 @@ Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge
 | MiniRouter — NEIRO → USDC deposit swap | **Works — Surfpool** | Adapted MiniRouter orders settled both directly through Kora and through the then-current router. Router run delivered 0.553293 USDC to the destination; customer held zero SOL. Real MiniRouter account credit was not tested. [Evidence and required adaptation](../docs/test-results/swaps-and-wallets.md#minirouter). |
 | USDC transfer, paid in NEIRO | **Works — Surfpool** | Operator funded a new recipient ATA and gas; customer sent USDC and reimbursed in NEIRO while holding zero SOL. [Evidence](../docs/test-results/swaps-and-wallets.md#other-earlier-program-checks). |
 | NEIRO transfer, new or existing recipient ATA | **Works — Surfpool** | Operator-funded account creation where needed; exact reimbursement and zero customer SOL checked. [Results](../docs/test-results/client-practices-surfpool-2026-10-07.md). |
+| Privy-path payment test — local signer | **Works — Surfpool** | Sent 1 NEIRO and created the recipient ATA; finalized with zero customer SOL. Used a local signer fallback, so Privy hosted signing was not exercised. [Evidence](../docs/test-results/agent-uptake-2026-10-07.md#what-actually-worked). |
+| Turnkey-path payment test — local signer | **Works — Surfpool** | Sent 10,000 lamports plus a memo; gas paid in NEIRO. Finalized with customer SOL covering only the transfer principal. Used a local signer fallback, so Turnkey hosted signing was not exercised. [Evidence](../docs/test-results/agent-uptake-2026-10-07.md#what-actually-worked). |
 | NEIRO ID registration, resolution and tipping | **Works — Surfpool** | pay.sh signed registration and two tips, including a new recipient ATA; operator funded rent and gas. Customer stayed at zero SOL. [Results](../docs/test-results/swaps-and-wallets.md#paysh). |
 | Pump bonding-curve buy | **Works — Surfpool** | Buyer started and finished at zero SOL. Operator advanced purchase SOL and funded account setup; buyer paid NEIRO and retained the tokens. [Results](../docs/test-results/pump-buy-surfpool-2026-10-08.md). |
 
@@ -23,7 +25,7 @@ Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge
 | Para — Kora operator signer | **Works — real remote signing, private-ledger execution** | Legacy, v0 and v1 transactions confirmed; message and customer signature preserved. Free sponsorship tested, not a NEIRO-paid client wallet flow. [Evidence](../docs/test-results/swaps-and-wallets.md#para). |
 | Local Solana Ed25519 keys | **Works — mainnet and Surfpool** | Used in the swap and program tests on this page, preserving the approved transaction message and collecting customer/operator signatures. |
 
-Privy and Turnkey payment tests succeeded using local-key fallbacks; their actual hosted signing was not exercised. Para’s verified path above is the Kora operator signer. Browser-wallet and Para customer-wallet integrations need separate checks.
+Para’s verified path above is the Kora operator signer. Browser-wallet and Para customer-wallet integrations need separate checks.
 
 Jupiter and MiniRouter swap results include earlier router-based integrations. They establish the sponsored operations tested; current signed-listing discovery is a separate check.
 
