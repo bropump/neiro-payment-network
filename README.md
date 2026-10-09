@@ -46,6 +46,12 @@ Simulate the completed transaction and reject errors. Approve it, sign with your
 
 **Starting with zero SOL?** Tested paths include NEIRO transfers, account creation and a pump.fun buy. A SOL-priced purchase needs an explicit operator advance or conversion in addition to gas sponsorship. Our pump test included the advance: the buyer started and finished at zero SOL and paid only NEIRO. [Tested paths and limits →](docs/FEATURE-MAP.md)
 
+## PayBox for agent payments
+
+**PayBox worked as an agent wallet in a complete NPN payment on a local Surfpool fork.** Its real signing service and official Kora co-signed one transaction: the recipient received **1.25 NEIRO**, the operator received **0.010710 NEIRO** for gas, and the customer stayed at **zero SOL**.
+
+Reusing the existing authorized PayBox wallet was straightforward: load its profile, select the Solana grant and sign the approved NPN transaction through the SDK. First-time onboarding and mainnet settlement were not tested. [Setup path, versions and payment evidence →](docs/test-results/paybox-npn-surfpool-2026-10-09.md)
+
 ## Set up your operator
 
 Choose your host, signing wallet and markup. Run **official Kora from latest upstream `main`**, including merged fixes, plus the Node.js listing runner for onchain discovery and renewal. Use the [verified install commands](docs/OPERATOR-SETUP.md#install-kora-and-the-listing-runner); a stable release or old test image is not the installation target.

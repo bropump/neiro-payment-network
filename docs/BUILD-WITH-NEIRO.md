@@ -23,6 +23,12 @@ For an untested integration, validate the actual built transaction and wallet si
 
 Report the exact wallet API, builder API and operator used, followed by **tested**, **not yet tested**, or the specific blocker. Keep this evidence tied to the operation and software versions; a local-keypair transfer does not establish browser-wallet or swap compatibility.
 
+### PayBox for an agent wallet
+
+**Tested: real PayBox signing through the complete NPN client flow on Surfpool.** Reuse an existing authorized Solana wallet: load `PayboxClient.fromConfig()`, inspect `listCredentials()`, then use `requestWalletSign` with the `solanaTransaction` intent to sign the completed, approved transaction. The operator remains fee payer; the customer remains transfer authority. Apply all quote, message, signature, journal and settlement checks below.
+
+The test delivered **1.25 NEIRO** to the recipient and **0.010710 NEIRO** to the operator in one finalized transaction, with customer SOL remaining zero. Reusing the existing profile and autonomous grant was straightforward; first-time PayBox onboarding was not tested. Synthetic funds, seeded token accounts and mock pricing were used; mainnet settlement remains untested. [Exact signing call, versions and receipt →](test-results/paybox-npn-surfpool-2026-10-09.md)
+
 ## Start with a payment
 
 You need a signing wallet with NEIRO, a Solana RPC that supports listing discovery, and your existing transaction builder. NEIRO’s mint is `CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump` (6 decimals).

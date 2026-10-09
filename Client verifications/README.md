@@ -1,6 +1,6 @@
 # Client verifications
 
-Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge and pay.sh signing**, transfers, naming, token launches, trading and staking. Results below distinguish mainnet payments, Surfpool program execution and wallet-signing support.
+Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PayBox, PaySponge and pay.sh signing**, transfers, naming, token launches, trading and staking. Results below distinguish mainnet payments, Surfpool program execution and wallet-signing support.
 
 **Ten independent client trials: 20/20 NEIRO-paid transfers passed on Surfpool, with customers holding 0 SOL.** Review found unsafe rejection probes and reliability gaps in some generated clients. [Results and security review](../docs/test-results/ten-independent-clients.md).
 
@@ -22,6 +22,7 @@ Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge
 
 | Wallet / signer | Result | Exact supported path tested |
 |---|---|---|
+| PayBox — agent customer wallet | **Works — real wallet API signing, complete NPN flow on Surfpool** | Authenticated v5 discovery, independently verified quote, PayBox + Kora co-signing and finalized NEIRO payment/reimbursement in one transaction. Sent 1.25 NEIRO, paid 0.010710 NEIRO for gas, customer stayed at 0 SOL. Existing authorized wallet and seeded token accounts; mock pricing. [Setup and evidence](../docs/test-results/paybox-npn-surfpool-2026-10-09.md). |
 | PaySponge | **Works — real wallet API signing, Surfpool execution** | Sign-only API preserved the other signature while creating a classic SPL mint, creating its ATA and minting 123 tokens. Customer held zero SOL. [API, versions and evidence](../docs/test-results/agent-uptake-2026-10-07.md#paysponge-reproducibility). |
 | pay.sh | **Works — local wallet signing, Surfpool execution** | Local file-keystore signer plus Kora completed NEIRO ID registration, tipping and a Pump `createV2` launch. This was outside stock solOS. [Evidence](../docs/test-results/swaps-and-wallets.md#paysh). |
 | Para — Kora operator signer | **Works — real remote signing, private-ledger execution** | Legacy, v0 and v1 transactions confirmed; message and customer signature preserved. Free sponsorship tested, not a NEIRO-paid client wallet flow. [Evidence](../docs/test-results/swaps-and-wallets.md#para). |

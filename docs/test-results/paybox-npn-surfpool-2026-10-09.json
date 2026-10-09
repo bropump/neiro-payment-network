@@ -1,0 +1,147 @@
+{
+  "startedAt": "2026-10-09T11:48:24.392Z",
+  "scope": "Local Surfpool + isolated official Kora + real PayBox signing; synthetic funds; deterministic Mock pricing",
+  "checks": [
+    "Onchain v5 operator listing discovered and authenticated; live Kora configuration matched",
+    "Completed unsigned transaction quote stabilized; exact reimbursement independently verified; simulation passed",
+    "Real PayBox signature verified on the exact approved message, with operator signature still absent",
+    "Kora co-signed without changing the PayBox approved message; both required signatures verified",
+    "One finalized successful transaction paid recipient and operator in NEIRO; operator funded the SOL network fee; customer remained at zero SOL"
+  ],
+  "status": "PASS_FULL_PAYBOX_NPN_LOCAL_PAYMENT",
+  "listing": {
+    "address": "3KjCAj7igCUx4u3sLqQKYG51B7jUt5mKXnR5DNjs4o1z",
+    "terms": {
+      "anchor_blockhash": "SURFNETxSAFEHASHxxxxxxxxxxxxxxxxxxx1b1c894x",
+      "anchor_slot": 454854976,
+      "genesis": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+      "mint": "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+      "operator": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+      "oracle": "Mock",
+      "payment": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+      "price": {
+        "margin": 0.05,
+        "type": "margin"
+      },
+      "url": "https://127.0.0.1:18343/",
+      "v": 5
+    },
+    "discoveredByRpc": true,
+    "signatureAndExpiryVerified": true
+  },
+  "quote": {
+    "quotes": [
+      {
+        "fee_in_lamports": 10710,
+        "fee_in_token": 10710,
+        "signer_pubkey": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+        "payment_address": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR"
+      },
+      {
+        "fee_in_lamports": 10710,
+        "fee_in_token": 10710,
+        "signer_pubkey": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+        "payment_address": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR"
+      }
+    ],
+    "final": {
+      "fee_in_lamports": 10710,
+      "fee_in_token": 10710,
+      "signer_pubkey": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+      "payment_address": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR"
+    },
+    "independentNetworkFeeLamports": 10200,
+    "independentAtaRentLamports": 0,
+    "independentCostLamports": 10200,
+    "verifiedReimbursementRaw": "10710",
+    "pricing": "Mock oracle: 0.001 SOL / NEIRO, 5% margin",
+    "feeCapRaw": "5000000"
+  },
+  "paybox": {
+    "providerStatus": "success",
+    "unchangedMessage": true,
+    "signatureVerified": true,
+    "signingApi": "requestWalletSign / solanaTransaction",
+    "sdkVersion": "1.0.0"
+  },
+  "payment": {
+    "signature": "4iUXHb4swxd9YpiFHS6iTQtNn8K261Y6Mqv9x56zNjf3AhRoR48TUSs8KHRVfxx5xjdvTLPX3x6QByBE5JybY1Sc",
+    "slot": 454856273,
+    "confirmation": "finalized",
+    "successful": true,
+    "operator": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+    "recipient": "CZVmxnS3reDWpRdCTwgT5Pdo5JTzb7VKTQoQzLcEQM4G",
+    "principalRaw": "1250000",
+    "reimbursementRaw": "10710",
+    "totalCustomerNeiroDebitRaw": "1260710",
+    "actualNetworkFeeLamports": 10200,
+    "actualRecipientAtaRentLamports": 0,
+    "operatorSolDebitLamports": 10200,
+    "customerSolBefore": 0,
+    "customerSolAfter": 0,
+    "before": {
+      "operatorSol": 994002441,
+      "customerSol": 0,
+      "customerNeiro": "100000000",
+      "operatorNeiro": "0",
+      "recipientNeiro": "0"
+    },
+    "after": {
+      "operatorSol": 993992241,
+      "customerSol": 0,
+      "customerNeiro": "98739290",
+      "operatorNeiro": "10710",
+      "recipientNeiro": "1250000"
+    },
+    "messageSha256": "62e4b8dad70b2aad4e8365768725e22d6149cacb012188094ecbffd8731c5ad2",
+    "feePayer": "5RXPARWDUJMAty25v5fhCEXuJkyE5K3mHxJ7BgdjinjR",
+    "customerSignatureProvider": "PayBox real service",
+    "operatorSignatureProvider": "Official Kora memory signer",
+    "signatureCount": 2
+  },
+  "accountSetup": "Existing customer/operator/recipient NEIRO token accounts seeded on Surfpool; no account-creation rent in this payment",
+  "recoveredEarlierAttempt": "A prior attempt with new ATA creation failed local preflight, was reconciled through exact signature/history/balances, and its signed journal was preserved before this replacement",
+  "software": {
+    "npnCommit": "44de5d887aff084f6721c8c34fb0eb497a715349",
+    "koraMainCommit": "4b683edacb11955cc4a9b854d6bc5e47c35d6b2a",
+    "koraBinarySha256": "de109cb7dd7a906f960fa7fb62f50324f1b020d8d187be36bab03cf2169eb7f9",
+    "surfpool": "1.5.0",
+    "payboxSdk": "1.0.0",
+    "solanaWeb3js": "1.99.0",
+    "solanaSplToken": "0.4.15"
+  },
+  "completedAt": "2026-10-09T11:48:37.741Z",
+  "receiptVerification": {
+    "status": "PASS",
+    "signature": "4iUXHb4swxd9YpiFHS6iTQtNn8K261Y6Mqv9x56zNjf3AhRoR48TUSs8KHRVfxx5xjdvTLPX3x6QByBE5JybY1Sc",
+    "slot": 454856273,
+    "finalized": true,
+    "chainMessageMatchesApproved": true,
+    "bothSignaturesCryptographicallyValid": true,
+    "requiredSignatures": 2,
+    "twoNeiroTransfersInSameTransaction": true,
+    "recipientNeiroRaw": "1250000",
+    "operatorReimbursementNeiroRaw": "10710",
+    "customerNeiroDebitRaw": "1260710",
+    "customerSolBefore": 0,
+    "customerSolAfter": 0,
+    "operatorSolNetworkFeeLamports": 10200,
+    "approvedMessageSha256": "62e4b8dad70b2aad4e8365768725e22d6149cacb012188094ecbffd8731c5ad2"
+  },
+  "cleanup": {
+    "status": "COMPLETE",
+    "listingClosed": true,
+    "listingClosureSignature": "Kvah5rTFJpCDAr7kmYoAsVTvDF8XhLK11ok3R2pWd5N7GDgdZPLHHcELbCP6sS5n8pDxB4V32ke2yRWFS9cdrPX",
+    "listingClosureCommitment": "finalized",
+    "listingAbsentAtSlot": 454857125,
+    "temporaryServicesStopped": [
+      "official Kora",
+      "local HTTPS proxy",
+      "in-memory Surfpool fork",
+      "read-only RPC relay"
+    ],
+    "syntheticForkDiscarded": true,
+    "payboxProfileModified": false
+  },
+  "publicationScope": "Sanitized historical local-fork proof; customer address and PayBox request identifiers omitted; no credential material or raw transaction bytes included"
+}
