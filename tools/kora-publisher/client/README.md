@@ -1,5 +1,7 @@
 # Verify the three Kora pricing modes
 
+**Start with the [tested rent, swap and retry examples](../../../docs/CLIENT-PAYMENT-CHECKS.md).** `payment-safety.example.mjs` provides narrow reference checks alongside this quote verifier; it is not a general program-cost calculator or automatic payment recovery service.
+
 `verify-quote.mjs` is a small, pure JavaScript quote checker, not a router, complete payment SDK or replacement for Kora. It has no network, signing or third-party dependencies. Node's built-in assertion failures reject a quote. For signature release, deadlines and restart recovery, follow the [client flow](../../../docs/BUILD-WITH-NEIRO.md#start-with-a-payment) and [failure-path tests](../../../docs/BUILD-WITH-NEIRO.md#test-your-client-before-use); these pure verification functions do not implement those controls.
 
 ```sh

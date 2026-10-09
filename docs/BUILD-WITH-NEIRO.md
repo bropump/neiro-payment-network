@@ -8,6 +8,8 @@ Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora
 
 **Choose once, verify each payment, reuse.** Pick a preferred operator by available SOL, verified price, response speed or your own preference. Keep using it until you want to reconsider or it becomes unavailable. Fastest/cheapest comparisons are optional, not a step required for every payment.
 
+**Copy the tested checks:** [account rent, swap protection and retry example](CLIENT-PAYMENT-CHECKS.md). These cover the mistakes observed in product trials without requiring an NPN SDK.
+
 ## Start with a payment
 
 You need a signing wallet with NEIRO, a Solana RPC that supports listing discovery, and your existing transaction builder. [Check the wallet and builder APIs](#check-your-wallet-and-app-first) if this is a new integration. NEIRO’s mint is `CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump` (6 decimals).
@@ -53,6 +55,8 @@ For every payment, fetch the chosen operator’s live config and SOL balance. Re
 
 The [reference quote checker](../tools/kora-publisher/client/README.md) covers these modes, but needs independently calculated costs where applicable. It does not calculate every program’s costs. Reject operations whose costs or price inputs you cannot verify. The current default `maxAgeSlots: 0` disables oracle-age rejection; it does not establish a fresh price. Apply your own explicit price-quality policy.
 
+Do not infer rent from the presence of a creation instruction. Read and validate the actual account: an existing ATA needs zero new rent, including when the builder emits `CreateIdempotent`. If the quote still charges that rent, reject it; safely omit redundant unsigned setup and re-quote, or stop if the builder cannot be adapted. [Worked check](CLIENT-PAYMENT-CHECKS.md#1-charge-account-rent-only-when-it-is-actually-needed).
+
 ### 4. Approve and sign
 
 **Keep discovery, quote comparisons and diagnostic probes unsigned.** Releasing a customer-signed payment to Kora authorizes that operator to complete and broadcast it, even when the method is called `signTransaction`. Only release the one approved payment to the selected operator. Normal clients do not need to run operator rejection probes before each payment; use the [isolated integration checks](#test-your-client-before-use) when developing or validating an integration.
@@ -71,7 +75,7 @@ With Kora’s `signTransaction`, require the returned message to match the appro
 
 **Save recovery state before sending any customer signature to Kora**, including `signTransaction`, not just before your own RPC broadcast. Durably save the operation ID, exact approved message and customer-signed bytes, selected operator, amounts, fee cap, blockhash and last valid block height. Add the expected transaction signature and fully signed bytes when available, before broadcasting them. Keep signed bytes private; they can authorize execution.
 
-On startup, check for a pending operation **before writing new evidence, requesting another signature or replacing its journal**. Acquire exclusive ownership for that operation before reading or updating its state, and use atomic, durable writes. Checking whether a file exists and then replacing it is not an exclusive lock. Reconcile the saved signature and transaction through RPC. If the operator withheld its fee-payer signature, reconcile the exact saved message against chain history; if that cannot be established reliably, leave the operation unresolved and stop. A timeout or expired blockhash alone does not prove the original transaction never landed. In particular, checking history before expiry and expiry afterward leaves a gap in which it could land. Missing transaction data is not proof of absence; if a sufficiently finalized outcome cannot be established, stop unresolved. Do not automatically create a replacement payment. Rebroadcasting identical fully signed bytes is different from authorizing a new message. Verify amounts and costs from that transaction’s `pre/postBalances` and `pre/postTokenBalances`, not wallet-wide snapshots that include other customers’ payments. Return the confirmed transaction link and actual charge.
+On startup, check for a pending operation **before writing new evidence, requesting another signature or replacing its journal**. Acquire exclusive ownership for that operation before reading or updating its state, and use atomic, durable writes. Checking whether a file exists and then replacing it is not an exclusive lock. Reconcile the saved signature and transaction through RPC. If the operator withheld its fee-payer signature, reconcile the exact saved message against chain history; if that cannot be established reliably, leave the operation unresolved and stop. A timeout or expired blockhash alone does not prove the original transaction never landed. In particular, checking history before expiry and expiry afterward leaves a gap in which it could land. Missing transaction data is not proof of absence; if a sufficiently finalized outcome cannot be established, stop unresolved. Do not automatically create a replacement payment or add a retry suffix to its business operation ID to bypass the pending claim. A local exception before client broadcast is not proof of nonpayment once Kora has received the customer signature. Rebroadcasting identical fully signed bytes is different from authorizing a new message. Verify amounts and costs from that transaction’s `pre/postBalances` and `pre/postTokenBalances`, not wallet-wide snapshots that include other customers’ payments. Return the confirmed transaction link and actual charge.
 
 ## Check your wallet and app first
 
@@ -116,6 +120,10 @@ Funding an ATA does not give the operator control of it. Test cleanup used the r
 
 For another program, inspect its actual instructions and documented account roles. Preserve swap slippage, minimum output, lookup tables and setup/cleanup instructions. Do not infer a funding restriction merely because the app is untested, or replace every user address with the operator.
 
+Rebuild funding instructions with their official constructors. For `SystemProgram.createAccountWithSeed`, when the operator becomes `fromPubkey` and the customer remains `basePubkey`, the instruction needs the separate base signer account. Replacing only the payer account meta can omit it and cause `MissingRequiredSignature` before quoting. That error does not by itself mean Kora must sign before the quote.
+
+A swap that fails its price bound must be re-quoted within the user's authorized slippage or stopped. Never lower its minimum output to force simulation success. Preserve an independent snapshot of the approved swap instructions while adapting sponsorship. [Concrete guard](CLIENT-PAYMENT-CHECKS.md#2-preserve-the-swap-the-user-approved).
+
 For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessage` for the completed message plus `getMinimumBalanceForRentExemption(165)`. Priority fees are already included in the network fee. Existing ATAs add no rent. Other account types and program outflows need their own calculation.
 
 ## Fast, verified operator selection
@@ -147,6 +155,8 @@ Use disposable wallets and synthetic funds for fault tests. A normal payment cli
 | Absolute deadline | Make one endpoint stream small chunks indefinitely. Selection and response-body reads must stop at the overall deadline; a valid candidate already received remains usable. |
 | Fastest return | Keep a losing candidate pending. Assert the actual selection promise resolves with the verified winner while the loser is still pending. An early log entry is insufficient. |
 | Pending-payment recovery | Stop after saving the customer-signed attempt and before receiving the operator response, then restart. Assert the original journal survives and no new message is signed or sent until reconciliation establishes the outcome. Test concurrent attempts against the same operation ID too. |
+| Existing-account rent | Leave an idempotent creation instruction for an already-existing ATA. Reject a quote that charges new rent; safely rebuild without redundant setup and re-quote. Also test a genuinely absent ATA with fetched rent. |
+| Swap protection | Modify the approved swap's output bound or recipient. Reject before signatures, even if the altered message simulates successfully. A protected fork slippage failure remains blocked until a fresh allowed quote works. |
 | Discovery isolation | Mix one malformed/expired record with a valid listing. Reject only the bad record and continue with the valid operator. |
 
 Run fastest-result tests only if you implement optional racing. For a single preferred operator, still test changed/expired selected records, a completed reimbursement quote, a stalled RPC, concurrent runs and a lost response after signature release.

@@ -40,6 +40,8 @@ Call the operator's `getConfig` and `estimateTransactionFee`. Include the NEIRO 
 
 Check the operator’s current signed listing, live SOL capacity and configuration. Verify the completed quote against its advertised terms, independently calculated costs and your NEIRO spending limit. **Reuse the operator choice, not an old quote or approval.** [Per-payment checks →](docs/BUILD-WITH-NEIRO.md#3-verify-the-completed-quote)
 
+[Tested examples: account rent, swap protection and safe retries →](docs/CLIENT-PAYMENT-CHECKS.md)
+
 ### 5. Sign, send and confirm
 
 Simulate and approve the completed transaction, then sign with your wallet. Save the signed recovery state before sending it to Kora. Ask Kora to **sign** for you to broadcast, or **sign and send**. Verify the exact message, required signatures and settled effects. If a response is lost after signing, reconcile that payment before creating another. [Simulation, signing and submission →](docs/BUILD-WITH-NEIRO.md#4-approve-and-sign)

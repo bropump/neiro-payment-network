@@ -17,6 +17,7 @@ For an operator, resolve current official upstream Kora main and verify the inst
 
 - [Feature map and test coverage](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/FEATURE-MAP.md)
 - [Build a payment or app](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/BUILD-WITH-NEIRO.md)
+- [Tested account-rent, swap-protection and retry examples](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/CLIENT-PAYMENT-CHECKS.md)
 - [Discovery format and client checks](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/SPL-RECORD-LISTINGS.md)
 - [Operator installation and host details](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/docs/OPERATOR-SETUP.md)
 - [Operator configuration](https://raw.githubusercontent.com/bropump/neiro-payment-network/main/CONFIGURATION.md)

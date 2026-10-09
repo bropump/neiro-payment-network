@@ -1,0 +1,477 @@
+{
+  "scope": "27 completed operations with independently checked finalized fork receipts; not entire product or wallet/website certification. Eighteen targets share SPL stake-pool implementations. SOL application principal was separate from NEIRO gas. Raw evidence retained locally.",
+  "npnCommit": "c66d28e10f872a6b3eed8c901df99b94dc1c8d4a",
+  "koraCommit": "b15b482968518a61f2a55acb7a19b8fb524b9109",
+  "price": "1 NEIRO = 0.001 SOL; synthetic Mock input",
+  "margin": "5%",
+  "freshContexts": 3,
+  "model": "gpt-6-luna, low",
+  "assistance": "Parent repaired fork account-cache/runtime issues and corrected evidence/safety claims; not an unassisted benchmark.",
+  "operations": [
+    {
+      "product": "Sanctum Validator LSTs",
+      "operation": "Sanctum Infinity exact-in SOL swap to mint INF (official SDK tradeExactInIx; on-chain SwapExactInV2)",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "LcngbFgUzrJN9EsfTGgt1Ex1pYa1u95xmbUzk6fktEkXgb71VayjMr3hLmc4Fqbyd1APJ5gDLT9XXGyy3STmH66",
+      "slot": 454915573,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -4088560,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "4292988",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "5ocnV1qiCgaQR8Jb8xWnVbApfaygJ8tNoZfgPwsgx9kx",
+        "wsoGmxQLSvwWpuaidCApxN5kEowLe2HLQLJhCQnj4bE",
+        "s1b6NRXj6ygNu1QMKXh2H9LUR2aPApAAm1UQ2DjdhNV"
+      ]
+    },
+    {
+      "product": "Kamino Lend",
+      "operation": "Deposit 0.2 USDC through official KTX REST deposit-instructions for vault HDsayqAsDWy3QvANGqh2yNraqcD8Fnjgh73Mhb3WRS5E.",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "24bbhkNb3HoKRkzsJvFk6oi9u7hJustVAu7Ta4MknUGYMCG8xwWb3ufUY4bqvk4qwGcYAme8kfX39wbwDDqNTmR5",
+      "slot": 454911242,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": 0,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+      ]
+    },
+    {
+      "product": "Raydium AMM",
+      "operation": "Swap 10000000 lamports customer SOL to 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R through the official Raydium swap route and reimburse Kora fee in NEIRO",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "5VnxL7pgoGn7B9JofYDNE8vFrwYQg127JaFs13H4RtE3yk6f2AmLyhwShnEPnvj7U7xgornDJBFtp1Wvst2fmoXa",
+      "slot": 454912129,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -4088560,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "4292988",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS",
+        "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+      ]
+    },
+    {
+      "product": "Jito Liquid Staking",
+      "operation": "Deposit SOL into Jito stake pool and mint JitoSOL",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "2M8BpDrsgSxfzGkpV62BnA6ycamiKmQJRD1NDDrHhVt2BW292a7Aufu2zvJyxy7xFfQRYBxkwWMHuYHrHNAbxXrd",
+      "slot": 454910363,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "Jupiter Lend",
+      "operation": "Deposit 1,000 USDC base units (0.001 USDC) into a Jupiter Earn main market vault using official getDepositIxs SDK.",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "267K4rt5wEsRyYR4fXokeCsKbtNQmrJ5EVcXCBQvWfBRpDHZ1F5X7Mx71Cg8npXnVdZ4Z38stSvFofTnEVhyvx5c",
+      "slot": 454910288,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": 0,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"
+      ]
+    },
+    {
+      "product": "Binance Staked SOL",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into BNso1VUJnh4zcfpZa6986Ea66P6TCp59hvtNJ8b1X85",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "4zMNv5YCwBEstdrLu7CjhoGPaLzuEBW2391HGhXxP54yRtBYyA9SVfS2SBCDBfUc155rm26aQmbY2EGaqtvLdFwX",
+      "slot": 454910269,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "PumpSwap",
+      "operation": "Buy PumpSwap SARP from its canonical SOL pool using Pump.fun official SDK, spending 10000000 lamports (0.01 SOL).",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "4fk1YEG7sFxvLvSHggATN88sPhxAMxbHyvCbMF617FsBB7dk8YcCdqEvAAu2kMeUWA9pUCdchMMriJybD45GDSVV",
+      "slot": 454914669,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -4123360,
+      "customerSolDeltaLamports": -9805119,
+      "reimbursementRawNeiro": "4329528",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+        "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"
+      ]
+    },
+    {
+      "product": "Orca DEX",
+      "operation": "Swap 10000000 lamports customer SOL to 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R through Orca Whirlpool D3C5H4YU7rjhK7ePrGtK1Bhde4tfeiTr98axdZnA7tet and reimburse Kora fee in NEIRO",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "4EFaFRwCB7NuPcZQVQ8CYZdBKVfzkDexaXyChNXqLWJuE9sqN5MxHHGn5deFr5kDJHc4TuZqbvGLupqfRoPtBLFi",
+      "slot": 454912952,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -10000,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "10500",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+      ]
+    },
+    {
+      "product": "Drift Staked SOL",
+      "operation": "Deposit SOL and mint dSOL via Drift\u2019s official Sanctum stake-pool account",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "5ZFDw92xWgBbg3gPgintQguzjt1Zist7UdCSysFwCuq2hVTWyDdfNhVsPhAbJMkemaAQ64E5mU5aXicShmk9F1eK",
+      "slot": 454911690,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    },
+    {
+      "product": "Huma",
+      "operation": "Deposit 1 USDC into Huma Classic/PST using the official Huma permissionless SDK, operator funds Huma account rents and gas and NEIRO reimburses it",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "5dd1Lq6MJsgzoRbiFdGKg4AqQREyXX9A9ijUhz9iXBcmAWKNXCChbuvArQnVp8bbL9tZdJTmpkp9ULBsEGjZnrah",
+      "slot": 454914240,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -5786800,
+      "customerSolDeltaLamports": 0,
+      "reimbursementRawNeiro": "6076140",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn"
+      ]
+    },
+    {
+      "product": "Forward Industries SOL",
+      "operation": "Stake 0.1 SOL in the fwdSOL stake pool",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "xuRCibhKgbUpz9z9nq4GX5zGrEjwg7khXTMgHnqBHXeS427x54eyVgAFCDGWAXubuJLy6g4Bi9kd8jVyNnnArej",
+      "slot": 454916622,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -100000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    },
+    {
+      "product": "DFDV Staked SOL",
+      "operation": "Deposit SOL into dfdvSOL stake pool and mint dfdvSOL",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "3ohjo7bkx2k1V9qJqiXaq1PB8TF3xD32Nr5t6fFwpHtiP3ATY72ogLqVmFX1kQ4gTed2nJSrghUXhvTAhBRFUSkg",
+      "slot": 454910223,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    },
+    {
+      "product": "Meteora DLMM",
+      "operation": "Swap 0.1 USDC to SOL through Meteora DLMM pool 5rCf1DM8LjKTw4YqhnoLcngyZYeNnQqztScTogYHAS6 using official SDK quote and instruction builder.",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "2piXu373dTdp13VYzmDNxLsnSzMbd7h3esk2vbKGF9nUSEbNwwmNq9mihuswzsXryCoEv7X8h74tz53UykgoMYRc",
+      "slot": 454912059,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": 2951533,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+      ]
+    },
+    {
+      "product": "Phantom SOL",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into pSo1f9nQXWgXibFtKf7NWYxb5enAM4qfP6UJSiXRQfL",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "2ijdkJwiAHJaWGDjLzqYZ7MhfADQdYGzuXfSp6xE5Fd3yjg6hpcG5cfEHHYhjbMkQUf9XJhBmYSexD9CTsRT8Nkc",
+      "slot": 454910326,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "Bybit Staked SOL",
+      "operation": "deposit 50000000 lamports SOL for Bybit2vBJGhPF52GBdNaQfUJ6ZpThSgHBobjWZpLPb4B",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "41m27TqgGsDUMfx6JWfyvjcpmw6SkPVaxSDWwbckPJV4AEoyzDxe7XzJi3KKeB8sZvshHuZLSTh99H5tmVEmhsg5",
+      "slot": 454912403,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    },
+    {
+      "product": "The Vault Liquid Staking",
+      "operation": "Stake 0.01 SOL in The Vault vSOL stake pool",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "pcMUas3kUJkte58px1N96GgDJcPDzu53tKmvnP7krq2j9QXcAh7ahYAWiKKD4Lr94dxRHfW9yLEZs5Gc5uNYiEf",
+      "slot": 454916969,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "JPool",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into 7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "5iEM4JbHVBbaiLfFzCroZTWgqX6bhVQFcCV8f4VcgWiqjFsx1Y5BKCbyWg99rXbsSwxmbSmB8WftZusv5sKnE2rj",
+      "slot": 454910038,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "Phase Delegation",
+      "operation": "Deposit SOL and mint pdSOL via Phase Delegation\u2019s official SPL Stake Pool",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "haTa8aPh9dTNfm9WfqNTvLSEqCYmGQZPk7gT87nmewKgLRKjnTwAEWkPNEkbqYezWvDTPz68vVMvX5AsFe5Ldcq",
+      "slot": 454914348,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "Helius Staked SOL",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "3Kj5SsNnJjfEKz6egzjLM2xBACupEixBVXamiTuRP6xzN7mrJcyJMMPefoAuFoBuvYHcLXZwQGgusQ6xfR6Btk28",
+      "slot": 454910383,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    },
+    {
+      "product": "BlazeStake",
+      "operation": "deposit 50000000 lamports SOL for bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "2HkHbsW2W7guqVWQDPC3QroTwUU9HNaif1xUDtccbK7kcfFu4eawcRtdSaNmuavKTJ9mXiCaLxLT7mgtuYP7ybaY",
+      "slot": 454912824,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "JagPool Staked SOL",
+      "operation": "deposit 50000000 lamports SOL for jag58eRBC1c88LaAsRPspTMvoKJPbnzw9p9fREzHqyV",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "TKtKPFbzHEs49WiL9dMZuDS4EoXgyjoUKKKXVGU7Axk1BULawrZHRGvMUxDAGsYsdb5RyTbJatvgkQAxRKsocTa",
+      "slot": 454913756,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 10000,
+      "operatorSolDeltaLamports": -2049280,
+      "customerSolDeltaLamports": -50000000,
+      "reimbursementRawNeiro": "2151744",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "DoubleZero Staked SOL",
+      "operation": "Stake 0.1 SOL in DoubleZero dzSOL via the official SPL Stake Pool depositSol instruction.",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "24TWWJhY4FdDusupCbWh8gQ2arXbaaSA13YDBvNAXL6W2rSKjeGuqpnD7vRS5ZBoh8GaLYojnTfMVxpXFfpeecmj",
+      "slot": 454918758,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -100000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "Gate SOL",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into gateMurAxe4YFoUR6J63gXGKtkbTfdkMdLjZrCmThFP",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "3Ku61BrTAUPdpKozGfu9LN5gCQFNEThGSbh9tjD1M5xwjBCAMsz4qKyN6oCsjZoCAuFiTC6vy5TfXEV8uZS7WAUe",
+      "slot": 454910426,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    },
+    {
+      "product": "STKESOL by SOL Strategies",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into stke7uu3fXHsGqKVVjKnkmj65LRPVrqr4bLG2SJg7rh",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "PtM4ddGnbwoZtiwyLtQdWwHSZxnvmSFDDig6Hp1BTMg4aoJijb6mEPSG7QyMaRybQsecWXF3d8TZsSy5qNahzCN",
+      "slot": 454910476,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+      ]
+    },
+    {
+      "product": "Definity Staked SOL",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into DEF1NXSZ8Th9n28hYBayrFtx9bj1EwwTiy3mhHEB9oyA",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "2Ghm2DwAnkqRELsYXcpAVrd15Fjn9ybLpVEA8QYzbW4JPXsCXSCdb3JtKW1yJvexz7k3JR3ZiiBkbxd9wCT4b9sU",
+      "slot": 454910524,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SPMBzsVUuoHA4Jm6KunbsotaahvVikZs1JyTW6iJvbn"
+      ]
+    },
+    {
+      "product": "Adrastea Validator",
+      "operation": "Create native stake account, delegate 1100000000 lamports SOL to Adrastea vote account adraBKLNY3DL3pg6SJRDYiMA8BsznaWpUdE42X41gbP, and reimburse Kora fee in NEIRO",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "26Z1CoDq1T7GbLkc2SM3T3quokpc1mqgVxtvmwrdyZynh11q5wfKHqAQtPLN4NzBjmv9p2LvMvQqrnuMNpWTGP84",
+      "slot": 454916283,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2297880,
+      "customerSolDeltaLamports": -1100000000,
+      "reimbursementRawNeiro": "2412774",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "Stake11111111111111111111111111111111111111"
+      ]
+    },
+    {
+      "product": "Raiku Staked SOL",
+      "operation": "Stake 10000000 lamports SOL via official SPL Stake Pool DepositSol instruction into rkubjTrZYioRSeXwDnhwGQzvW3qkcin72JSxUt3WMVp",
+      "environment": "Surfpool, synthetic balances and Mock price",
+      "signature": "46oRwLGGmZmnThgpVFmtpTD3D6XVHzGzKbfriaHjMnsM6M22TmTc2H9pLcvKCxpuC82tyGPMBJgNPSxLVgopUwWo",
+      "slot": 454911167,
+      "err": null,
+      "requiredSignaturesVerified": true,
+      "networkFeeLamports": 15000,
+      "operatorSolDeltaLamports": -2054280,
+      "customerSolDeltaLamports": -10000000,
+      "reimbursementRawNeiro": "2156994",
+      "feeMatchesIndependentCost": true,
+      "programs": [
+        "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+      ]
+    }
+  ]
+}

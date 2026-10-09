@@ -34,6 +34,20 @@ Para’s verified path above is the Kora operator signer. Browser-wallet and Par
 
 Jupiter and MiniRouter swap results include earlier router-based integrations. They establish the sponsored operations tested; current signed-listing discovery is a separate check.
 
+## Additional product operations — NEIRO gas on Surfpool
+
+**27 completed operations had independently verified finalized receipts and exact NEIRO reimbursement.** These used local signing, synthetic funds and a fixed mock price. SOL used for staking or purchases was application principal, separate from gas; these rows do not all claim a zero-SOL customer. [Per-operation signatures, program IDs and balance changes](../docs/test-results/product-operations.json).
+
+| Product | Operation verified |
+|---|---|
+| Raydium, Orca, PumpSwap, Meteora DLMM | One swap through each protocol, with the operator paying network fees and applicable account costs. PumpSwap is a pool buy, distinct from a Pump bonding-curve buy. |
+| Kamino Earn, Jupiter Earn, Huma | Vault deposits; these do not establish borrowing, withdrawal or every product under those brands. |
+| Sanctum Infinity | SOL-to-INF swap through the official Infinity program. |
+| Jito, Drift dSOL, DFDV, Bybit, Phase Delegation, BlazeStake, JagPool, Forward fwdSOL, The Vault vSOL, DoubleZero dzSOL, Binance BNSOL, Phantom pSOL, JPool, Helius hSOL, Gate, STKESOL, Definity, Raiku | SOL deposit and receipt of the corresponding pool token. These 18 pools share stake-pool implementations; they are not 18 different wallet integrations. |
+| Adrastea | Native stake-account creation and delegation to its validator. |
+
+Marinade Native account setup and Unit's source-leg deposit also settled, but their subsequent service actions were not demonstrated and are not included in the 27. Neutral Trade's original overcharged request is excluded from that batch; the [corrected first and repeat requests](../docs/test-results/client-payment-checks.md#product-retests-after-the-corrections) subsequently finalized with exact reimbursement. Those prove pending requests, not keeper processing or vault share issuance. Blocked or unfinished attempts do not reverse independently verified earlier results for a different operation. Generated client code is not certified by a successful receipt: use the [rent, swap and retry checks](../docs/CLIENT-PAYMENT-CHECKS.md).
+
 ## Applications — verified on Surfpool
 
 The flows below completed using an actual official Kora operator connected to a local Surfpool fork. Customer wallets started with NEIRO only and remained at **0 SOL**. The operator supplied SOL and received the customer's NEIRO payment.

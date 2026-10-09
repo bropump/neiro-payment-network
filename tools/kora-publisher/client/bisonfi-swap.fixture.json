@@ -1,0 +1,118 @@
+{
+  "scope": "Recorded Jupiter BisonFi route instruction from synthetic fork trial; structural mutation regression, not a fresh quote or executable payment.",
+  "slippageBps": 100,
+  "inputAmount": "10000000",
+  "outputAmount": "1094824",
+  "otherAmountThreshold": "1083876",
+  "swapInstruction": {
+    "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+    "accounts": [
+      {
+        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "5ddNC3JLgUrYGndj2nWy4ZoMUD3m2Zr81xvak6VNrfXy",
+        "isSigner": true,
+        "isWritable": false
+      },
+      {
+        "pubkey": "AhAnzKWXZUdudGc8baoYvm4T7KgfH73qtgktNxjEDcS3",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "2eCk8UAMmytgTQp88iQvAUZuLpoZPbe57MqT9ZnD3ZL2",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "BiSoNHVpsVZW2F7rx2eQ59yQwKxzU5NvBcmKshCSUypi",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "5ddNC3JLgUrYGndj2nWy4ZoMUD3m2Zr81xvak6VNrfXy",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "8FnX3xo2yYw3EUE6w3nQA4GfXGS9wpK6oj3veJpbFzLo",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "ATRsNGv2nDw7hSMfkUTBoVUDsFDwN7po7KbecyiGWNB4",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "2Y7HATmn9aJBcxCskE5V2U2epmjvkZmB51zTJBbhj4cU",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "AhAnzKWXZUdudGc8baoYvm4T7KgfH73qtgktNxjEDcS3",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "2eCk8UAMmytgTQp88iQvAUZuLpoZPbe57MqT9ZnD3ZL2",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "Sysvar1nstructions1111111111111111111111111",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "J1to1yufRnoWn81KYg1XkTWzmKjnYSnmE2VY8DGUJ9Qv",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "pubkey": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "isSigner": false,
+        "isWritable": false
+      }
+    ],
+    "data": "5RfLl3rjrSoBAAAAjQFkAAGAlpgAAAAAAKi0EAAAAAAAZAAA"
+  }
+}
