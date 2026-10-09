@@ -14,6 +14,7 @@ The flows below completed using an actual official Kora operator connected to a 
 | Pump | PASS | Launched a regular SOL-paired Token-2022 coin with `create_v2`. Operator paid fees and account rent; customer remained the recorded creator. Verified curve, 1 billion supply and revoked mint/freeze authority. No initial buy. |
 | Meteora DBC | PASS | Created a new DBC configuration and launched its classic SPL curve. Operator paid fees and account rent; verified customer creator, fee recipient, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
 | Raydium LaunchLab | PASS | Launched a Token-2022 curve using Raydium’s default platform/config. Operator paid fees and account rent; verified customer creator, platform, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
+| Marinade | PASS — gas sponsorship | Deposited 0.1 SOL through the liquid-staking program and received 0.070873849 mSOL. Operator funded principal, mSOL account rent and gas; customer paid NEIRO and started/finished at 0 SOL. Separate listing-verification failure described below. |
 
 ## How NPN paid for the flows
 
@@ -24,6 +25,20 @@ The flows below completed using an actual official Kora operator connected to a 
 5. Submitted to Surfpool and checked finalized success, application state, exact NEIRO transfers and the customer's zero SOL balance.
 
 Kora's listing-account protection and priority-fee cap were also checked.
+
+Marinade was a separate trial: listing protection was checked, but priority-cap probes were not repeated. Its payment passed while final listing authentication failed, as detailed below; the full sequence above must not be inferred from its gas-sponsorship PASS.
+
+## Marinade — separate trial, 9 October 2026
+
+A fresh GPT-6.1 Sol agent on low reasoning randomly selected Marinade from four established products. It used the official Marinade SDK **6.1.0** to build a 0.1 SOL deposit, changed the new mSOL ATA's payer to the operator, and added an explicit operator-to-customer principal advance. The customer retained ownership of the received mSOL. This advance is additional to gas sponsorship and was fully included in NEIRO reimbursement.
+
+The finalized transaction delivered **0.070873849 mSOL**. Operator costs were **0.1 SOL principal + 0.002039280 SOL rent + 0.000010000 SOL network fee**. At the test-only mock price and 50% markup, the customer paid **153.073920 NEIRO** in total. Independent readback verified every transaction signature, unchanged saved transaction bytes, all SOL deltas, exact NEIRO transfers and expected mSOL output. Customer SOL was **0 before and after**, with the advance spent inside the same transaction.
+
+Local Surfpool receipt: `Y28gkWWPdqgvWFbmzwLfHdEb6BsU2ztHNW5z5s9fLZaYykfrec1UNTY2axfHch7paB8YMui3MX2JWLKodCTh2AT`, finalized at slot **454817094**. This is a fork receipt, not a mainnet explorer transaction. Successful payment execution through confirmation took **13.229 seconds**; this excludes setup and authoring.
+
+**Listing verification: FAIL after the fork restarted.** The persisted test listing's signed anchor no longer matched the block returned by Surfpool. Verification correctly rejected it, but the agent missed that rejection and called the known Kora endpoint directly. Therefore this proves the tested program operation, local signing and NEIRO-paid sponsorship, **not a complete authenticated NPN discovery-to-payment flow**. Hosted Marinade website integration, remote wallet signing and live pricing were not tested.
+
+All trial services were stopped and temporary keys, credential copies and fork state removed after independent review. Sanitized evidence remains local. No mainnet funds were used.
 
 ## Scope and limits
 
