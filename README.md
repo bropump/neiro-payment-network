@@ -24,9 +24,9 @@ Send, swap and build on Solana with NEIRO as your gas. NPN connects humans, agen
 
 You need a wallet holding NEIRO, a Solana RPC and an app or transaction builder that supports a separate fee payer. Your wallet must be able to sign without sending or changing the transaction. **No NPN SDK, CLI or operator installation is required.**
 
-### 1. Find an operator
+### 1. Choose your preferred operator
 
-Query Solana RPC for `NEIRO069` SPL Records. Verify the operator's signature and listing validity. Each listing gives you its URL and fee terms; read its current SOL balance through RPC. [Discovery query and checks →](docs/SPL-RECORD-LISTINGS.md#discovery-and-client-checks)
+Query Solana RPC for `NEIRO069` SPL Records. Verify the operator's signature and listing validity. Each listing gives you its URL and fee terms; read its current SOL balance through RPC. Choose by available SOL, verified price, response speed or your preference. **Keep using that operator; you do not need to compare everyone again for each payment.** Reconsider whenever you want or it becomes unavailable. [Discovery query and checks →](docs/SPL-RECORD-LISTINGS.md#discovery-and-client-checks)
 
 ### 2. Build what you want to do
 
@@ -36,13 +36,13 @@ Use your existing builder for a payment, swap or other program call. Set the ope
 
 Call the operator's `getConfig` and `estimateTransactionFee`. Include the NEIRO reimbursement in the transaction, then re-quote the completed transaction before signing. [Exact HTTP requests →](docs/BUILD-WITH-NEIRO.md#2-build-and-request-quotes)
 
-### 4. Verify and choose
+### 4. Verify this payment
 
-Check the charge against the signed fee terms, independently calculated costs and your NEIRO spending limit. For **fastest**, use the first verified quote; for **cheapest**, compare verified quotes within your deadline. Keep the selected operator through submission. [Fee checks and selection →](docs/BUILD-WITH-NEIRO.md#3-verify-and-select)
+Check the operator’s current signed listing, live SOL capacity and configuration. Verify the completed quote against its advertised terms, independently calculated costs and your NEIRO spending limit. **Reuse the operator choice, not an old quote or approval.** [Per-payment checks →](docs/BUILD-WITH-NEIRO.md#3-verify-the-completed-quote)
 
 ### 5. Sign, send and confirm
 
-Simulate the completed transaction and reject errors. Approve it, sign with your wallet and request Kora's signature. Verify the returned message and signatures, send through Solana RPC and confirm the recipient and balance changes. [Simulation, signing and submission →](docs/BUILD-WITH-NEIRO.md#4-approve-and-sign)
+Simulate and approve the completed transaction, then sign with your wallet. Save the signed recovery state before sending it to Kora. Ask Kora to **sign** for you to broadcast, or **sign and send**. Verify the exact message, required signatures and settled effects. If a response is lost after signing, reconcile that payment before creating another. [Simulation, signing and submission →](docs/BUILD-WITH-NEIRO.md#4-approve-and-sign)
 
 **Starting with zero SOL?** Tested paths include NEIRO transfers, account creation and a pump.fun buy. A SOL-priced purchase needs an explicit operator advance or conversion in addition to gas sponsorship. Our pump test included the advance: the buyer started and finished at zero SOL and paid only NEIRO. [Tested paths and limits →](docs/FEATURE-MAP.md)
 
@@ -68,6 +68,6 @@ Operators supply SOL and choose their own prices. A failed onchain transaction c
 
 ## Give this to your agent
 
-> Use NPN for this operation. Follow the five payment steps above and their linked checks. Use my existing wallet, pay transaction costs only in NEIRO, verify the quote and final transaction, and return the confirmed signature and actual charge. Do not silently fall back to spending my SOL.
+> Use NPN with my existing wallet. Choose a preferred operator by verified price, SOL capacity or response speed, then reuse it. Check its current signed terms and verify each completed quote and transaction before signing. Pay transaction costs only in NEIRO and return the confirmed signature and actual charge. Reconcile uncertain payments before retrying; never silently spend my SOL.
 
 [Client guide](docs/BUILD-WITH-NEIRO.md) · [Operator setup](docs/OPERATOR-SETUP.md) · [Agent setup checklist](AGENTS.md) · [Operations](docs/RENEWAL.md) · [Record format](docs/SPL-RECORD-LISTINGS.md)

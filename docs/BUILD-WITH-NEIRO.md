@@ -6,6 +6,73 @@ NEIRO Payment Network (NPN) lets a user pay transaction costs in NEIRO while an 
 
 Use **Solana RPC** for chain reads and confirmation, and the **operator’s Kora endpoint** for quotes and sponsorship. They are different endpoints. Kora accepts HTTP JSON-RPC: keep your existing transaction library and wallet API. Installing Kora’s SDK, Solana Kit or Keychain is optional for payment clients.
 
+**Choose once, verify each payment, reuse.** Pick a preferred operator by available SOL, verified price, response speed or your own preference. Keep using it until you want to reconsider or it becomes unavailable. Fastest/cheapest comparisons are optional, not a step required for every payment.
+
+## Start with a payment
+
+You need a signing wallet with NEIRO, a Solana RPC that supports listing discovery, and your existing transaction builder. [Check the wallet and builder APIs](#check-your-wallet-and-app-first) if this is a new integration. NEIRO’s mint is `CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump` (6 decimals).
+
+### 1. Choose an operator once
+
+Follow the [RPC filters and signature checks](SPL-RECORD-LISTINGS.md#discovery-and-client-checks) to discover `NEIRO069` records. Authenticate v5 terms, network, mint and their 48-hour validity using trusted finalized chain data. Reject invalid or expired listings individually and continue with other candidates; one bad record must not abort discovery. If none verify, stop without signing.
+
+Each listing supplies the operator, payment destination, URL and pricing terms. Fetch live SOL balances with `getMultipleAccounts`; balances are not stored in the listing. Exclude operators unable to cover your transaction. Choose your preferred eligible operator and retain its record address and identity. To compare price or speed, use the [optional selection rules](#fast-verified-operator-selection). More SOL indicates capacity, not a guaranteed faster or cheaper service.
+
+**For later payments, start at step 2 with that operator.** Read its selected record directly; a new scan of every operator is unnecessary. If you switch before signing, rebuild and verify for the new operator. After releasing a customer signature, reconcile the original payment before authorizing any replacement.
+
+### 2. Build and request quotes
+
+Build the intended operation for your chosen operator, using its signer as network fee payer. Keep the user’s wallet as transfer/swap authority. Include account creation and compute-budget instructions, then obtain a fresh blockhash before the final quote.
+
+POST JSON-RPC to the selected operator URL using your existing HTTP library:
+
+| Method | Parameters / result |
+| --- | --- |
+| `getConfig` | `{}` → live configuration; compare with signed terms. |
+| `getPayerSigner` | `{}` → the endpoint's recommended payer/payment identity; a pool may recommend a different signer. |
+| `estimateTransactionFee` | `{transaction, fee_token, signer_key}` → quoted `fee_in_token` and `payment_address`. |
+| `signTransaction` | `{transaction, signer_key}` → `signed_transaction`; use only after approval and user signing. |
+
+Here `transaction` is the **base64 serialized Solana transaction**, `fee_token` is the NEIRO mint and `signer_key` is the selected operator public key. `fee_in_token` is an integer in raw NEIRO units: 1,000,000 units = 1 NEIRO. Use the JSON-RPC envelope `{"jsonrpc":"2.0","id":1,"method":"…","params":{…}}`; handle both HTTP errors and JSON-RPC `error`. These are Kora methods, not Solana RPC methods. The [official walkthrough](https://solana.com/docs/tools/kora/guides/full-demo) also shows the optional SDK path.
+
+Require the selected operator in `getConfig.fee_payers`. Pin `signer_key` in every quote/sign request and require the quote's `signer_pubkey` and `payment_address` to match the authenticated listing. `getPayerSigner` takes no signer selector; its recommendation must not silently replace your selected operator. The publisher has a stricter [pool limitation](SIGNING.md#listing-runner-compatibility).
+
+For paid modes, include one provisional NEIRO reimbursement transfer to the verified `payment` address’s token account **before checking completed-transaction costs**. For a classic SPL transfer, a positive placeholder amount can establish the instruction shape; it is never authorized for submission on its own. Kora SDK `getPaymentInstruction` is an optional local helper, not a server RPC method.
+
+Calculate costs and verify the quote for that shape, replace the provisional amount with the verified fee, then re-quote and verify the completed transaction. Bound corrections (for example, three attempts). Sign only when its total reimbursement equals the independently verified final quote and is within the authorized cap. Replace the transfer; do not append another. An estimate for a draft missing reimbursement is not a completed-message fee check. Do not add an unexplained tolerance to make it pass. [Worked transfer calculation →](../tools/kora-publisher/client/README.md#completed-transfer-example)
+
+<a id="3-verify-and-select"></a>
+
+### 3. Verify the completed quote
+
+For every payment, fetch the chosen operator’s live config and SOL balance. Require enough SOL for this transaction’s sponsored costs; the balance is an observation, not reserved funds. Check the live payer, payment destination, mint, oracle and pricing against its signed listing. Independently calculate reimbursement and enforce the user’s maximum NEIRO fee. Matching `getConfig` alone does not verify a quote.
+
+- **Margin:** verify chargeable costs, price conversion, markup and rounding.
+- **Fixed:** verify the fixed amount and admission policy.
+- **Free:** expect zero reimbursement. Omit `fee_token` from `estimateTransactionFee` to avoid unnecessary oracle conversion; do not add a reimbursement instruction.
+
+The [reference quote checker](../tools/kora-publisher/client/README.md) covers these modes, but needs independently calculated costs where applicable. It does not calculate every program’s costs. Reject operations whose costs or price inputs you cannot verify. The current default `maxAgeSlots: 0` disables oracle-age rejection; it does not establish a fresh price. Apply your own explicit price-quality policy.
+
+### 4. Approve and sign
+
+**Keep discovery, quote comparisons and diagnostic probes unsigned.** Releasing a customer-signed payment to Kora authorizes that operator to complete and broadcast it, even when the method is called `signTransaction`. Only release the one approved payment to the selected operator. Normal clients do not need to run operator rejection probes before each payment; use the [isolated integration checks](#test-your-client-before-use) when developing or validating an integration.
+
+Immediately before approval, re-read and fully authenticate the chosen record using the actual RPC account owner, executable flag, signature and current finalized-chain validity checks. Do not just compare cached JSON or supply assumed account fields to the verifier. Use the URL and payment address from those authenticated terms; if they or other terms changed during preparation, restart the quote checks. Stop on a missing or expired record. Decode the completed transaction, including lookup tables. Check fee payer, recipients, amounts, account authorities, reimbursement and compute budget.
+
+Before collecting signatures, call Solana RPC `simulateTransaction` on the completed base64 transaction with `encoding: "base64"`, `sigVerify: false` and `replaceRecentBlockhash: false`. Reject a non-null `result.value.err`. This tests execution without submitting or collecting operator signatures; it does not verify signatures or guarantee later execution. If simulation reveals a needed instruction, account, fee or blockhash change, rebuild and repeat the quote and message checks.
+
+Show the operation and full NEIRO charge to the user, then sign within their authorization. Verify the user and other application signatures while preserving the approved message. The operator signature is added in step 5.
+
+If the blockhash expires before releasing any customer signature, rebuild and repeat quote verification, message inspection and approval before collecting fresh signatures. After signature release, the operator may already have broadcast; follow step 5 recovery before authorizing a replacement, even if your client has not broadcast anything. Any change to the quoted transaction, including its blockhash, requires repeating quote and message checks before signing. Never edit an already signed message. Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
+
+### 5. Submit and confirm
+
+With Kora’s `signTransaction`, require the returned message to match the approved bytes and require **every required signature to be present and valid** before broadcasting. An option that permits missing signatures is insufficient. Derive the transaction ID by base58-encoding the first signature after Kora signs; a raw byte buffer, base64 or hex string is not the RPC transaction ID. With `signAndSendTransaction`, Kora broadcasts: reconcile its returned ID and independently check the exact transaction, signatures and effects through RPC.
+
+**Save recovery state before sending any customer signature to Kora**, including `signTransaction`, not just before your own RPC broadcast. Durably save the operation ID, exact approved message and customer-signed bytes, selected operator, amounts, fee cap, blockhash and last valid block height. Add the expected transaction signature and fully signed bytes when available, before broadcasting them. Keep signed bytes private; they can authorize execution.
+
+On startup, check for a pending operation **before writing new evidence, requesting another signature or replacing its journal**. Acquire exclusive ownership for that operation before reading or updating its state, and use atomic, durable writes. Checking whether a file exists and then replacing it is not an exclusive lock. Reconcile the saved signature and transaction through RPC. If the operator withheld its fee-payer signature, reconcile the exact saved message against chain history; if that cannot be established reliably, leave the operation unresolved and stop. A timeout or expired blockhash alone does not prove the original transaction never landed. In particular, checking history before expiry and expiry afterward leaves a gap in which it could land. Missing transaction data is not proof of absence; if a sufficiently finalized outcome cannot be established, stop unresolved. Do not automatically create a replacement payment. Rebroadcasting identical fully signed bytes is different from authorizing a new message. Verify amounts and costs from that transaction’s `pre/postBalances` and `pre/postTokenBalances`, not wallet-wide snapshots that include other customers’ payments. Return the confirmed transaction link and actual charge.
+
 ## Check your wallet and app first
 
 **NPN sponsors ordinary Solana transactions. A wallet does not need a NEIRO-specific integration, but the app must let you assemble the sponsored transaction before signing.** Check the installed wallet/provider and builder APIs, not the brand name. Reuse the existing wallet; do not create another wallet or run an operator just to make a payment.
@@ -25,68 +92,9 @@ Report the exact wallet API, builder API and operator used, followed by **tested
 
 ### PayBox for an agent wallet
 
-**Tested: real PayBox signing through the complete NPN client flow on Surfpool.** Reuse an existing authorized Solana wallet: load `PayboxClient.fromConfig()`, inspect `listCredentials()`, then use `requestWalletSign` with the `solanaTransaction` intent to sign the completed, approved transaction. The operator remains fee payer; the customer remains transfer authority. Apply all quote, message, signature, journal and settlement checks below.
+**Tested: real PayBox signing through the complete NPN client flow on Surfpool.** Reuse an existing authorized Solana wallet: load `PayboxClient.fromConfig()`, inspect `listCredentials()`, then use `requestWalletSign` with the `solanaTransaction` intent to sign the completed, approved transaction. The operator remains fee payer; the customer remains transfer authority. Apply all quote, message, signature, journal and settlement checks in this guide.
 
 The test delivered **1.25 NEIRO** to the recipient and **0.010710 NEIRO** to the operator in one finalized transaction, with customer SOL remaining zero. Reusing the existing profile and autonomous grant was straightforward; first-time PayBox onboarding was not tested. Synthetic funds, seeded token accounts and mock pricing were used; mainnet settlement remains untested. [Exact signing call, versions and receipt →](test-results/paybox-npn-surfpool-2026-10-09.md)
-
-## Start with a payment
-
-You need a signing wallet with NEIRO, a Solana RPC that supports listing discovery, and your existing transaction builder. NEIRO’s mint is `CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump` (6 decimals).
-
-### 1. Find operators
-
-Follow the [RPC filters and signature checks](SPL-RECORD-LISTINGS.md#discovery-and-client-checks) to discover `NEIRO069` records. Authenticate v5 terms, network, mint and their 48-hour validity using trusted finalized chain data. Reject invalid or expired listings individually and continue with other candidates; one bad record must not abort discovery. If none verify, stop without signing.
-
-Each listing supplies the operator, payment destination, URL and pricing terms. Fetch current operator SOL balances with `getMultipleAccounts`; balances are not stored in the listing. Exclude operators unable to cover your transaction.
-
-### 2. Build and request quotes
-
-Build the intended operation for each candidate, using its signer as network fee payer. Keep the user’s wallet as transfer/swap authority. Include account creation and compute-budget instructions, then obtain a fresh blockhash before the final quote.
-
-POST JSON-RPC to the selected operator URL using your existing HTTP library:
-
-| Method | Parameters / result |
-| --- | --- |
-| `getConfig` | `{}` → live configuration; compare with signed terms. |
-| `getPayerSigner` | `{}` → the endpoint's recommended payer/payment identity; a pool may recommend a different signer. |
-| `estimateTransactionFee` | `{transaction, fee_token, signer_key}` → quoted `fee_in_token` and `payment_address`. |
-| `signTransaction` | `{transaction, signer_key}` → `signed_transaction`; use only after approval and user signing. |
-
-Here `transaction` is the **base64 serialized Solana transaction**, `fee_token` is the NEIRO mint and `signer_key` is the selected operator public key. `fee_in_token` is an integer in raw NEIRO units: 1,000,000 units = 1 NEIRO. Use the JSON-RPC envelope `{"jsonrpc":"2.0","id":1,"method":"…","params":{…}}`; handle both HTTP errors and JSON-RPC `error`. These are Kora methods, not Solana RPC methods. The [official walkthrough](https://solana.com/docs/tools/kora/guides/full-demo) also shows the optional SDK path.
-
-Require the selected operator in `getConfig.fee_payers`. Pin `signer_key` in every quote/sign request and require the quote's `signer_pubkey` and `payment_address` to match the authenticated listing. `getPayerSigner` takes no signer selector; its recommendation must not silently replace your selected operator. The publisher has a stricter [pool limitation](SIGNING.md#listing-runner-compatibility).
-
-For paid modes, append a normal NEIRO token transfer to the verified payment address’s token account. Kora SDK `getPaymentInstruction` is an optional **local helper**, not a server RPC method; its amount is provisional. Quote and independently verify the completed transaction. If its reimbursement differs, replace that transfer’s amount and re-quote before signing. Bound retries (for example, three attempts); stop if no verified amount stabilizes. Sum the completed message's reimbursement transfers and require exact equality with the verified fee: a leftover placeholder plus the corrected transfer is an overpayment, even when the quote itself is valid.
-
-### 3. Verify and select
-
-Check the live payer, payment destination, mint, oracle and pricing against the signed listing. Independently calculate reimbursement and enforce the user’s maximum NEIRO fee. Matching `getConfig` alone does not verify a quote.
-
-- **Margin:** verify chargeable costs, price conversion, markup and rounding.
-- **Fixed:** verify the fixed amount and admission policy.
-- **Free:** expect zero reimbursement. Omit `fee_token` from `estimateTransactionFee` to avoid unnecessary oracle conversion; do not add a reimbursement instruction.
-
-The [reference quote checker](../tools/kora-publisher/client/README.md) covers these modes, but needs independently calculated costs where applicable. It does not calculate every program’s costs. Reject operations whose costs or price inputs you cannot verify. The current default `maxAgeSlots: 0` disables oracle-age rejection; it does not establish a fresh price. Apply your own explicit price-quality policy.
-
-### 4. Approve and sign
-
-**Keep discovery, quote comparisons and diagnostic probes unsigned.** Releasing a customer-signed payment to Kora authorizes that operator to complete and broadcast it, even when the method is called `signTransaction`. Only release the one approved payment to the selected operator. Normal clients do not need to run operator rejection probes before each payment; use the [isolated integration checks](#test-your-client-before-use) when developing or validating an integration.
-
-Re-read the chosen listing; if its terms changed, get a new quote. Decode the completed transaction, including lookup tables. Check fee payer, recipients, amounts, account authorities, reimbursement and compute budget.
-
-Before collecting signatures, call Solana RPC `simulateTransaction` on the completed base64 transaction with `encoding: "base64"`, `sigVerify: false` and `replaceRecentBlockhash: false`. Reject a non-null `result.value.err`. This tests execution without submitting or collecting operator signatures; it does not verify signatures or guarantee later execution. If simulation reveals a needed instruction, account, fee or blockhash change, rebuild and repeat the quote and message checks.
-
-Show the operation and full NEIRO charge to the user, then sign within their authorization. Verify the user and other application signatures while preserving the approved message. The operator signature is added in step 5.
-
-If the blockhash expires before releasing any customer signature, rebuild and repeat quote verification, message inspection and approval before collecting fresh signatures. After signature release, the operator may already have broadcast; follow step 5 recovery before authorizing a replacement, even if your client has not broadcast anything. Never edit an already signed message. Keep this operator selected through submission. A quote-only request ends before signing. If sponsorship is unavailable, report that; never silently spend the user’s SOL.
-
-### 5. Submit and confirm
-
-With Kora’s `signTransaction`, verify the returned message is byte-for-byte what the user approved and verify all required signatures before broadcasting. With `signAndSendTransaction`, Kora broadcasts: reconcile its returned signature and independently check the transaction and effects through RPC.
-
-**Save recovery state before sending any customer signature to Kora**, including `signTransaction`, not just before your own RPC broadcast. Durably save the operation ID, exact approved message and customer-signed bytes, selected operator, amounts, fee cap, blockhash and last valid block height. Add the expected transaction signature and fully signed bytes when available, before broadcasting them. Keep signed bytes private; they can authorize execution.
-
-On startup, check for a pending operation **before writing new evidence, requesting another signature or replacing its journal**. Use exclusive ownership for that operation and atomic, durable state writes. Reconcile the saved signature and transaction through RPC. If the operator withheld its fee-payer signature, reconcile the exact saved message against chain history; if that cannot be established reliably, leave the operation unresolved and stop. A timeout or expired blockhash alone does not prove the original transaction never landed. Do not automatically create a replacement payment. Rebroadcasting identical fully signed bytes is different from authorizing a new message. Return the confirmed transaction link and actual charge.
 
 ## Use your existing program or transaction builder
 
@@ -112,6 +120,8 @@ For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessag
 
 ## Fast, verified operator selection
 
+**Optional when choosing or reconsidering an operator.** Normal payments reuse your choice and check only that operator. A failure before signature release may prompt reselection; a failure after release requires payment reconciliation first.
+
 | Preference | Selection rule |
 | --- | --- |
 | Fastest quote | Return the first fully verified quote immediately; do not wait for slower candidates. |
@@ -120,7 +130,7 @@ For the tested classic SPL transfer with one new ATA, costs are `getFeeForMessag
 
 Cache authenticated listings, batch balance reads and quote a bounded shortlist in parallel. Rotate candidates and temporarily back off from dead endpoints. Recheck selected terms before approval. A shortlist cannot prove globally cheapest, and fast quotes do not guarantee fast finality.
 
-Set one absolute selection deadline using a monotonic clock, covering every candidate's config fetch, quote/correction loop and verification. Pass its cancellation signal and remaining budget through each HTTP request and body read. A socket inactivity timeout is insufficient: a server can keep sending small chunks. Per-request timeouts must not restart the overall budget. Restrict untrusted listing URLs, private/local destinations and redirects; bound response sizes.
+Even with one operator, set an absolute preparation deadline using a monotonic clock for its chain reads, config fetch, quote/correction loop, verification and simulation. For a comparison, share one selection deadline across all candidates. Pass its cancellation signal and remaining budget through each HTTP request and body read. A socket inactivity timeout is insufficient: a server can keep sending small chunks. Per-request timeouts must not restart the overall budget. Restrict untrusted listing URLs, private/local destinations and redirects; bound response sizes.
 
 For fastest, return the first **fully verified** success from the selection function immediately. Cancel losing requests and handle their rejections in the background; do not await them in the return path or in `finally`. `Promise.any()` alone does not impose a deadline. For cheapest, retain verified successes received before the cutoff and choose the lowest at the cutoff, or earlier once all candidates finish. At the deadline, return a retained candidate or a no-verified-quote error without waiting for unfinished tasks. Send wallet signatures only after selection, to the selected operator.
 
@@ -138,6 +148,8 @@ Use disposable wallets and synthetic funds for fault tests. A normal payment cli
 | Fastest return | Keep a losing candidate pending. Assert the actual selection promise resolves with the verified winner while the loser is still pending. An early log entry is insufficient. |
 | Pending-payment recovery | Stop after saving the customer-signed attempt and before receiving the operator response, then restart. Assert the original journal survives and no new message is signed or sent until reconciliation establishes the outcome. Test concurrent attempts against the same operation ID too. |
 | Discovery isolation | Mix one malformed/expired record with a valid listing. Reject only the bad record and continue with the valid operator. |
+
+Run fastest-result tests only if you implement optional racing. For a single preferred operator, still test changed/expired selected records, a completed reimbursement quote, a stalled RPC, concurrent runs and a lost response after signature release.
 
 For rejection assertions, capture the RPC error first, then check its code/reason **outside** any catch that labels the test PASS. A failing assertion must fail the test. Never interpret “some exception occurred” as proof of the intended security rule.
 

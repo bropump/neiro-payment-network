@@ -9,6 +9,19 @@ cargo test --locked --manifest-path tools/kora-publisher/Cargo.toml --test prici
 
 The caller must authenticate and decode the SPL Record, check network/mint/authority/derived address, fetch current configuration and the quote directly, and independently obtain current slot, transaction cost and pricing inputs. Never use the operator's claimed fee as the independent cost. The checker does not perform discovery or validate a transaction's instructions. Before signing, separately validate the exact message, recipients, principal, reimbursement, signer set, program set, blockhash and spending authorization.
 
+## Completed transfer example
+
+For a classic SPL NEIRO transfer, build the principal transfer and one provisional reimbursement transfer, plus operator-funded recipient ATA creation if needed. Use the completed message for `getFeeForMessage`; add independently fetched rent only for an account that must actually be created. Verify the quote, replace the reimbursement amount, re-quote and verify exact equality before signing. Keep the blockhash and instructions unchanged afterward.
+
+The synthetic Surfpool fixture used **1 NEIRO = 0.001 SOL** and a **5% margin**. These are test inputs, not current NEIRO prices or constants for an application:
+
+| Recipient ATA | Network fee | Rent | Cost × 1.05, rounded up | Reimbursement at fixture price |
+| --- | ---: | ---: | ---: | ---: |
+| Absent | 10,000 lamports | 2,039,280 lamports | 2,151,744 lamports | 2,151,744 raw NEIRO = 2.151744 NEIRO |
+| Existing | 10,000 lamports | 0 | 10,500 lamports | 10,500 raw NEIRO = 0.010500 NEIRO |
+
+At this fixture price, one raw NEIRO unit equals one lamport before markup. Each payment also transfers its separately authorized principal. A draft with no reimbursement instruction can receive a different estimate; do not compare that draft estimate as though it were the completed transaction or weaken exact verification to accept it. For other programs, independently identify their actual sponsored costs. These functions remain quote/record verifiers, not signing or recovery implementations.
+
 ## Existing pricing modes
 
 | `price.type` | Independent calculation |

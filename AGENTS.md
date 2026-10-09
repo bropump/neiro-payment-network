@@ -1,6 +1,6 @@
 # Work with NPN
 
-- **Client / builder:** follow [Build with NEIRO](docs/BUILD-WITH-NEIRO.md) to use an existing wallet or integrate an app. Operator installation is not required.
+- **Client / builder:** follow [Build with NEIRO](docs/BUILD-WITH-NEIRO.md). Choose a preferred operator once and reuse it; verify current terms, costs and the completed quote for every payment. Operator installation and repeated fastest/cheapest comparisons are not required.
 - **Operator:** follow the five setup steps below. [Host and installation details](docs/OPERATOR-SETUP.md) expand them.
 
 ## Operator setup

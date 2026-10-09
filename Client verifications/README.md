@@ -4,6 +4,8 @@ Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PayBox, P
 
 **Ten independent client trials: 20/20 NEIRO-paid transfers passed on Surfpool, with customers holding 0 SOL.** Review found unsafe rejection probes and reliability gaps in some generated clients. [Results and security review](../docs/test-results/ten-independent-clients.md).
 
+**Build your client:** [choose an operator once, verify each payment and reuse it](../docs/BUILD-WITH-NEIRO.md). Compare SOL capacity, speed or price when choosing or switching; comparisons are optional for normal payments.
+
 ## Swaps and payments
 
 | Application or flow | Result / environment | What was verified |
