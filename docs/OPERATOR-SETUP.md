@@ -187,7 +187,7 @@ curl --fail-with-body https://YOUR_OPERATOR_HOST/ \
 
 Check `getPayerSigner` in the same way by changing `method`. The signer, payment destination, NEIRO acceptance, fees and blocked listing must match your setup. Confirm `max_allowed_lamports` and `max_priority_fee_lamports` match your chosen limits. The estimate endpoint can quote above a cap; the signing path must reject it. The runner checks listing identity, terms and protection before publication. Its endpoint calls currently do not supply API-key/HMAC/CAPTCHA credentials; resolve unsupported access requirements without exposing keys or silently removing existing protections.
 
-**Check:** an enabled public signing method rejects a bounded request touching your listing because of the account-deny rule. An authentication error or disabled-method response does not prove this. Have the setup agent perform this non-destructive check on each public instance before publishing; see the [verification checklist](AGENT-SETUP.md).
+**Check:** an enabled public signing method rejects a bounded request touching your listing because of the account-deny rule. An authentication error or disabled-method response does not prove this. Have the setup agent perform this non-destructive check on each public instance before publishing; see the [verification checklist](../AGENTS.md#3-protect-the-listing-then-start-kora).
 
 ## 4. Publish your listing and keep it running
 
@@ -251,4 +251,4 @@ Give it this repository and say:
 
 > Set up a NEIRO operator on my chosen host using all five operator setup steps and the agent verification checklist. Reuse my existing host access, signer, RPC, Jupiter key and fee choices. If no RPC is chosen, use the standard Helius path; treat Quicknode x402 as a separate integration only when requested. Complete installation, protected config, HTTPS, publication, supervised renewal, discovery and the authorized payment test. Ask only for missing inputs, keep credentials private, and leave exact operating commands and receipts. Mark every finish check PASS, FAIL or NOT RUN with evidence. Do not report the setup complete while a required check is unfinished.
 
-[Agent verification checklist](AGENT-SETUP.md) · [Operations](RENEWAL.md) · [Client integration](BUILD-WITH-NEIRO.md) · [Record format](SPL-RECORD-LISTINGS.md#operator-attestation-v5) · [Security review](../tools/kora-publisher/SECURITY-REVIEW.md)
+[Agent verification checklist](../AGENTS.md) · [Operations](RENEWAL.md) · [Client integration](BUILD-WITH-NEIRO.md) · [Record format](SPL-RECORD-LISTINGS.md#operator-attestation-v5) · [Security review](../tools/kora-publisher/SECURITY-REVIEW.md)

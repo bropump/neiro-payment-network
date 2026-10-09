@@ -114,6 +114,14 @@ For fastest, each parallel task must finish its own quote/correction/verificatio
 
 Measure discovery, quote/verification, selected-result delivery and confirmation separately with a monotonic timer. Distinguish cold discovery from cached selection.
 
+## Optional routers and indexers
+
+Anyone can build a router or indexer to discover operators, cache listings or compare quotes. Clients can choose another service or call operators directly; no central registration is required.
+
+Routers must apply the same v5 signature, authority, network and finalized-anchor checks, reject legacy or expired listings, and fetch live balances and quotes. Report which operators and time window were compared. A router's fastest response is measured from its location and may differ from the client's; cheapest depends on the completed transaction and current pricing inputs.
+
+Clients still independently verify the selected listing, quote and exact transaction before signing, and keep the chosen operator through submission. A recommendation is not proof of an honest fee. Check an existing router's implementation before assuming it supports this format.
+
 ## Surfpool verification — 7 October 2026
 
 The [test report and timings](test-results/client-practices-surfpool-2026-10-07.md) cover two operators, verified fastest/cheapest selection, rejection checks, and a NEIRO payment with **zero user SOL**, including new ATA rent and cleanup. This proves the tested transfer flow; it does not establish arbitrary-program compatibility or mainnet latency. Landed failures can still charge the operator network fees.

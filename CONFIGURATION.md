@@ -99,7 +99,7 @@ Build and config must be updated together: an old binary still cannot reconstruc
 
 ## What you supply
 
-Your host, dedicated signer reference, RPC/Jupiter credentials and intended public HTTPS endpoint. See [publication](docs/REGISTRATION.md) for deriving and protecting the listing, publishing terms and checking direct discovery after changes.
+Your host, dedicated signer reference, RPC/Jupiter credentials and intended public HTTPS endpoint. See [operator setup](AGENTS.md) for deriving and protecting the listing, publishing terms and checking direct discovery after changes.
 
 ## Pricing service
 

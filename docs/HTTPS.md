@@ -17,4 +17,4 @@ The example blocks the template's `/metrics` path: Kora serves it on the RPC por
 
 A temporary tunnel can be useful for a bounded test, but its URL stops working when the tunnel stops. For an operating listing, choose a stable endpoint, arrange restart using normal host tools, and verify it from outside the host. If the endpoint changes, republish the listing.
 
-Before [publishing](REGISTRATION.md), verify the live operator identity, advertised terms and listing-account deny protection through this endpoint. HTTPS reachability alone does not prove safe transaction signing.
+Before [publishing](../AGENTS.md#4-publish-renew-and-track-upstream-updates), verify the live operator identity, advertised terms and listing-account deny protection through this endpoint. HTTPS reachability alone does not prove safe transaction signing.

@@ -1,6 +1,0 @@
-# Listing protection for bunny; operator public key: S42G16e52WiSRuBS49DNSNsWEx1CmysRfmuguEbotyg
-# Snippet only. Merge into the EXISTING [validation] section of kora.toml.
-# Preserve other disallowed_accounts entries; do not add a duplicate TOML section.
-# This address remains the same when this operator recreates its listing.
-[validation]
-disallowed_accounts = ["AUcq2QhmqGAH4QSm5qMPnfZb6TcEoKVF8fHGg9FnWKfo"]

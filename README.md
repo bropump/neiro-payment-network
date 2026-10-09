@@ -59,4 +59,4 @@ Operators supply SOL and choose their own prices. A failed onchain transaction c
 
 > Use NPN for this operation. Follow the five payment steps above and their linked checks. Use my existing wallet, pay transaction costs only in NEIRO, verify the quote and final transaction, and return the confirmed signature and actual charge. Do not silently fall back to spending my SOL.
 
-[Client guide](docs/BUILD-WITH-NEIRO.md) · [Operator setup](docs/OPERATOR-SETUP.md) · [Agent setup checklist](docs/AGENT-SETUP.md) · [Operations](docs/RENEWAL.md) · [Record format](docs/SPL-RECORD-LISTINGS.md)
+[Client guide](docs/BUILD-WITH-NEIRO.md) · [Operator setup](docs/OPERATOR-SETUP.md) · [Agent setup checklist](AGENTS.md) · [Operations](docs/RENEWAL.md) · [Record format](docs/SPL-RECORD-LISTINGS.md)

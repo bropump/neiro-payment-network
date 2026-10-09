@@ -18,7 +18,6 @@ For an operator, resolve current official upstream Kora main and verify the inst
 - [Operator configuration](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/CONFIGURATION.md)
 - [Operator tutorial](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/TUTORIAL.md)
 - [Required renewal worker and recovery](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/RENEWAL.md)
-- [Publish, update or close a listing](https://raw.githubusercontent.com/bropump/neiro-payment-network-core/main/docs/REGISTRATION.md)
 - [NEIRO ID](https://github.com/bropump/neiro-id): separate naming protocol.
 
 ## Network
