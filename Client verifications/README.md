@@ -6,43 +6,46 @@ Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge
 
 | Application or flow | Result / environment | What was verified |
 |---|---|---|
-| Jupiter — NEIRO ↔ USDC | **PASS — mainnet, 29 September** | Two finalized swaps through Bunny Kora: 10 NEIRO → 0.005067 USDC → 9.941756 NEIRO. NEIRO reimbursement included account-creation costs and 5% markup. [Evidence](../docs/test-results/swaps-and-wallets.md#jupiter). |
-| Jupiter — NEIRO → USDC | **PASS — Surfpool, 27 September** | Live Jupiter instructions using a Raydium route executed on a fork; 1,000 NEIRO → 0.512701 USDC, with customer SOL remaining zero. Historical price-source override used. [Scope](../docs/test-results/swaps-and-wallets.md#jupiter). |
-| MiniRouter — NEIRO → USDC deposit swap | **PASS — Surfpool, 29 September** | Adapted MiniRouter orders settled both directly through Kora and through the then-current router. Router run delivered 0.553293 USDC to the destination; customer held zero SOL. Real MiniRouter account credit was not tested. [Evidence and required adaptation](../docs/test-results/swaps-and-wallets.md#minirouter). |
-| USDC transfer, paid in NEIRO | **PASS — Surfpool, 29 September** | Operator funded a new recipient ATA and gas; customer sent USDC and reimbursed in NEIRO while holding zero SOL. [Evidence](../docs/test-results/swaps-and-wallets.md#other-earlier-program-checks). |
-| NEIRO transfer, new or existing recipient ATA | **PASS — Surfpool, 7 October** | Operator-funded account creation where needed; exact reimbursement and zero customer SOL checked. [Results](../docs/test-results/client-practices-surfpool-2026-10-07.md). |
-| NEIRO ID registration, resolution and tipping | **PASS — Surfpool, 7 October** | pay.sh signed registration and two tips, including a new recipient ATA; operator funded rent and gas. Customer stayed at zero SOL. [Results](../docs/test-results/swaps-and-wallets.md#paysh). |
-| Pump bonding-curve buy | **PASS — Surfpool, 8 October** | Buyer started and finished at zero SOL. Operator advanced purchase SOL and funded account setup; buyer paid NEIRO and retained the tokens. [Results](../docs/test-results/pump-buy-surfpool-2026-10-08.md). |
+| Jupiter — NEIRO ↔ USDC | **Works — mainnet** | Two finalized swaps through Bunny Kora: 10 NEIRO → 0.005067 USDC → 9.941756 NEIRO. NEIRO reimbursement included account-creation costs and 5% markup. [Evidence](../docs/test-results/swaps-and-wallets.md#jupiter). |
+| Jupiter — NEIRO → USDC | **Works — Surfpool** | Live Jupiter instructions using a Raydium route executed on a fork; 1,000 NEIRO → 0.512701 USDC, with customer SOL remaining zero. Historical price-source override used. [Scope](../docs/test-results/swaps-and-wallets.md#jupiter). |
+| MiniRouter — NEIRO → USDC deposit swap | **Works — Surfpool** | Adapted MiniRouter orders settled both directly through Kora and through the then-current router. Router run delivered 0.553293 USDC to the destination; customer held zero SOL. Real MiniRouter account credit was not tested. [Evidence and required adaptation](../docs/test-results/swaps-and-wallets.md#minirouter). |
+| USDC transfer, paid in NEIRO | **Works — Surfpool** | Operator funded a new recipient ATA and gas; customer sent USDC and reimbursed in NEIRO while holding zero SOL. [Evidence](../docs/test-results/swaps-and-wallets.md#other-earlier-program-checks). |
+| NEIRO transfer, new or existing recipient ATA | **Works — Surfpool** | Operator-funded account creation where needed; exact reimbursement and zero customer SOL checked. [Results](../docs/test-results/client-practices-surfpool-2026-10-07.md). |
+| NEIRO ID registration, resolution and tipping | **Works — Surfpool** | pay.sh signed registration and two tips, including a new recipient ATA; operator funded rent and gas. Customer stayed at zero SOL. [Results](../docs/test-results/swaps-and-wallets.md#paysh). |
+| Pump bonding-curve buy | **Works — Surfpool** | Buyer started and finished at zero SOL. Operator advanced purchase SOL and funded account setup; buyer paid NEIRO and retained the tokens. [Results](../docs/test-results/pump-buy-surfpool-2026-10-08.md). |
 
 ## Wallet signing
 
 | Wallet / signer | Result | Exact supported path tested |
 |---|---|---|
-| PaySponge | **PASS — real wallet API signing, Surfpool execution** | Sign-only API preserved the other signature while creating a classic SPL mint, creating its ATA and minting 123 tokens. Customer held zero SOL. [API, versions and evidence](../docs/test-results/agent-uptake-2026-10-07.md#paysponge-reproducibility). |
-| pay.sh | **PASS — local wallet signing, Surfpool execution** | Local file-keystore signer plus Kora completed NEIRO ID registration, tipping and a Pump `createV2` launch. This was outside stock solOS. [Evidence](../docs/test-results/swaps-and-wallets.md#paysh). |
-| Local Solana Ed25519 keys | **PASS — mainnet and Surfpool** | Used in the swap and program tests on this page, preserving the approved transaction message and collecting customer/operator signatures. |
+| PaySponge | **Works — real wallet API signing, Surfpool execution** | Sign-only API preserved the other signature while creating a classic SPL mint, creating its ATA and minting 123 tokens. Customer held zero SOL. [API, versions and evidence](../docs/test-results/agent-uptake-2026-10-07.md#paysponge-reproducibility). |
+| pay.sh | **Works — local wallet signing, Surfpool execution** | Local file-keystore signer plus Kora completed NEIRO ID registration, tipping and a Pump `createV2` launch. This was outside stock solOS. [Evidence](../docs/test-results/swaps-and-wallets.md#paysh). |
+| Local Solana Ed25519 keys | **Works — mainnet and Surfpool** | Used in the swap and program tests on this page, preserving the approved transaction message and collecting customer/operator signatures. |
 
 These results cover the signing paths actually exercised. Privy, Turnkey, Para and browser-wallet integrations still need their own provider tests; local-key fallback does not prove a hosted signer.
 
-September results used earlier router-based integrations. They prove the recorded sponsored operations, not the current signed-listing discovery protocol. Saved evidence was reviewed and consolidated on 9 October; no new payments were sent during this documentation update.
+Jupiter and MiniRouter swap results include earlier router-based integrations. They establish the sponsored operations tested; current signed-listing discovery is a separate check.
 
-## Surfpool app checks — 9 October 2026
+## Applications — verified on Surfpool
 
 The flows below completed using an actual official Kora operator connected to a local Surfpool fork. Customer wallets started with NEIRO only and remained at **0 SOL**. The operator supplied SOL and received the customer's NEIRO payment.
 
 | Application | Result | What was tested |
 |---|---|---|
-| Stonkfun | PASS | Created a Token-2022 LaunchLab curve using Stonkfun's platform, allow-config and curve-rule accounts. Verified the creator, platform and token supply. |
-| Ember | PASS | Created a Meteora DBC pool using Ember's reusable config and launch memo. Verified the creator and config. |
-| Hooked — P2P-only | PASS | Created a Token-2022 DBC pool and initialized the actual P2P hook. Verified the hook rule account, creator and mint linkage. |
-| Phoenix — DOGE perps | PASS | Registered a trader, deposited operator-funded collateral directly into the trader account, bought 100 DOGE and sold all 100. Verified the final DOGE position was zero. |
-| Bangfun | PASS — gas sponsorship | Launches with 1 billion and 500 million supply; curve buys/sells and creator claims; 1 billion curve graduation; graduated DAMM buy/sell and creator claim. Verified finalized state across 25 transactions. Current website requires NPN integration changes. |
-| Pump | PASS | Launched a regular SOL-paired Token-2022 coin with `create_v2`. Operator paid fees and account rent; customer remained the recorded creator. Verified curve, 1 billion supply and revoked mint/freeze authority. No initial buy. |
-| Meteora DBC | PASS | Created a new DBC configuration and launched its classic SPL curve. Operator paid fees and account rent; verified customer creator, fee recipient, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
-| Raydium LaunchLab | PASS | Launched a Token-2022 curve using Raydium’s default platform/config. Operator paid fees and account rent; verified customer creator, platform, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
-| Marinade | PASS — gas sponsorship | Deposited 0.1 SOL through the liquid-staking program and received 0.070873849 mSOL. Operator funded principal, mSOL account rent and gas; customer paid NEIRO and started/finished at 0 SOL. Separate listing-verification failure described below. |
+| Stonkfun | Works | Created a Token-2022 LaunchLab curve using Stonkfun's platform, allow-config and curve-rule accounts. Verified the creator, platform and token supply. |
+| Ember | Works | Created a Meteora DBC pool using Ember's reusable config and launch memo. Verified the creator and config. |
+| Hooked — P2P-only | Works | Created a Token-2022 DBC pool and initialized the actual P2P hook. Verified the hook rule account, creator and mint linkage. |
+| Phoenix — DOGE perps | Works | Registered a trader, deposited operator-funded collateral directly into the trader account, bought 100 DOGE and sold all 100. Verified the final DOGE position was zero. |
+| Bangfun | Works — gas sponsorship | Launches with 1 billion and 500 million supply; curve buys/sells and creator claims; 1 billion curve graduation; graduated DAMM buy/sell and creator claim. Verified finalized state across 25 transactions. Current website requires NPN integration changes. |
+| Pump | Works | Launched a regular SOL-paired Token-2022 coin with `create_v2`. Operator paid fees and account rent; customer remained the recorded creator. Verified curve, 1 billion supply and revoked mint/freeze authority. No initial buy. |
+| Meteora DBC | Works | Created a new DBC configuration and launched its classic SPL curve. Operator paid fees and account rent; verified customer creator, fee recipient, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
+| Raydium LaunchLab | Works | Launched a Token-2022 curve using Raydium’s default platform/config. Operator paid fees and account rent; verified customer creator, platform, config, 1 billion supply and revoked mint/freeze authority. No initial buy. |
+| Marinade | Works — gas sponsorship | Deposited 0.1 SOL through the liquid-staking program and received 0.070873849 mSOL. Operator funded principal, mSOL account rent and gas; customer paid NEIRO and started/finished at 0 SOL. Separate listing-verification failure described below. |
 
-## How NPN paid for the 9 October app checks
+<details>
+<summary>Verification details and integration requirements</summary>
+
+## How NPN paid for the app checks
 
 1. Published and authenticated a local NPN operator listing, then checked its live Kora config.
 2. Built the application instructions with the operator as fee payer and the customer as owner or creator. Included the NEIRO reimbursement in the transaction.
@@ -54,7 +57,7 @@ Kora's listing-account protection and priority-fee cap were also checked.
 
 Marinade was a separate trial: listing protection was checked, but priority-cap probes were not repeated. Its payment passed while final listing authentication failed, as detailed below; the full sequence above must not be inferred from its gas-sponsorship PASS.
 
-## Marinade — separate trial, 9 October 2026
+## Marinade — verification details
 
 A fresh GPT-6.1 Sol agent on low reasoning randomly selected Marinade from four established products. It used the official Marinade SDK **6.1.0** to build a 0.1 SOL deposit, changed the new mSOL ATA's payer to the operator, and added an explicit operator-to-customer principal advance. The customer retained ownership of the received mSOL. This advance is additional to gas sponsorship and was fully included in NEIRO reimbursement.
 
@@ -66,7 +69,7 @@ Local Surfpool receipt: `Y28gkWWPdqgvWFbmzwLfHdEb6BsU2ztHNW5z5s9fLZaYykfrec1UNTY
 
 All trial services were stopped and temporary keys, credential copies and fork state removed after independent review. Sanitized evidence remains local. No mainnet funds were used.
 
-## Scope and limits of the 9 October app checks
+## App verification scope
 
 - These were local program executions with synthetic funds and mock pricing, not mainnet transactions or live price quotes. Operator accounts and lookup tables were test setup.
 - Phoenix onboarding permission was a local fixture. Its SOL collateral went directly into the program-owned trader account; the customer paid NEIRO. Production access was not tested.
@@ -80,3 +83,5 @@ All trial services were stopped and temporary keys, credential copies and fork s
 Launch builder versions: Pump SDK **4.0.0**, Meteora DBC SDK **1.5.13**, Raydium SDK **0.2.74-alpha**.
 
 Environment: Surfpool **1.5.0** and official Kora **2.2.0-beta.8**, built from upstream commit `4b683edacb11955cc4a9b854d6bc5e47c35d6b2a`.
+
+</details>

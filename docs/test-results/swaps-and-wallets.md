@@ -57,6 +57,6 @@ Sources: saved `paysh-solos-npn-sim/REPORT.md`, `npn-surfpool/SUMMARY.json`, and
 
 The **29 September Surfpool application matrix** also records successful USDC transfers to a new recipient ATA, Meteora DBC configuration creation in classic and Token-2022 modes, classic DBC pool creation, classic SPL Raydium LaunchLab creation with a NEIRO quote mint, and an Ember launch rebuilt using its observed config plus a disposable memo signer. Operator-funded costs were reimbursed in NEIRO. These are program-level results, not proof of hosted website integration.
 
-Source: saved `APPLICATION-COMPATIBILITY.md` and its application retry report. Several Token-2022 launch paths were blocked in those older builds; the later [9 October app checks](../../Client%20verifications/README.md#surfpool-app-checks--9-october-2026) record successful tested paths and their versions.
+Source: saved `APPLICATION-COMPATIBILITY.md` and its application retry report. Several Token-2022 launch paths were blocked in those older builds; the later [app checks](../../Client%20verifications/README.md#applications--verified-on-surfpool) record successful tested paths and their versions.
 
 For **PaySponge's real signing API**, see the existing [7 October report](agent-uptake-2026-10-07.md#paysponge-reproducibility). For the later zero-SOL **Pump buy**, including purchase funding, see the [8 October report](pump-buy-surfpool-2026-10-08.md). The [verification index](../../Client%20verifications/README.md) brings these results together.
