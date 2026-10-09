@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "scope": "Additional local Surfpool app compatibility trials; no mainnet execution or whole-product certification",
+  "npnCommit": "2a87d166b67645f8814234e559493575eacc50d1",
+  "koraSourceCommit": "cbef22d82ff599e892fd54b6d10af4f6cca4da80",
+  "koraBinarySha256": "ef24de06694d5626d74c215862fca25264515ba9e99b7fd66cdb276d3e2e0fe9",
+  "surfpoolVersion": "1.5.0",
+  "clientAgents": {
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "count": 2,
+    "input": "Published repository docs plus parent-supplied isolated synthetic fixtures"
+  },
+  "oracle": {
+    "type": "Mock",
+    "solPerNeiro": "0.001",
+    "margin": "0.05",
+    "productionPrice": false
+  },
+  "fixtureAssistance": [
+    "Parent supplied isolated current-main Kora/Surfpool, synthetic balances and controlled TLS.",
+    "Parent prefetched Core create static accounts, marking RPC-confirmed absent accounts offline in Surfpool without changing program state.",
+    "Parent added actual observed finalized fork blockId to constant Mock-price metadata after agent identified the missing required field."
+  ],
+  "verifiedOperations": [
+    {
+      "operation": "createV1",
+      "result": "FINALIZED_EXACT_REIMBURSEMENT",
+      "receipt": {
+        "signature": "2QP2toAoHfAQ3B6LujzQnHnqafEdeAFRXNCfUhcpQ4JVYEHZ9Bz2MgH6LnrG7ZvUaUgxQcJkpgioqxpvf6i7GkZi",
+        "slot": 454981959,
+        "status": "finalized-success",
+        "messageSha256": "3c05436c58453bea3cef838ad75a5a77d416c681b69d946fe1ac966a4b649490",
+        "requiredSigners": [
+          "4Ab9ZWv6QiZZHX9nyTsn2GwFvTwfZmAL5JjXbMWvpXU3",
+          "Y7oZYpwLwmCL3agvuXT7ygvuzkkcVZh1eDXZPopEaif",
+          "2ypT4XJR9W5XzrH9xrm8u4XbZZaBbJhJjBPXfdw8Rgr8"
+        ],
+        "allRequiredSignaturesVerified": true,
+        "feeLamports": 15000,
+        "lamportDeltas": [
+          {
+            "account": "4Ab9ZWv6QiZZHX9nyTsn2GwFvTwfZmAL5JjXbMWvpXU3",
+            "pre": 9991943161,
+            "post": 9988402801,
+            "delta": -3540360
+          },
+          {
+            "account": "Y7oZYpwLwmCL3agvuXT7ygvuzkkcVZh1eDXZPopEaif",
+            "pre": 0,
+            "post": 3525360,
+            "delta": 3525360
+          }
+        ],
+        "tokenDeltas": [
+          {
+            "account": "88TU38r9ZxaDHgV3AdKFHVoBNavUB9wFTmPoUwjA9fkR",
+            "mint": "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+            "owner": "2ypT4XJR9W5XzrH9xrm8u4XbZZaBbJhJjBPXfdw8Rgr8",
+            "pre": "10000000000",
+            "post": "9996282622",
+            "delta": "-3717378"
+          },
+          {
+            "account": "AZtYMt5w4ecxLoxkTkaAMbgW75YRwjhuRCNnHfWFyj2x",
+            "mint": "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump",
+            "owner": "4Ab9ZWv6QiZZHX9nyTsn2GwFvTwfZmAL5JjXbMWvpXU3",
+            "pre": "2162244",
+            "post": "5879622",
+            "delta": "3717378"
+          }
+        ],
+        "programIds": [
+          "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        ]
+      },
+      "operatorSolOutflowLamports": "3540360",
+      "customerReimbursementRawNeiro": "3717378",
+      "customerSolBefore": 0,
+      "customerSolAfter": 0,
+      "generalClientSafetyApproved": false,
+      "productEvidence": {
+        "signature": "2QP2toAoHfAQ3B6LujzQnHnqafEdeAFRXNCfUhcpQ4JVYEHZ9Bz2MgH6LnrG7ZvUaUgxQcJkpgioqxpvf6i7GkZi",
+        "customerSolBefore": 0,
+        "customerSolAfter": 0,
+        "approvedMessageMatchesFinalized": true,
+        "sameBusinessOperation": true,
+        "originalSignedAttemptPreserved": true,
+        "originalAttemptNeverReleased": "Local missing callback evidence supplied; not established by signature-status lookup",
+        "asset": {
+          "address": "Y7oZYpwLwmCL3agvuXT7ygvuzkkcVZh1eDXZPopEaif",
+          "programOwner": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+          "owner": "2ypT4XJR9W5XzrH9xrm8u4XbZZaBbJhJjBPXfdw8Rgr8",
+          "updateAuthority": {
+            "type": "Address",
+            "address": "2ypT4XJR9W5XzrH9xrm8u4XbZZaBbJhJjBPXfdw8Rgr8"
+          },
+          "name": "NPN Synthetic Core Compatibility Asset",
+          "uri": "https://example.invalid/npn-compat/core-asset.json"
+        },
+        "fullSafetyApproval": false,
+        "originalAttemptChainOutcome": "No independent chain-absence claim; source-level missing callback evidence supports zero release."
+      },
+      "product": "Metaplex Core"
+    }
+  ],
+  "otherOutcomes": [
+    {
+      "product": "Metaplex Core",
+      "operation": "transferV1",
+      "result": "INCONCLUSIVE",
+      "reason": "Fully signed attempt expired with no observed receipt or state change. Send admission/confirmation response not retained; no replacement."
+    },
+    {
+      "product": "Squads v4",
+      "operation": "multisigCreateV2 candidate",
+      "result": "CLIENT_SAFETY_FAILURE",
+      "reason": "Partially signed transaction serialized into estimateTransactionFee before independent fee check and durable operation claim. Parent stopped test; no finalized operation. Raw outbound request not retained; source and reported execution establish the release path."
+    },
+    {
+      "product": "Tensor",
+      "operation": "listing/purchase",
+      "result": "PREREQUISITES_NOT_ESTABLISHED",
+      "reason": "Agent did not establish an executable supported path with available API access/market fixture; no transaction tested."
+    },
+    {
+      "product": "Drift",
+      "operation": "legacy USDC collateral",
+      "result": "SDK_DEPLOYMENT_BLOCKER",
+      "reason": "Legacy SDK failed to decode deployed account layout; no payment tested. Velocity tracked separately."
+    },
+    {
+      "product": "Velocity",
+      "operation": "USDT collateral",
+      "result": "NO_FINALIZED_RECEIPT",
+      "reason": "Quote/simulation/signatures obtained, but client used unsupported JSON-RPC method sendRawTransaction. Attempt expired with no observed receipt; no replacement."
+    },
+    {
+      "product": "OpenBook v2",
+      "operation": "post-only bid/cancel",
+      "result": "COST_MODEL_MISMATCH_BEFORE_SIGNING",
+      "reason": "Independent modeled account costs did not match quote; no paid pass."
+    },
+    {
+      "product": "Lulo",
+      "operation": "USDC deposit",
+      "result": "API_PREREQUISITE_BLOCKER",
+      "reason": "Required API access was unavailable; no paid operation tested."
+    }
+  ],
+  "publicationNote": "Only audited narrow operation result is a compatibility addition. Generated agent clients are not approved for reuse.",
+  "cleanup": {
+    "testServicesStopped": true,
+    "testPortsClosed": true,
+    "syntheticPrivateKeysRemoved": true,
+    "privateServiceLogsRemoved": true,
+    "rawEvidenceRetainedLocally": true,
+    "productionServicesUnchanged": true
+  }
+}

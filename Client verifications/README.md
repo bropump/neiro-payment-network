@@ -36,7 +36,9 @@ Jupiter and MiniRouter swap results include earlier router-based integrations. T
 
 ## Additional product operations — NEIRO gas on Surfpool
 
-**27 completed operations had independently verified finalized receipts and exact NEIRO reimbursement.** These used local signing, synthetic funds and a fixed mock price. SOL used for staking or purchases was application principal, separate from gas; these rows do not all claim a zero-SOL customer. [Per-operation signatures, program IDs and balance changes](../docs/test-results/product-operations.json).
+**Metaplex Core asset creation also works with zero customer SOL.** A fresh client created a Core asset with the customer as owner and update authority; the operator paid the costs and received exactly 3.717378 NEIRO at the synthetic test price. Creation is verified; transfer and other Core operations are not established by this trial. [Receipt and scope](../docs/test-results/additional-app-compatibility.md).
+
+**In the earlier product batch, 27 completed operations had independently verified finalized receipts and exact NEIRO reimbursement.** These used local signing, synthetic funds and a fixed mock price. SOL used for staking or purchases was application principal, separate from gas; these rows do not all claim a zero-SOL customer. [Per-operation signatures, program IDs and balance changes](../docs/test-results/product-operations.json).
 
 | Product | Operation verified |
 |---|---|
