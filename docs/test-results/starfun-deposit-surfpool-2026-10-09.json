@@ -1,0 +1,61 @@
+{
+  "confirmErr": null,
+  "deposit": {
+    "decimals": 6,
+    "discriminator": "f223c68952e1f2b6",
+    "grossUnits": "25000000",
+    "netUnits": "24750000",
+    "platformFeeUnits": "250000",
+    "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  },
+  "depositorRecord": {
+    "lamports": 1642560,
+    "length": 108,
+    "owner": "DJBVrVcy98wCaL4W3Ri4YmBvSXyD5nRAbR7igAMcTRQA",
+    "seeds": [
+      "depositor",
+      "<vault>",
+      "<user>"
+    ]
+  },
+  "deviations": [
+    "vault start/end u64s rewritten to surround fork clock (offsets 145/153)",
+    "maker fee ATA topped up to rent-exempt, data preserved",
+    "buyer USDC/NEIRO balances fabricated; production buyer brings them",
+    "operator was a local keypair, NOT Kora: no getConfig/estimateTransactionFee/signTransaction; flat 10 NEIRO reimbursement, not a margin quote"
+  ],
+  "fork": {
+    "baseSlot": 454811443,
+    "id": "star-npn-test",
+    "port": 19999
+  },
+  "koraFlowExercised": false,
+  "makerFeeAtaAfter": "291750",
+  "negativeProbes": {
+    "5 USDC": "DepositTooSmall 6034 (simulation, not broadcast)",
+    "closed window": "RaisePeriodEnded 6003 (simulation, not broadcast)",
+    "wrong account 11": "ConstraintSeeds naming blacklist_entry"
+  },
+  "operatorNeiro": "0 -> 10000000",
+  "operatorSol": "5000000000 -> 4998347440",
+  "program": "DJBVrVcy98wCaL4W3Ri4YmBvSXyD5nRAbR7igAMcTRQA",
+  "quoteMintCensus": {
+    "mock mint 5GYM6fVM6gruTkP3oG6GzV3YNm242LhgWGfh3G5gjWuS (test vaults)": 14,
+    "no indexer snapshot": 16,
+    "USDC EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 41
+  },
+  "result": "STRUCTURAL PASS (Kora flow not exercised)",
+  "signature": "4Pf7kz9mGk5bD77dSaFdMwbFBHETZiy4Cy6uoKzr5hYZ1YfxMqNcwnpSRwukNrffgmLFfBsbXzkdsaeTybMT5Jwh",
+  "signatureScope": "local fork only, not mainnet",
+  "userNeiro": "50000000 -> 40000000",
+  "userSol": "0 -> 0",
+  "userUsdc": "100000000 -> 75000000",
+  "vault": "4eRCqBQo2ghDMNxtfyNQ4YTbCd8i7grGwqSMMzxXvZQw",
+  "vaultUsdcAfter": "24750000",
+  "versions": {
+    "node": "24.3.0",
+    "solanaSplToken": "0.4",
+    "solanaWeb3js": "1",
+    "surfpool": "1.5.0"
+  }
+}
