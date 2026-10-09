@@ -20,9 +20,10 @@ Verified operations include **Jupiter swaps, MiniRouter deposit swaps, PaySponge
 |---|---|---|
 | PaySponge | **Works — real wallet API signing, Surfpool execution** | Sign-only API preserved the other signature while creating a classic SPL mint, creating its ATA and minting 123 tokens. Customer held zero SOL. [API, versions and evidence](../docs/test-results/agent-uptake-2026-10-07.md#paysponge-reproducibility). |
 | pay.sh | **Works — local wallet signing, Surfpool execution** | Local file-keystore signer plus Kora completed NEIRO ID registration, tipping and a Pump `createV2` launch. This was outside stock solOS. [Evidence](../docs/test-results/swaps-and-wallets.md#paysh). |
+| Para — Kora operator signer | **Works — real remote signing, private-ledger execution** | Legacy, v0 and v1 transactions confirmed; message and customer signature preserved. Free sponsorship tested, not a NEIRO-paid client wallet flow. [Evidence](../docs/test-results/swaps-and-wallets.md#para). |
 | Local Solana Ed25519 keys | **Works — mainnet and Surfpool** | Used in the swap and program tests on this page, preserving the approved transaction message and collecting customer/operator signatures. |
 
-These results cover the signing paths actually exercised. Privy, Turnkey, Para and browser-wallet integrations still need their own provider tests; local-key fallback does not prove a hosted signer.
+Privy and Turnkey payment tests succeeded using local-key fallbacks; their actual hosted signing was not exercised. Para’s verified path above is the Kora operator signer. Browser-wallet and Para customer-wallet integrations need separate checks.
 
 Jupiter and MiniRouter swap results include earlier router-based integrations. They establish the sponsored operations tested; current signed-listing discovery is a separate check.
 

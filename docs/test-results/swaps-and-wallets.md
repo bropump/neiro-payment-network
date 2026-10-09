@@ -53,6 +53,18 @@ This proves **pay.sh signing + Kora outside stock solOS**. It does not establish
 
 Sources: saved `paysh-solos-npn-sim/REPORT.md`, `npn-surfpool/SUMMARY.json`, and `pump-npn-paysh/REPORT.txt` / `SUMMARY.json`. The naming/tipping summary records matching NEIRO reimbursements and zero SOL before/after for all three transactions. The launch summary records its successful transaction separately.
 
+## Para
+
+**Works as a real remote Kora operator signer.** Official Kora using Solana Keychain called Para with an API credential and a dedicated API-managed wallet. The container did not hold that wallet’s Solana private key. Both the initial release-image test and the subsequent upstream-main test confirmed transactions on disposable private ledgers.
+
+The upstream-main run confirmed **legacy, v0 and genuine v1** transactions. All three saved Para receipts have no onchain error, valid independently verified signatures, an unchanged original message and customer signature, and rejection of altered message bytes. An invalid API credential was rejected with HTTP 403. The test used official Kora commit `afe5e6b297c33b71293eb57da80bd8de8b40709a` and an Agave **4.2.2** private ledger.
+
+These were **free sponsorship / mock-pricing tests**, not NEIRO reimbursement tests or a Para customer-wallet integration. Para support in Kora also does not imply Para support in the separate listing runner.
+
+Sources: saved `keychain-signing-test/REPORT.md` / `results.json`, `main-image-test/results.json` and `main-upgrade-private/REPORT.md`. The initial release image passed legacy/v0; upstream main additionally passed v1. No public-chain funds were used.
+
+For **Privy and Turnkey**, the [wallet uptake report](agent-uptake-2026-10-07.md) explicitly records local-key fallback because provider credentials were unavailable. Its successful payments cannot be attributed to those providers’ hosted signing services.
+
 ## Other earlier program checks
 
 The **29 September Surfpool application matrix** also records successful USDC transfers to a new recipient ATA, Meteora DBC configuration creation in classic and Token-2022 modes, classic DBC pool creation, classic SPL Raydium LaunchLab creation with a NEIRO quote mint, and an Ember launch rebuilt using its observed config plus a disposable memo signer. Operator-funded costs were reimbursed in NEIRO. These are program-level results, not proof of hosted website integration.
