@@ -1,7 +1,9 @@
 # Work with NPN
 
 - **Client / builder:** follow [Build with NEIRO](docs/BUILD-WITH-NEIRO.md) and the [tested rent, swap and retry examples](docs/CLIENT-PAYMENT-CHECKS.md). Choose a preferred operator once and reuse it; verify current terms, costs and the completed quote for every payment. Operator installation and repeated fastest/cheapest comparisons are not required.
-- **Operator:** follow the five setup steps below. [Host and installation details](docs/OPERATOR-SETUP.md) expand them.
+- **Operator:** this file is the single setup procedure. Follow its five steps in order and use linked references only when needed. Humans choose their host, wallet, fee and budget in the [README](README.md#set-up-your-operator).
+
+Keep a five-step result checklist with evidence as you work. Reading these instructions is not a passed check; mark missing proof FAIL or NOT RUN. Reference pages explain details and do not replace this procedure.
 
 ## Operator setup
 

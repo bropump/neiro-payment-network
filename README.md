@@ -82,7 +82,7 @@ listing, published terms, a confirmed payment and running renewal/monitoring.
 Tell me exactly what is still incomplete.
 ```
 
-**[Plain-language setup guide →](TUTORIAL.md)** · [Technical procedure for your agent](AGENTS.md)
+**[Give AGENTS.md to your agent →](AGENTS.md)** It is the single operator setup procedure; the five steps above are your decisions.
 
 Keep the host online and replenish its SOL: receiving NEIRO does not automatically refill SOL. Failed onchain transactions can still cost network fees. Hosting, price changes and demand affect returns; a listing does not guarantee customers or profit.
 
@@ -90,4 +90,4 @@ Keep the host online and replenish its SOL: receiving NEIRO does not automatical
 
 > Use NPN with my existing wallet. Choose a preferred operator by verified price, SOL capacity or response speed, then reuse it. Check its current signed terms and verify each completed quote and transaction before signing. Pay transaction costs only in NEIRO and return the confirmed signature and actual charge. Reconcile uncertain payments before retrying; never silently spend my SOL.
 
-[Client guide](docs/BUILD-WITH-NEIRO.md) · [Operator setup](docs/OPERATOR-SETUP.md) · [Agent setup checklist](AGENTS.md) · [Operations](docs/RENEWAL.md) · [Record format](docs/SPL-RECORD-LISTINGS.md)
+[Client guide](docs/BUILD-WITH-NEIRO.md) · [Operator agent procedure](AGENTS.md) · [Host reference](docs/OPERATOR-SETUP.md) · [Operations](docs/RENEWAL.md) · [Record format](docs/SPL-RECORD-LISTINGS.md)

@@ -1,10 +1,10 @@
 # Run and maintain your listing
 
-For installation, use the [operator setup guide](OPERATOR-SETUP.md). The recommended setup is **one supervised `renew --watch` process per operator signer**. It creates the listing on its first run, then checks hourly. Unchanged terms renew after 24 chain hours; clients reject them after 48 hours. The host clock only schedules checks.
+For installation, use the [operator procedure in AGENTS.md](../AGENTS.md). The recommended setup is **one supervised `renew --watch` process per operator signer**. It creates the listing on its first run, then checks hourly. Unchanged terms renew after 24 chain hours; clients reject them after 48 hours. The host clock only schedules checks.
 
 ## Keep the worker running
 
-Use the host's existing service manager: systemd on Linux, launchd on macOS, or the platform's container service. Configure it to run the exact README command with absolute paths, the private signer environment, persistent state, and startup after reboot. On Bunny, use one private worker with a persistent volume; do not add a renewal worker to every regional Kora replica.
+Use the host's existing service manager: systemd on Linux, launchd on macOS, or the platform's container service. Configure it to run the exact `renew --watch` command from AGENTS.md with absolute paths, the private signer environment, persistent state, and startup after reboot. On Bunny, use one private worker with a persistent volume; do not add a renewal worker to every regional Kora replica.
 
 A terminal session alone does not provide that supervision. Your setup agent should install the service and leave the exact status, log, restart and stop commands for your host. There is no second daily job: `--watch` handles the checks.
 
