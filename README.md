@@ -13,7 +13,7 @@ Send, swap and build on Solana with NEIRO as your gas. NPN connects humans, agen
 ## Start here with your agent
 
 - **[Client / builder →](docs/BUILD-WITH-NEIRO.md)** Use NPN or build apps where users pay transaction costs in NEIRO.
-- **[Run an operator →](AGENTS.md)** Set up on a Mac, Raspberry Pi, PC or in the cloud and choose your fees.
+- **[Run an operator →](#set-up-your-operator)** Five steps for you; your agent handles installation on your computer or in the cloud.
 - **[Client verifications →](Client%20verifications/README.md)** See verified payments, wallets and applications.
 
 ---
@@ -56,17 +56,35 @@ Reusing the existing authorized PayBox wallet was straightforward: load its prof
 
 ## Set up your operator
 
-Choose your host, signing wallet and markup. Run **official Kora from latest upstream `main`**, including merged fixes, plus the Node.js listing runner for onchain discovery and renewal. Use the [verified install commands](docs/OPERATOR-SETUP.md#install-kora-and-the-listing-runner); a stable release or old test image is not the installation target.
+**You choose where it runs, which wallet it uses and what you charge. Your agent does the technical setup.** An operator spends SOL to sponsor customers’ transactions and receives NEIRO in return.
 
-1. **Install and configure.** Install Kora and Node.js 24+, select your signer and choose your margin, fixed NEIRO fee or free sponsorship.
-2. **Fund it.** Add SOL and prepare the NEIRO receiving account.
-3. **Protect and start.** Run `protect` to add your listing address to `kora.toml`; load it in every Kora instance sharing the key. Start HTTPS and verify public signing cannot modify the listing.
-4. **Publish and renew.** Run one supervised `renew --watch` service with persistent state. It publishes the signed listing and renews it automatically.
-5. **Verify it works.** Discover the listing through RPC, complete a payment using your chosen pricing mode, check fees and balances, and verify restart and monitoring.
+1. **Pick a computer or cloud host.** Tell your agent “use this Mac”, “use my Linux server” or “help me choose hosting”. PCs and Raspberry Pis need a supported Kora setup; your agent checks compatibility. The machine must stay online to serve customers.
+2. **Choose a dedicated operator wallet.** Ask your agent to create one, or connect your chosen local or remote signer. Keep its recovery access. This is the wallet that spends SOL and receives NEIRO; keep keys out of chat.
+3. **Choose your price.** Tell your agent “charge cost plus 20%”, choose a fixed NEIRO payment, or sponsor for free. A 20% markup turns a calculated cost worth 10 NEIRO into a 12 NEIRO quote; it is not 20% of the customer’s transfer.
+4. **Set a budget and connect the services.** Specify your SOL funding and hosting budget. Your agent guides you through Solana RPC access (reading/sending transactions), a Jupiter API key (pricing), and an HTTPS address (where clients connect). Let it reuse existing accounts and store credentials privately. Fund only the verified operator address; the operator needs a NEIRO receiving account, not an initial NEIRO deposit.
+5. **Give your agent the setup brief below.** It installs current official Kora and the listing runner, protects and publishes your listing, and tests a payment within your limits. Ask it to show the result and how to stop, restart and monitor the service. A separate test customer needs NEIRO for a paid test.
 
-**[Agent: follow the setup procedure →](AGENTS.md)** · [Detailed installation commands](docs/OPERATOR-SETUP.md) · [RPC setup options](docs/OPERATOR-SETUP.md#free-rpc-options)
+```text
+Help me run an NPN operator. Follow the current instructions:
+https://raw.githubusercontent.com/bropump/neiro-payment-network/main/AGENTS.md
 
-Operators supply SOL and choose their own prices. A failed onchain transaction can still cost the operator network fees; reimbursement is not guaranteed on failure.
+Host: [my device / cloud provider / help me choose]
+Operator wallet or signer: [existing / create a dedicated wallet / help me choose]
+Price: [cost plus __% / fixed __ NEIRO / free / explain the options]
+Budget: [__ SOL to fund; __ per month for hosting]
+Payment test: [customer wallet, amount and maximum NEIRO fee / help me decide]
+Existing RPC, Jupiter account and HTTPS address: [what I already have / none]
+
+Walk me through missing decisions one at a time. Explain what each is for.
+Handle installation and configuration, keeping keys and credentials private.
+Ask before spending beyond my agreed limits. Show evidence of a protected
+listing, published terms, a confirmed payment and running renewal/monitoring.
+Tell me exactly what is still incomplete.
+```
+
+**[Plain-language setup guide →](TUTORIAL.md)** · [Technical procedure for your agent](AGENTS.md)
+
+Keep the host online and replenish its SOL: receiving NEIRO does not automatically refill SOL. Failed onchain transactions can still cost network fees. Hosting, price changes and demand affect returns; a listing does not guarantee customers or profit.
 
 ## Give this to your agent
 

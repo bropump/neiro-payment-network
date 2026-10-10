@@ -1,102 +1,69 @@
 # Run an NPN operator with your agent
 
-**[Client / builder guide](docs/BUILD-WITH-NEIRO.md)** · **[Agent operator setup](AGENTS.md)**
+**You make the choices. Your agent installs and checks the service.** You do not need to edit configuration files yourself.
 
-Run a NEIRO payment operator on your own computer or cloud host. Your operator pays the SOL needed to process a customer's transaction, and the customer reimburses you in NEIRO, including the fee you choose.
+Your operator pays Solana transaction costs in SOL and receives the agreed NEIRO payment from customers. You run two things: **Kora**, which checks and sponsors transactions, and the **listing runner**, which publishes your signed address and fee terms so clients can find you.
 
-You run official **Kora from current upstream main**, Solana's payment sponsorship software, with our **NEIRO configuration**, plus Node.js 24+ for the listing runner. Your agent handles installation and verifies the deployed Kora revision.
-
-## Why run one?
-
-Help people use Solana without keeping SOL in their wallets, and charge for providing that service. You choose where to run it and what to charge. You keep control of your operator wallet.
-
-This is a service you operate, not staking or a guaranteed return. You receive fees when customers use your operator. You fund hosting and the SOL your operator spends; RPC access can start on a [free provider allowance](docs/OPERATOR-SETUP.md#free-rpc-options). Publishing a listing does not guarantee traffic or profit.
-
-## How you get paid
-
-1. An app requests a quote for its customer's transaction.
-2. Your operator calculates the cost and your fee in NEIRO.
-3. The customer approves the transaction and payment.
-4. Kora checks the transaction and adds the operator's signature. With `signTransaction`, the client verifies and submits the returned transaction; `signAndSendTransaction` has Kora submit it. On success, your wallet spends SOL and receives the agreed NEIRO payment in the same transaction.
-
-For example, with a **20% markup**, a transaction whose sponsored cost is worth **10 NEIRO** is quoted at **12 NEIRO**. The extra 2 NEIRO is your gross markup, before running costs and price changes. This is a percentage of the sponsored cost, not the amount the customer sends.
-
-When the app includes supported token-account creation with the operator as payer, its cost is included in cost-based pricing. Kora does not automatically add those instructions; the [client / builder guide](docs/BUILD-WITH-NEIRO.md#use-your-existing-program-or-transaction-builder) explains account funding.
+Only want to pay in NEIRO or build an app? Use the [client / builder guide](docs/BUILD-WITH-NEIRO.md); you do not need to run an operator.
 
 ## 1. Choose where to run it
 
-Tell your agent which machine or host to use: your Mac, a server or a cloud container host such as Bunny.net, following upstream Kora requirements. It must stay online to serve payments.
+Tell your agent which machine to use: **your Mac, Windows PC, Linux server, Raspberry Pi or cloud host**. If you have no preference, say “help me choose a host within my monthly budget”.
 
-Have a dedicated operator wallet funded with SOL and a NEIRO token account for reimbursement. Keep enough SOL for your intended workload. Your agent can help prepare the accounts; an SPL Record listing does not impose a fixed SOL or NEIRO deposit beyond its rent.
+Your own computer must stay on, connected and awake to serve customers. Cloud hosting can keep it online independently of your computer and has its own bill. Your agent checks the machine’s architecture and supported Kora installation before proceeding. Give it access through your normal local or hosting tools.
 
-The agent also guides you through [RPC access](docs/OPERATOR-SETUP.md#free-rpc-options)—Helius with free signup, or Quicknode x402 through an agent-managed adapter—the Jupiter pricing key required by the current Kora configuration, and a public HTTPS endpoint. Keep credentials in secret storage, never in the repository or a chat message.
+**You provide:** the device or hosting account, access and any monthly spending limit. **Your agent handles:** installation, networking and service startup.
 
-## 2. Ask your AI to set it up
+## 2. Choose the operator wallet
 
-Give your coding agent **[AGENTS.md](AGENTS.md)**. It covers installation, configuration, listing protection, publication, renewal and a verified payment. The agent should leave the exact start, stop, status and log commands for your host, with evidence for every completed check.
+Ask your agent to **create a dedicated operator wallet**, or tell it which existing dedicated wallet or signing provider to use. This wallet spends SOL and receives NEIRO.
 
-You choose the host, fee and funding. Supply credentials through private storage. [Remote signing](docs/SIGNING.md) through Kora's solana-keychain integration is an optional recommendation for stronger key isolation; a dedicated local keypair also works.
+A local signer keeps signing access on the host; a remote signer uses a separate signing service. Your agent checks that the selected signer works with both Kora and the listing runner. Ask it to explain recovery and backup before you fund the wallet. Keep your private key, recovery phrase and service credentials out of chat and GitHub.
+
+**You provide:** the wallet/signer choice and private access through your tools. **Your agent handles:** connecting it and confirming the public address.
 
 ## 3. Set your fees
 
-You can tell your agent “charge cost plus 20%” or edit the `[validation.price]` section in your private `kora.toml`.
+Tell your agent which price you want:
 
-**Cost plus a markup** — recover the calculated sponsored cost and add your fee:
+- **Cost plus a markup:** “Charge cost plus 20%.” A calculated cost worth 10 NEIRO becomes a 12 NEIRO quote. The percentage applies to sponsored cost, not the customer’s transfer amount.
+- **Fixed NEIRO:** “Charge 10 NEIRO per transaction with strict cost checking.” More expensive transactions are rejected rather than covered at that fixed price.
+- **Free:** “Sponsor transactions for free.” You pay the costs and receive no reimbursement.
 
-```toml
-[validation.price]
-type = "margin"
-margin = 0.20
-```
+The markup is gross revenue before running costs and price changes, not guaranteed profit. Your agent applies your choice and publishes matching signed terms. Later, ask it to update both the running configuration and the onchain listing. [Technical pricing and limits](CONFIGURATION.md).
 
-`0.20` means 20%; `0.50` means 50%; `0.0` means no markup. The included 50% is an editable example, not a network rule.
+## 4. Set your budget and connect the services
 
-**A fixed payment** — charge 10 NEIRO and reject transactions whose calculated cost exceeds that payment:
+Tell your agent **how much SOL you want to fund**, your hosting budget, and the limits for a test payment. Ask it to explain the per-transaction spending limits before applying them; those limits are not a daily budget or a guarantee against losses.
 
-```toml
-[validation.price]
-type = "fixed"
-amount = 10000000
-token = "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"
-strict = true
-```
+Your agent checks what you already have and guides you through anything missing:
 
-NEIRO has six decimal places, so `10000000` means 10 NEIRO. This is the total operator payment, not an additional markup. More expensive transactions will be rejected.
+| What you need | Why | Your action |
+|---|---|---|
+| Solana RPC access | Reads the chain and sends transactions. | Reuse an account or sign up with a provider your agent helps you choose. Give access through private storage. |
+| Jupiter API key | Supplies token prices for the current NEIRO pricing configuration. | Reuse your account or have your agent guide you through obtaining access. Store the key privately. |
+| Public HTTPS address | Lets customers connect securely to your operator. | Choose a hostname you control or a suitable hosting-provided address. Your agent sets up HTTPS. |
+| SOL in the operator wallet | Pays sponsored costs, listing rent and network fees. | Fund the public address only after your agent verifies it, within your chosen budget. |
+| NEIRO for a test customer | Pays for the small test that proves reimbursement works. | Choose a separate customer wallet and approve its test amount and maximum fee. |
 
-**Free sponsorship** — cover the cost yourself and receive no reimbursement:
+The operator needs a **NEIRO receiving account**, which your agent prepares; it does **not** need an initial NEIRO balance. There is no network-set operating deposit. Funding depends on your workload; your agent should explain its estimate. [RPC options](docs/OPERATOR-SETUP.md#free-rpc-options).
 
-```toml
-[validation.price]
-type = "free"
-```
+## 5. Give your agent the setup brief
 
-Use one pricing mode at a time; replace the existing section rather than adding another. After a change, validate the file, restart all Kora instances and restart the sole listing worker with the same config and state so it republishes immediately. Verify the updated onchain terms and a matching live quote. [Fee-change procedure](docs/RENEWAL.md#change-fees-or-update-the-script).
+Copy the [brief on the front page](README.md#set-up-your-operator), fill in what you know, and leave “help me choose” for anything uncertain. The agent follows [AGENTS.md](AGENTS.md) for the exact installation and verification steps.
 
-## 4. Set your spending limit
+It should explain progress as it:
 
-In the existing `[validation]` section:
+1. **Installs Kora and the listing runner.** These serve payments and keep your public listing current.
+2. **Protects your listing before serving requests.** Public signing requests must not be able to modify your operator listing; the agent tests the running protection.
+3. **Publishes your URL and signed fees on Solana.** Clients can discover and verify your terms without registering with a router.
+4. **Proves a payment.** You see the confirmed transaction, the NEIRO charge and the operator’s SOL/NEIRO changes, within your agreed limits.
+5. **Leaves the service running and monitored.** It shows restart checks, automatic listing renewal, upstream update checks, alerts, and your exact stop/start/status commands. Unobserved checks stay marked incomplete.
 
-```toml
-max_allowed_lamports = 250000000
-max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee
-```
+## After setup
 
-The recommendation is **0.25 SOL per transaction**. Choose your own limit. A lower limit rejects more expensive transactions; a higher one permits larger sponsored costs. Quote the complete transaction, including sponsored rent. This allowance does not guarantee every launch will be supported or put a hard cap on every possible loss; Kora models network fees separately from fee-payer outflow. See [configuration details](CONFIGURATION.md).
+Keep the host online, monitor its SOL and replenish it when needed. **SOL goes out; NEIRO comes in.** NEIRO reimbursement does not automatically refill SOL. A failed onchain transaction can still charge network fees while the NEIRO payment rolls back.
 
-This is **not a daily budget**. Many transactions can each consume up to the configured allowance. Keep only your intended operating funds in the sponsor wallet and monitor its balance.
+The runner renews unchanged terms after 24 chain hours; clients reject them after 48 hours without renewal. Your agent sets this up and explains alerts. Publishing a listing does not guarantee traffic or profit.
 
-## Costs and security
-
-- **Use a dedicated wallet.** Kora needs signing access to it. Do not use your personal savings wallet or commit its private key to Git.
-- **SOL goes out; NEIRO comes in.** Reimbursement does not automatically refill your SOL balance. You must manage that balance yourself.
-- **Failed transactions can cost money.** If an on-chain transaction fails, network fees can still be charged while its NEIRO payment is rolled back.
-- **Keep the supplied protections.** Use HTTPS and request limits, and retain Kora's transaction and sponsor permissions. Clients call the published HTTPS endpoint directly; its access requirements must be supported by the publisher and intended clients. Spending limits reduce exposure but do not prevent every loss or software bug.
-- **Track official main.** Resolve upstream main every five minutes and verify the deployed source SHA. If the edge image lags, wait for its matching build or build that revision natively; do not report an older image as current. Pin each deployment, validate your private config and retain rollback if an update fails. Main can contain unaudited changes; a successful build is not an audit. See [installation and update checks](AGENTS.md).
-
-The current template uses `allowed_programs = "All"` for broad program compatibility. Arbitrary programs are admitted, and the existing fee-payer policies do not establish a general sponsor-safety boundary. The prepared upstream #683 migration uses a restricted `allowed_programs` list with `sponsor_only_programs = "All"`; it awaits a merge into official main and validation. See [configuration and upgrade status](CONFIGURATION.md).
-
-## Publish and verify
-
-Follow [AGENTS.md](AGENTS.md): derive your listing address, deny it in every public Kora instance sharing the signer, restart and test that signing requests touching the listing are rejected. One supervised `renew --watch` worker creates the listing and maintains it; no separate registration service is needed. Verify discovery and an authorized finalized payment, not only a quote.
-
-Publication pays a network fee and deposits refundable rent. The [renewal worker](docs/RENEWAL.md) checks hourly and renews unchanged terms after 24 chain hours. Clients reject listings at 48 hours after their finalized block anchor. Each renewal pays a network fee; missing renewal does not close the account or refund rent.
+[Technical operator procedure](AGENTS.md) · [Hosting details](docs/OPERATOR-SETUP.md) · [Fees and permissions](CONFIGURATION.md) · [Renewal and recovery](docs/RENEWAL.md)
