@@ -64,6 +64,13 @@ Reusing the existing authorized PayBox wallet was straightforward: load its prof
 4. **Set a budget and connect the services.** Specify your SOL funding and hosting budget. Your agent guides you through Solana RPC access (reading/sending transactions), a Jupiter API key (pricing), and an HTTPS address (where clients connect). Let it reuse existing accounts and store credentials privately. Fund only the verified operator address; the operator needs a NEIRO receiving account, not an initial NEIRO deposit.
 5. **Give your agent the setup brief below.** It installs current official Kora and the listing runner, protects and publishes your listing, and tests a payment within your limits. Ask it to show the result and how to stop, restart and monitor the service. A separate test customer needs NEIRO for a paid test.
 
+**Need a free RPC connection to Solana? Choose with your agent:**
+
+- **[Helius free plan](https://dashboard.helius.dev/signup?plan=free):** you sign up; your agent helps you save the mainnet RPC URL privately.
+- **[Quicknode x402](https://x402.quicknode.com/llms.txt):** your agent can obtain free access without a dashboard signup, with up to **1 million credits per month** through its test-token route. We tested mainnet discovery, simulations and NEIRO quotes. The agent must configure the connection adapter and credit renewal; that unattended setup is not supplied yet. [Agent setup details](docs/OPERATOR-SETUP.md#free-rpc-options).
+
+These allowances cover RPC access, not the operator's SOL costs. Reuse an existing connection if you have one; your agent should check current provider limits and ask before choosing a paid plan.
+
 ```text
 Help me run an NPN operator. Follow the current instructions:
 https://raw.githubusercontent.com/bropump/neiro-payment-network/main/AGENTS.md

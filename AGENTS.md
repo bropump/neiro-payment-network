@@ -58,6 +58,13 @@ Use the selected [signer backend](docs/SIGNING.md) in both services. Verify thei
 
 Load `RPC_URL` for Kora, `SOLANA_RPC_URL` for the runner, `JUPITER_API_KEY` and the signer's credentials from private storage. Reuse working RPC access; [RPC setup options](docs/OPERATOR-SETUP.md#free-rpc-options) apply when none exists. Verify mainnet genesis, finalized account/block reads and discovery scans. Live Kora checks follow protected startup in step 3; verify its paid quote in step 5. Redact credential-bearing URLs and keys from subprocess errors **before** returning logs.
 
+**No RPC yet? Explain both free routes before asking a beginner to sign up:**
+
+- **Helius:** [open the free dashboard signup](https://dashboard.helius.dev/signup?plan=free), guide the user through account verification, then save their mainnet RPC URL privately. Do not send them to a paid plan by default.
+- **Quicknode x402:** the agent can bootstrap access without dashboard signup, using free test tokens for up to 1 million credits/month. Mainnet discovery, simulation and NEIRO quoting were tested. Follow the [adapter and renewal requirements](docs/OPERATOR-SETUP.md#free-rpc-options); the repo does not supply an unattended adapter, and credit renewal and settlement still need verification for this route. Do not describe it as ready merely because authentication works.
+
+Reuse existing access. Explain one action at a time, check current allowances, and get agreement before any paid plan or real-money credit purchase. Jupiter access remains separate.
+
 Fund the operator with the authorized SOL amount. Run these using the selected Kora binary/image, private environment and mounted config paths:
 
 ```sh
