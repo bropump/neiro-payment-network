@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createTransactionMessage,setTransactionMessageFeePayer,setTransactionMessageLifetimeUsingBlockhash,appendTransactionMessageInstructions} from '@solana/transaction-messages';
-import {compileTransaction,getTransactionEncoder} from '@solana/transactions';
+import {createTransactionMessage,setTransactionMessageFeePayer,setTransactionMessageLifetimeUsingBlockhash,appendTransactionMessageInstructions,getCompiledTransactionMessageDecoder} from '@solana/transaction-messages';
+import {compileTransaction,getTransactionEncoder,getTransactionDecoder} from '@solana/transactions';
 import {getBase58Decoder} from '@solana/codecs-strings';
 import {getCreateAccountWithSeedInstruction,getTransferSolWithSeedInstruction,SYSTEM_PROGRAM_ADDRESS} from '@solana-program/system';
 import {parse} from 'smol-toml';
@@ -28,6 +28,7 @@ interface PublishOptions {
   loadSigner: () => Promise<MessagePartialSigner>;
   notify?: (event: {record: string; signature: string; status: 'journaled'}) => void;
   wait?: (milliseconds: number) => Promise<unknown>;
+  legacyRecovery?: {signature: string; beforeSlot: number};
 }
 export function jsonObject(value: unknown): JsonObject {
   assert(value !== null && typeof value === 'object' && !Array.isArray(value), 'JSON object required');
@@ -45,8 +46,9 @@ function accountResult(value: unknown): {context: {slot: number}; value: RpcAcco
   return {context:{slot:context.slot},value:r.value===null?null:rpcAccount(r.value)};
 }
 function firstStatus(value: unknown): JsonObject | null {
-  const response=jsonObject(value);assert(Array.isArray(response.value),'invalid signature statuses');
-  return response.value[0]==null?null:jsonObject(response.value[0]);
+  const response=jsonObject(value);assert(Array.isArray(response.value)&&response.value.length===1,'invalid signature statuses');
+  if(response.value[0]===null)return null;
+  const s=jsonObject(response.value[0]);assert(s.err===null||(s.err!==null&&(typeof s.err==='object'||typeof s.err==='string')),'invalid transaction error');return s;
 }
 export const GENESIS='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
 export const SPACE=733, RENEW_AFTER=86400;
@@ -65,14 +67,17 @@ export function rpcClient(url: string): Rpc {
   let id=0;
   return async (method: string,params: readonly unknown[] | JsonObject=[])=>{
     const requestId=++id;
+    try {
     const r=await fetch(url,{method:'POST',redirect:'error',headers:{'content-type':'application/json'},
       body:JSON.stringify({jsonrpc:'2.0',id:requestId,method,params}),signal:AbortSignal.timeout(20000)});
-    assert(r.ok,'RPC HTTP failure');
+    if(!r.ok)throw new RecoveryError(`RPC_${method}_HTTP_${r.status}`);
     const chunks: Uint8Array[]=[];let size=0;assert(r.body,'empty RPC response');
     for await(const chunk of r.body){size+=chunk.length;assert(size<=8*1024*1024,'RPC response too large');chunks.push(chunk);}
     const x=jsonObject(jsonParse(Buffer.concat(chunks).toString()));
-    assert(x.jsonrpc==='2.0'&&x.id===requestId&&!x.error,'RPC rejected request');
+    if(x.error)throw new RecoveryError(`RPC_${method}_REJECTED`);
+    assert(x.jsonrpc==='2.0'&&x.id===requestId,'invalid RPC envelope');
     return x.result;
+    } catch(error){if(error instanceof RecoveryError)throw error;throw new RecoveryError(`RPC_${method}_TRANSPORT_OR_RESPONSE`);}
   };
 }
 export async function anchorAt(rpc: Rpc,slot: unknown): Promise<Anchor> {
@@ -160,19 +165,114 @@ export function lockState(dir: string) {
   try{writeNew(path.join(lock,'owner.json'),{pid:process.pid});}catch(e){fs.rmSync(lock,{recursive:true});throw e;}
   return ()=>{fs.rmSync(lock,{recursive:true});syncDir(dir);};
 }
-export async function reconcile(rpc: Rpc,dir: string,record: string,genesis: string) {
+// Only fixed error codes cross the log boundary; RPC/signer errors may contain secrets.
+export class RecoveryError extends Error {
+  readonly code: string;
+  constructor(code: string) {super(code);this.code=code;}
+}
+export function safeErrorCode(error: unknown): string {
+  if(error instanceof RecoveryError)return error.code;
+  const code=error instanceof Error?(error as NodeJS.ErrnoException).code:undefined;
+  return ['EEXIST','EACCES','EPERM','ENOSPC','ENOENT'].includes(code??'')?`STATE_${code}`:'VALIDATION_OR_SIGNER_FAILED';
+}
+interface RecoveryOptions {
+  operator?: string; action?: Action; legacyRecovery?: {signature: string; beforeSlot: number};
+}
+function saveFloor(dir: string,record: string,genesis: string,slot: number) {
+  const tmp=path.join(dir,'finalized.tmp');
+  if(fs.existsSync(tmp))fs.unlinkSync(tmp);
+  writeNew(tmp,{record,genesis,slot});fs.renameSync(tmp,path.join(dir,'finalized.json'));syncDir(dir);
+}
+function archivePending(dir: string,receipt: JsonObject,outcome: string,floor: number) {
+  // Persist the receipt and watermark before removing pending. All steps are repeatable after a crash.
+  const archive=path.join(dir,String(receipt.signature)+'.json');
+  if(fs.existsSync(archive))assert.deepEqual(readJSON(archive),receipt,'conflicting archived receipt');else writeNew(archive,receipt);
+  const evidence=path.join(dir,String(receipt.signature)+'.outcome.json');
+  if(!fs.existsSync(evidence))writeNew(evidence,{outcome,slot:floor});
+  saveFloor(dir,String(receipt.record),String(receipt.genesis),floor);
+  fs.unlinkSync(path.join(dir,'pending.json'));syncDir(dir);
+}
+function signedReceipt(receipt: JsonObject,operator: string) {
+  assert(receipt.v===2&&receipt.operator===operator,'invalid pending schema or operator');
+  assert(typeof receipt.transaction==='string'&&typeof receipt.blockhash==='string'&&integer(receipt.lastValidBlockHeight)&&integer(receipt.contextSlot),'invalid pending lifetime');
+  const bytes=Buffer.from(receipt.transaction,'base64');assert(bytes.length<=1232&&bytes.toString('base64')===receipt.transaction,'invalid pending bytes');
+  const tx=getTransactionDecoder().decode(bytes),message=getCompiledTransactionMessageDecoder().decode(tx.messageBytes);
+  assert(message.version==='legacy'&&message.staticAccounts[0]===operator&&message.staticAccounts.includes(address(String(receipt.record))),'invalid pending accounts');
+  assert(message.lifetimeToken===receipt.blockhash,'pending blockhash mismatch');
+  assert.deepEqual(Object.keys(tx.signatures),[operator],'invalid pending signers');
+  const sig=tx.signatures[address(operator)];assert(sig&&verifyAttestation(operator,new Uint8Array(tx.messageBytes),sig),'invalid pending signature');
+  assert(getBase58Decoder().decode(sig)===receipt.signature,'pending signature mismatch');
+  assert(['renew','publish','close'].includes(String(receipt.action)),'invalid pending action');
+  return {bytes:receipt.transaction,blockhash:receipt.blockhash,height:receipt.lastValidBlockHeight,slot:receipt.contextSlot};
+}
+async function statusAt(rpc: Rpc,signature: string,minSlot: number) {
+  const r=jsonObject(await rpc('getSignatureStatuses',[[signature],{searchTransactionHistory:true}]));
+  const context=jsonObject(r.context);assert(integer(context.slot)&&context.slot>=minSlot,'stale signature context');
+  const status=firstStatus(r);
+  if(status)assert(integer(status.slot)&&status.slot<=context.slot&&['processed','confirmed','finalized'].includes(String(status.confirmationStatus)),'invalid signature status');
+  return status;
+}
+export async function reconcile(rpc: Rpc,dir: string,record: string,genesis: string,options: RecoveryOptions={}) {
   const floorFile=path.join(dir,'finalized.json'),pending=path.join(dir,'pending.json');let floor=0;
   if(fs.existsSync(floorFile)){const f=readJSON(floorFile);assert(f.record===record&&f.genesis===genesis&&integer(f.slot),'invalid finalized state');floor=f.slot;}
   if(!fs.existsSync(pending))return floor;
   const receipt=readJSON(pending);assert(receipt.record===record&&receipt.genesis===genesis,'wrong receipt identity');
   assert(typeof receipt.signature==='string'&&/^[1-9A-HJ-NP-Za-km-z]{64,88}$/.test(receipt.signature),'bad receipt signature');
-  const s=firstStatus(await rpc('getSignatureStatuses',[[receipt.signature],{searchTransactionHistory:true}]));
-  assert(s&&s.err===null&&s.confirmationStatus==='finalized'&&integer(s.slot),'pending transaction unresolved; retain journal');
-  const archive=path.join(dir,receipt.signature+'.json');
-  if(fs.existsSync(archive))assert.deepEqual(readJSON(archive),receipt,'conflicting archived receipt');else writeNew(archive,receipt);
-  floor=Math.max(floor,s.slot);const tmp=path.join(dir,'finalized.tmp');
-  if(fs.existsSync(tmp))fs.unlinkSync(tmp);writeNew(tmp,{record,genesis,slot:floor});fs.renameSync(tmp,floorFile);syncDir(dir);
-  fs.unlinkSync(pending);syncDir(dir);return floor;
+  const modern=receipt.v===2;
+  const wire=modern?signedReceipt(receipt,options.operator??String(receipt.operator)):null;
+  if(!modern)assert.deepEqual(Object.keys(receipt).sort(),['genesis','record','signature'],'unknown legacy receipt');
+  const finish=(s: JsonObject)=>{
+    assert(integer(s.slot)&&(s.err===null||(s.err!==null&&(typeof s.err==='object'||typeof s.err==='string'))),'invalid finalized result');floor=Math.max(floor,s.slot);
+    archivePending(dir,receipt,s.err===null?'finalized':'failed',floor);
+    if(s.err!==null)throw new RecoveryError('TRANSACTION_FINALIZED_FAILED');
+    return floor;
+  };
+  let status=await statusAt(rpc,receipt.signature,Math.max(floor,wire?.slot??0));
+  if(status?.confirmationStatus==='finalized')return finish(status);
+  // Establish an expiry observation, THEN read status/account at or after that finalized root.
+  const root=await rpc('getSlot',[finalized]);assert(integer(root)&&root>=floor&&root>=(wire?.slot??0),'stale finalized root');
+  const rootedBlock=jsonObject(await rpc('getBlock',[root,{...finalized,transactionDetails:'none',rewards:false,maxSupportedTransactionVersion:0}]));
+  const height=rootedBlock.blockHeight;assert(integer(height),'invalid rooted block height');
+  let expired=false;
+  if(wire){
+    if(height>wire.height){
+      const valid=jsonObject(await rpc('isBlockhashValid',[wire.blockhash,{...finalized,minContextSlot:root}]));
+      const ctx=jsonObject(valid.context);assert(integer(ctx.slot)&&ctx.slot>=root&&typeof valid.value==='boolean','invalid blockhash validity');
+      if(valid.value)throw new RecoveryError('RPC_EXPIRY_CONFLICT');
+      expired=true;
+    }else{
+      if(options.action!=='check'&&!status){
+        if(options.action&&receipt.action!==options.action)throw new RecoveryError('PENDING_ACTION_MISMATCH');
+        const sent=await rpc('sendTransaction',[wire.bytes,{encoding:'base64',skipPreflight:false,preflightCommitment:'finalized',maxRetries:2}]);
+        assert.equal(sent,receipt.signature,'RPC returned wrong signature; retain journal');
+      }
+      throw new RecoveryError('PENDING_STILL_VALID');
+    }
+  }else{
+    const proof=options.legacyRecovery;
+    if(!proof||proof.signature!==receipt.signature)throw new RecoveryError('LEGACY_RECOVERY_REQUIRED');
+    assert(integer(proof.beforeSlot)&&proof.beforeSlot<=root,'legacy cutoff must be finalized');
+    const cutoff=jsonObject(await rpc('getBlock',[proof.beforeSlot,{...finalized,transactionDetails:'none',rewards:false,maxSupportedTransactionVersion:0}]));
+    assert(integer(cutoff.blockHeight),'legacy cutoff block unavailable');
+    // Explicit operator assertion: this old publisher attempt used a recent hash from <= beforeSlot,
+    // never a durable nonce. 160 rooted produced blocks exceeds Solana's 151-hash processing window.
+    if(height<=cutoff.blockHeight+160)throw new RecoveryError('LEGACY_EXPIRY_WAIT');
+    const proofFile=path.join(dir,receipt.signature+'.legacy-proof.json');
+    const evidence={signature:receipt.signature,beforeSlot:proof.beforeSlot,cutoffHeight:cutoff.blockHeight};
+    if(fs.existsSync(proofFile))assert.deepEqual(readJSON(proofFile),evidence,'legacy proof changed');else writeNew(proofFile,evidence);
+    expired=true;
+  }
+  assert(expired);
+  status=await statusAt(rpc,receipt.signature,root);
+  if(status?.confirmationStatus==='finalized')return finish(status);
+  if(status)throw new RecoveryError('PENDING_NOT_FINALIZED');
+  // A history lookup may find a transaction omitted from a provider's status index.
+  const historical=await rpc('getTransaction',[receipt.signature,{...finalized,maxSupportedTransactionVersion:0}]);
+  if(historical!==null){const h=jsonObject(historical),meta=jsonObject(h.meta);assert(integer(h.slot),'invalid transaction slot');return finish({slot:h.slot,err:meta.err});}
+  const account=accountResult(await rpc('getAccountInfo',[record,{...finalized,encoding:'base64',minContextSlot:root}]));
+  assert(account.context.slot>=root,'stale recovery account');
+  floor=Math.max(floor,root);archivePending(dir,receipt,'expired-unobserved',floor);
+  return floor;
 }
 function recordInstruction(operator: string,record: string,tag: number,data: Uint8Array=Buffer.alloc(0)): Instruction {
   const accounts: AccountMeta[]=[{address:address(record),role:1},{address:address(operator),role:tag===0?0:2}];
@@ -192,18 +292,18 @@ async function rawSign(signer: MessagePartialSigner,operator: string,message: Ui
   const [dictionary]=await signer.signMessages([{content:new Uint8Array(message),signatures:{}}]);
   assert(dictionary,'missing signer response');const sig=Buffer.from(dictionary[address(operator)]);assert(verifyAttestation(operator,message,sig),'invalid signer response');assertIsSignatureBytes(sig);return sig;
 }
-function transaction(operator: string,hash: string,instructions: Instruction[]) {
+function transaction(operator: string,hash: string,height: number,instructions: Instruction[]) {
   const message=createTransactionMessage({version:'legacy'});
   const withPayer=setTransactionMessageFeePayer(address(operator),message);
-  const withLifetime=setTransactionMessageLifetimeUsingBlockhash({blockhash:blockhash(hash),lastValidBlockHeight:0n},withPayer);
+  const withLifetime=setTransactionMessageLifetimeUsingBlockhash({blockhash:blockhash(hash),lastValidBlockHeight:BigInt(height)},withPayer);
   return compileTransaction(appendTransactionMessageInstructions(instructions,withLifetime));
 }
-export async function publish({rpc,operator,genesis=GENESIS,terms,stateDir,action='renew',loadSigner,notify=()=>{},wait=delay}: PublishOptions) {
+export async function publish({rpc,operator,genesis=GENESIS,terms,stateDir,action='renew',loadSigner,notify=()=>{},wait=delay,legacyRecovery}: PublishOptions) {
   keybytes(operator);keybytes(genesis);assert(['renew','publish','close','check'].includes(action),'unknown action');
   const record=recordAddress(operator),unlock=lockState(stateDir);
   try {
     assert.equal(await rpc('getGenesisHash'),genesis,'wrong network');
-    const floor=await reconcile(rpc,stateDir,record,genesis);
+    const floor=await reconcile(rpc,stateDir,record,genesis,{operator,action,legacyRecovery});
     const result=accountResult(await rpc('getAccountInfo',[record,{...finalized,encoding:'base64',minContextSlot:floor}]));
     assert(integer(result?.context?.slot)&&result.context.slot>=floor,'stale account read');let current=result.value;
     const instructions: Instruction[]=[];
@@ -224,25 +324,27 @@ export async function publish({rpc,operator,genesis=GENESIS,terms,stateDir,actio
         instructions.push(getCreateAccountWithSeedInstruction({payer:createNoopSigner(address(operator)),newAccount:address(record),base:address(operator),baseAccount:createNoopSigner(address(operator)),seed:SEED,amount:rent,space:SPACE,programAddress:address(PROGRAM)}),recordInstruction(operator,record,0));}
       instructions.push(recordInstruction(operator,record,1,framed.payload));
     }else instructions.push(recordInstruction(operator,record,3));
-    const latest=jsonObject(jsonObject(await rpc('getLatestBlockhash',[finalized])).value);assert(typeof latest.blockhash==='string','blockhash required');keybytes(latest.blockhash);
-    let tx=transaction(operator,latest.blockhash,instructions);
+    const latestResponse=jsonObject(await rpc('getLatestBlockhash',[finalized])),latestContext=jsonObject(latestResponse.context),latest=jsonObject(latestResponse.value);
+    assert(integer(latestContext.slot)&&latestContext.slot>=floor&&integer(latest.lastValidBlockHeight),'invalid blockhash context/lifetime');assert(typeof latest.blockhash==='string','blockhash required');keybytes(latest.blockhash);
+    let tx=transaction(operator,latest.blockhash,latest.lastValidBlockHeight,instructions);
     const fee=jsonObject(await rpc('getFeeForMessage',[Buffer.from(tx.messageBytes).toString('base64'),finalized]));
     assert(integer(fee?.value)&&fee.value<=10000,'network fee cap');
     assert(getTransactionEncoder().encode(tx).length<=1232,'transaction size cap');
     const signer=await loadSigner();assert.equal(signer.address,operator,'signer identity mismatch');
-    if(framed){const sig=await rawSign(signer,operator,attestationMessage(record,genesis,framed.body));sig.copy(framed.payload,framed.signatureOffset);instructions[instructions.length-1]=recordInstruction(operator,record,1,framed.payload);tx=transaction(operator,latest.blockhash,instructions);}
+    if(framed){const sig=await rawSign(signer,operator,attestationMessage(record,genesis,framed.body));sig.copy(framed.payload,framed.signatureOffset);instructions[instructions.length-1]=recordInstruction(operator,record,1,framed.payload);tx=transaction(operator,latest.blockhash,latest.lastValidBlockHeight,instructions);}
     const signature=await rawSign(signer,operator,new Uint8Array(tx.messageBytes));tx={...tx,signatures:{[operator]:signature}};
     const serialized=Buffer.from(getTransactionEncoder().encode(tx)),expected=getBase58Decoder().decode(signature);
     // Persist the actual transaction signature before handing bytes to any RPC.
-    writeNew(path.join(stateDir,'pending.json'),{record,signature:expected,genesis});notify({record,signature:expected,status:'journaled'});
+    writeNew(path.join(stateDir,'pending.json'),{v:2,record,signature:expected,genesis,operator,action,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight,contextSlot:latestContext.slot,transaction:serialized.toString('base64')});notify({record,signature:expected,status:'journaled'});
     const sent=await rpc('sendTransaction',[serialized.toString('base64'),{encoding:'base64',skipPreflight:false,preflightCommitment:'finalized',maxRetries:2}]);
     assert.equal(sent,expected,'RPC returned wrong signature; retain journal');
     for(let i=0;i<45;i++){
       const s=firstStatus(await rpc('getSignatureStatuses',[[expected],{searchTransactionHistory:true}]));
-      assert(!s?.err,'transaction failed; retain journal');
-      if(s?.confirmationStatus==='finalized'){await reconcile(rpc,stateDir,record,genesis);return {record,status:'finalized',signature:expected,fee:fee.value};}
+      if(s?.err&&s.confirmationStatus!=='finalized')throw new RecoveryError('PENDING_NOT_FINALIZED');
+      if(s?.confirmationStatus==='finalized'){await reconcile(rpc,stateDir,record,genesis,{operator,action,legacyRecovery});return {record,status:'finalized',signature:expected,fee:fee.value};}
+      if(!s&&i>0&&i%5===0){const sent=await rpc('sendTransaction',[serialized.toString('base64'),{encoding:'base64',skipPreflight:false,preflightCommitment:'finalized',maxRetries:2}]);assert.equal(sent,expected,'RPC returned wrong signature; retain journal');}
       await wait(1000);
     }
-    throw new Error('confirmation timed out; retain journal');
+    throw new RecoveryError('CONFIRMATION_TIMEOUT');
   }finally{unlock();}
 }

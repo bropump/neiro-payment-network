@@ -24,11 +24,14 @@ function fixture(t){
    return {context:{slot:f.slot},value:{owner:'Sysvar1111111111111111111111111111111111111',executable:false,data:[d.toString('base64'),'base64']}};
   }
   if(method==='getSlot')return f.slot;
-  if(method==='getBlock')return {blockhash:genesis,blockTime:f.anchorTimes.get(params[0])??f.anchorTime};
+  if(method==='getBlock')return {blockhash:genesis,blockTime:f.anchorTimes.get(params[0])??f.anchorTime,blockHeight:params[0]===f.slot?(f.height??100):100};
   if(method==='getMinimumBalanceForRentExemption')return f.rent;
-  if(method==='getLatestBlockhash')return {value:{blockhash:genesis,lastValidBlockHeight:12345}};
+  if(method==='getLatestBlockhash')return {context:{slot:f.slot},value:{blockhash:genesis,lastValidBlockHeight:12345}};
   if(method==='getFeeForMessage')return {value:f.fee};
-  if(method==='getSignatureStatuses')return {value:[f.statuses.length?f.statuses.shift():{slot:f.slot,err:null,confirmationStatus:'finalized'}]};
+  if(method==='getBlockHeight')return f.height??100;
+  if(method==='isBlockhashValid')return {context:{slot:f.slot},value:f.validHash??false};
+  if(method==='getTransaction')return f.historical??null;
+  if(method==='getSignatureStatuses')return {context:{slot:f.statusContext??f.slot},value:[f.statuses.length?f.statuses.shift():{slot:f.slot,err:null,confirmationStatus:'finalized'}]};
   if(method==='sendTransaction'){
    const tx=getTransactionDecoder().decode(Buffer.from(params[0],'base64'));
    assert.deepEqual(Object.keys(tx.signatures),[operator]);assert(verifyAttestation(operator,tx.messageBytes,tx.signatures[operator]));
@@ -63,7 +66,7 @@ test('close returns rent only to operator with one record instruction',async t=>
  const f=fixture(t);await f.run();const before=f.signs.length;await f.run({action:'close',terms:undefined});assert.equal(f.signs.length,before+1);const instructions=f.sends.at(-1);assert.equal(instructions.length,1);const ix=instructions[0];assert.equal(ix.program,PROGRAM);assert.deepEqual([...ix.data],[3]);assert.deepEqual(ix.keys,[f.record,f.operator,f.operator]);
 });
 test('ambiguous send keeps pending receipt and blocks signer access on restart',async t=>{
- const f=fixture(t);f.sendError=true;await assert.rejects(f.run(),/transport loss/);const pending=fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8');f.sendError=false;f.statuses=[null];const loads=f.loads;await assert.rejects(f.run(),/unresolved/);assert.equal(f.loads,loads);assert.equal(f.sends.length,1);assert.equal(fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8'),pending);
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run(),/transport loss/);const pending=fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8');f.sendError=false;f.statuses=[null];const loads=f.loads;await assert.rejects(f.run(),/PENDING_STILL_VALID/);assert.equal(f.loads,loads);assert.equal(f.sends.length,2);assert.equal(fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8'),pending);
 });
 test('finalized watermark rejects stale record reads before signer access',async t=>{
  const f=fixture(t);await f.run();f.slot=99;const loads=f.loads;await assert.rejects(f.run(),/stale account/);assert.equal(f.loads,loads);
@@ -83,8 +86,8 @@ test('daily boundary uses chain time and changed terms update immediately',async
  assert.equal((await f.run()).status,'unchanged');f.terms={...f.terms,url:'https://changed.example/'};assert.equal((await f.run()).status,'finalized');assert.equal(f.sends.length,3);
 });
 test('restart after send finalized but reconciliation timeout does not duplicate signing',async t=>{
- const f=fixture(t);f.statuses=[{slot:100,err:null,confirmationStatus:'finalized'},null];await assert.rejects(f.run(),/unresolved/);assert(fs.existsSync(path.join(f.stateDir,'pending.json')));const signs=f.signs.length;
- assert.equal((await f.run()).status,'unchanged');assert.equal(f.signs.length,signs);assert.equal(f.sends.length,1);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
+ const f=fixture(t);f.statuses=[{slot:100,err:null,confirmationStatus:'finalized'},null];await assert.rejects(f.run(),/PENDING_STILL_VALID/);assert(fs.existsSync(path.join(f.stateDir,'pending.json')));const signs=f.signs.length;
+ assert.equal((await f.run()).status,'unchanged');assert.equal(f.signs.length,signs);assert.equal(f.sends.length,2);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
 });
 test('configuration guard rejects malformed strings in place of required account arrays',t=>{
  const f=fixture(t),validation={price:{type:'free'},price_source:'Jupiter',allowed_tokens:[MINT],allowed_spl_paid_tokens:[MINT],disallowed_accounts:[f.record]};
@@ -106,4 +109,84 @@ test('discovery refreshes chain Clock after candidate anchor lookup',async t=>{
  };console.log=()=>{};
  try{await main(['discover','--genesis',genesis],{SOLANA_RPC_URL:'http://127.0.0.1:19999'});}finally{globalThis.fetch=previousFetch;console.log=previousLog;}
  const anchorIndex=calls.findIndex(x=>x.method==='getBlock');const clockIndex=calls.findIndex(x=>x.method==='getAccountInfo');assert(anchorIndex>=0&&clockIndex>anchorIndex,'Clock must be fetched after anchor');assert.equal(calls[clockIndex].params[1].minContextSlot,100);
+});
+
+test('expired unobserved attempt is archived and renewal succeeds with a fresh signature',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());
+ const receipt=JSON.parse(fs.readFileSync(path.join(f.stateDir,'pending.json')));
+ f.sendError=false;f.height=12346;f.statuses=[null,null];
+ assert.equal((await f.run()).status,'finalized');
+ assert.equal(f.loads,2);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
+ assert.equal(JSON.parse(fs.readFileSync(path.join(f.stateDir,receipt.signature+'.outcome.json'))).outcome,'expired-unobserved');
+});
+test('valid pending attempt retries identical bytes without loading signer; check never submits',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());f.sendError=false;
+ const pending=fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8'),loads=f.loads;
+ f.statuses=[null];await assert.rejects(f.run({action:'check'}),/PENDING_STILL_VALID/);assert.equal(f.sends.length,1);
+ f.statuses=[null];await assert.rejects(f.run(),/PENDING_STILL_VALID/);assert.equal(f.loads,loads);assert.deepEqual(f.sends[0],f.sends[1]);
+ assert.equal(fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8'),pending);
+});
+test('null status cannot clear a still-valid lifetime, stale context, inconsistent expiry or RPC outage',async t=>{
+ for(const scenario of ['stale','valid','conflict','outage','confirmed']){
+  const f=fixture(t);f.sendError=true;await assert.rejects(f.run());f.sendError=false;f.height=12346;
+  const pending=fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8');f.statuses=[null,null];
+  if(scenario==='stale')f.statusContext=99;
+  if(scenario==='valid')f.height=12345;
+  if(scenario==='conflict')f.validHash=true;
+  if(scenario==='confirmed')f.statuses=[null,{slot:100,err:null,confirmationStatus:'confirmed'}];
+  if(scenario==='outage'){const rpc=f.rpc;f.rpc=(method,params)=>method==='getBlock'?Promise.reject(Error('outage')):rpc(method,params);}
+  await assert.rejects(f.run());assert.equal(f.loads,1);assert.equal(fs.readFileSync(path.join(f.stateDir,'pending.json'),'utf8'),pending);
+ }
+});
+test('finalization racing expiry is reconciled rather than replaced',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());f.height=12346;
+ f.statuses=[null,{slot:100,err:null,confirmationStatus:'finalized'}];
+ assert.equal(await reconcile(f.rpc,f.stateDir,f.record,genesis,{operator:f.operator}),100);assert.equal(f.loads,1);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
+});
+test('history result is honored when signature status index returns null',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());f.height=12346;f.statuses=[null,null];f.historical={slot:100,meta:{err:null}};
+ assert.equal(await reconcile(f.rpc,f.stateDir,f.record,genesis,{operator:f.operator}),100);assert.equal(f.loads,1);
+});
+test('finalized failure archives receipt, raises actionable error and does not sign another transaction in that attempt',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());
+ const receipt=JSON.parse(fs.readFileSync(path.join(f.stateDir,'pending.json')));
+ f.statuses=[{slot:100,err:{InstructionError:[0,'Custom']},confirmationStatus:'finalized'}];
+ await assert.rejects(f.run(),/TRANSACTION_FINALIZED_FAILED/);assert.equal(f.loads,1);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
+ assert.equal(JSON.parse(fs.readFileSync(path.join(f.stateDir,receipt.signature+'.outcome.json'))).outcome,'failed');
+});
+test('tampered wire signature or blockhash fails before resend or signer access',async t=>{
+ for(const field of ['transaction','signature','blockhash']){
+  const f=fixture(t);f.sendError=true;await assert.rejects(f.run());const file=path.join(f.stateDir,'pending.json'),r=JSON.parse(fs.readFileSync(file));
+  r[field]=field==='transaction'?Buffer.from('invalid').toString('base64'):f.operator;fs.writeFileSync(file,JSON.stringify(r));
+  await assert.rejects(f.run());assert.equal(f.loads,1);assert.equal(f.sends.length,1);
+ }
+});
+test('legacy receipt needs exact signature and trusted cutoff plus finalized block-height expiry',async t=>{
+ const f=fixture(t),signature='1'.repeat(64),receipt={record:f.record,genesis,signature};
+ const file=path.join(f.stateDir,'pending.json');fs.writeFileSync(file,JSON.stringify(receipt));
+ f.statuses=[null];await assert.rejects(f.run(),/LEGACY_RECOVERY_REQUIRED/);
+ f.statuses=[null];await assert.rejects(f.run({legacyRecovery:{signature:'2'.repeat(64),beforeSlot:100}}),/LEGACY_RECOVERY_REQUIRED/);
+ f.slot=101;f.statuses=[null];f.height=260;await assert.rejects(f.run({legacyRecovery:{signature,beforeSlot:100}}),/LEGACY_EXPIRY_WAIT/);
+ assert(fs.existsSync(file));assert.equal(f.loads,0);
+ f.statuses=[null,null];f.height=261;
+ await reconcile(f.rpc,f.stateDir,f.record,genesis,{operator:f.operator,legacyRecovery:{signature,beforeSlot:100}});
+ assert(!fs.existsSync(file));assert.deepEqual(JSON.parse(fs.readFileSync(path.join(f.stateDir,signature+'.json'))),receipt);
+ assert.equal(JSON.parse(fs.readFileSync(path.join(f.stateDir,signature+'.legacy-proof.json'))).beforeSlot,100);
+});
+test('crash after archiving but before pending removal reconciles idempotently',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());const r=JSON.parse(fs.readFileSync(path.join(f.stateDir,'pending.json')));
+ fs.writeFileSync(path.join(f.stateDir,r.signature+'.json'),JSON.stringify(r));
+ assert.equal(await reconcile(f.rpc,f.stateDir,f.record,genesis,{operator:f.operator}),100);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
+});
+test('safe diagnostics never expose RPC URL or raw response/signer messages',async()=>{
+ const {rpcClient,safeErrorCode}=await import('./publisher.ts');
+ const original=globalThis.fetch;globalThis.fetch=async()=>{throw Error('https://secret.example/API-KEY');};
+ try{await assert.rejects(rpcClient('https://secret.example/API-KEY')('getBlockHeight'),e=>safeErrorCode(e)==='RPC_getBlockHeight_TRANSPORT_OR_RESPONSE');}finally{globalThis.fetch=original;}
+ assert.equal(safeErrorCode(Error('private key goes here')),'VALIDATION_OR_SIGNER_FAILED');
+});
+
+test('finalized string transaction error is terminal and archived without another signature',async t=>{
+ const f=fixture(t);f.sendError=true;await assert.rejects(f.run());
+ f.statuses=[{slot:100,err:'AccountNotFound',confirmationStatus:'finalized'}];
+ await assert.rejects(f.run(),/TRANSACTION_FINALIZED_FAILED/);assert.equal(f.loads,1);assert(!fs.existsSync(path.join(f.stateDir,'pending.json')));
 });

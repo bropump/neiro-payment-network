@@ -38,4 +38,4 @@ npm test
 npm audit --registry=https://registry.npmjs.org
 ```
 
-`surfpool.mjs` is the optional local-chain integration test. It uses an ephemeral signer, rejects non-loopback RPCs, and requires `EVIDENCE_DIR`. It tests creation, renewal, expiry and rent recovery without loading production keys.
+`surfpool.mjs` is the optional local-chain integration test. It uses an ephemeral signer, rejects non-loopback RPCs, and requires `EVIDENCE_DIR`. It tests a dropped send through blockhash expiry and automatic recovery, then creation, renewal, listing expiry and rent recovery without loading production keys. Start a fresh Surfpool instance for this test: time travel in a reused instance can make its block height and blockhash lifetime disagree; the runner correctly refuses conflicting expiry evidence.

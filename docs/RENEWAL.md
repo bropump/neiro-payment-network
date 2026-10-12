@@ -16,9 +16,9 @@ If you already use a native hourly job, it may invoke `renew` without `--watch` 
 
 - `"status":"finalized"` includes the transaction signature for a completed publication.
 - `"status":"unchanged"` means no renewal is due and no transaction was sent.
-- A journaled signature alone is not finality. Confirm its result before treating the listing as updated.
+- A journaled signature alone is not finality. Confirm its result before treating the listing as updated. `status:error` includes a safe error code and retry interval; raw credential-bearing RPC and signer errors are not logged.
 
-Monitor service errors, remaining 48-hour chain validity and the operator's SOL. RPC outages, a sleeping host, signer errors or lack of SOL can prevent renewal. A current listing does not prove continuous uptime or honest quotes.
+Monitor the last successful onchain renewal, not just whether the process is running. Alert when the signed anchor is 30 hours old, leaving 18 hours before expiry, and verify that alert reaches the operator. Also monitor service errors and the operator's SOL. RPC outages, a sleeping host, signer errors or lack of SOL can prevent renewal. A current listing does not prove continuous uptime or honest quotes.
 
 ## Change fees or update the script
 
@@ -32,7 +32,31 @@ Monitor service errors, remaining 48-hour chain validity and the operator's SOL.
 
 **Config check:** check the URL, signer, payment address, fees and deny entry. Run `protect` on the actual Kora config if needed, then restart every relevant Kora instance. Editing a local copy does not update a remote deployment. Do not weaken authentication or signing policies to make a check pass.
 
-**Pending transaction:** inspect the signature saved in `pending.json` through a trusted finalized RPC. The runner reconciles successful finalized submissions; an ambiguous or failed send requires investigation. Never delete the receipt or switch state directories to force another signature. `finalized.json` preserves the minimum chain slot accepted after a prior publication.
+**Pending transaction:** the runner saves the exact signed transaction, blockhash, last valid block height and identity before sending. On restart it checks the saved signature first. While valid it re-sends only those same bytes, without signing again. Once a finalized block proves expiry, it rechecks historical status and the record before archiving an unobserved attempt and preparing a fresh renewal. RPC failure, stale responses or conflicting evidence preserve the journal. `check` never submits a transaction.
+
+Successful and failed finalized transactions are archived with their outcome. A finalized failure reports `TRANSACTION_FINALIZED_FAILED` and the watch loop waits an hour before another attempt; network fees on failed transactions are not refundable. Pending confirmation, send RPC errors and legacy expiry waits retry after one minute. Other errors retry hourly. `finalized.json` preserves the minimum accepted chain slot. Never delete the receipt or switch state directories to force another signature.
+
+Useful error codes:
+
+| Code | Action |
+| --- | --- |
+| `PENDING_STILL_VALID` / `CONFIRMATION_TIMEOUT` | Keep the worker running; it reconciles/retries the same attempt. |
+| `RPC_*` | Check the named RPC method/provider; credentials remain private. |
+| `TRANSACTION_FINALIZED_FAILED` | Inspect the public signature's transaction error before the next hourly retry. |
+| `RPC_EXPIRY_CONFLICT` / `PENDING_NOT_FINALIZED` | Preserve state; the RPC evidence is inconsistent or not finalized. |
+| `STATE_EEXIST` | Check for another worker or an orphan lock; see below. |
+| `LEGACY_RECOVERY_REQUIRED` | Follow the guarded migration below. |
+| `VALIDATION_OR_SIGNER_FAILED` | Check signer/config and state integrity privately; no raw secret-bearing exception is printed. |
+
+### Recover an old journal without lifetime data
+
+Older runners saved only `{record, genesis, signature}`. Updating does not silently discard these receipts. Finalized results can still reconcile automatically; a missing signature requires an explicit recovery assertion.
+
+1. Stop all old workers. Preserve the state volume and identify the exact pending signature from its journal or the old worker's `journaled` log.
+2. Establish a **trusted finalized slot after that transaction was signed** using deployment/log evidence and chain data. This is an operator assertion that the attempt came from the old publisher, used a recent blockhash from no later than that slot, and did **not** use a durable nonce. A null transaction lookup alone is insufficient. Do not use this route for unknown transactions.
+3. Start the same worker/state with `--recover-legacy-signature SIGNATURE --recover-legacy-before-slot FINALIZED_SLOT` added to its normal `renew --watch` command. Container deployments can set `RECOVER_LEGACY_SIGNATURE` and `RECOVER_LEGACY_BEFORE_SLOT` instead.
+4. The runner waits until more than 160 produced finalized blocks have passed the cutoff, rechecks historical status and the record, and retains the original receipt plus recovery evidence before renewing. Unavailable or conflicting RPC evidence keeps it blocked.
+5. Verify the replacement finalized and is independently discoverable. Remove the two migration options afterward. They match only that exact old signature and do not relax validation for later attempts.
 
 **Crash lock:** Node uses a `runner.lock` directory. Normal completion releases it; a forced crash can leave it. First verify the previous process is dead on every host. Preserve and reconcile any pending transaction, then remove only the orphan lock directory and restart. There is deliberately no clock-based lock expiry.
 

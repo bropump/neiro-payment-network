@@ -16,5 +16,6 @@ try {
     fs.writeFileSync('/tmp/publisher/'+file,Buffer.from(data,'base64'),{mode:0o600});
   process.env.SOLANA_RPC_URL=rpc;
   await main(['renew','--watch','--operator',operator,'--url',url,
-    '--config','/tmp/publisher/kora.toml','--signers-config','/tmp/publisher/signers.toml','--state-dir','/state']);
+    '--config','/tmp/publisher/kora.toml','--signers-config','/tmp/publisher/signers.toml','--state-dir','/state',
+    ...(process.env.RECOVER_LEGACY_SIGNATURE||process.env.RECOVER_LEGACY_BEFORE_SLOT?['--recover-legacy-signature',required('RECOVER_LEGACY_SIGNATURE'),'--recover-legacy-before-slot',required('RECOVER_LEGACY_BEFORE_SLOT')]:[])]);
 }catch{console.error('Private publisher startup failed; check service configuration.');process.exitCode=1;}

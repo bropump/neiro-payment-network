@@ -4,7 +4,7 @@ import path from 'node:path';
 import {parseArgs} from 'node:util';
 import {setTimeout as delay} from 'node:timers/promises';
 import {fileURLToPath} from 'node:url';
-import {GENESIS,rpcClient,termsFromConfig,publish,anchorAt,chainTime,jsonObject,jsonParse,rpcAccount} from './publisher.ts';
+import {GENESIS,rpcClient,termsFromConfig,publish,anchorAt,chainTime,jsonObject,jsonParse,rpcAccount,safeErrorCode} from './publisher.ts';
 import {PROGRAM,MAGIC,recordAddress,readRecord} from '../client/read-record.mjs';
 import {loadSigner} from './signer.ts';
 import assert from 'node:assert/strict';
@@ -16,9 +16,10 @@ export async function main(args: string[]=process.argv.slice(2),env: NodeJS.Proc
     operator:{type:'string'},url:{type:'string'},config:{type:'string',default:'kora.toml'},
     'signers-config':{type:'string',default:'signers.toml'},'signer-name':{type:'string'},
     'state-dir':{type:'string'},genesis:{type:'string',default:GENESIS},
+    'recover-legacy-signature':{type:'string'},'recover-legacy-before-slot':{type:'string'},
     watch:{type:'boolean',default:false},help:{type:'boolean',default:false}
   }});
-  if(v.help){console.log('node runner.ts protect|address|discover|check|renew|publish|close --operator PUBKEY --url HTTPS --config kora.toml --signers-config signers.toml --state-dir PRIVATE_DIR [--watch]\nUse SOLANA_RPC_URL for RPC, Kora signer environment for credentials. --watch checks hourly; unchanged terms sign only after 24 chain hours.');return;}
+  if(v.help){console.log('node runner.ts protect|address|discover|check|renew|publish|close --operator PUBKEY --url HTTPS --config kora.toml --signers-config signers.toml --state-dir PRIVATE_DIR [--watch]\nUse SOLANA_RPC_URL for RPC, Kora signer environment for credentials. --watch checks hourly; unchanged terms sign only after 24 chain hours. Legacy recovery requires --recover-legacy-signature SIG --recover-legacy-before-slot FINALIZED_SLOT (see docs/RENEWAL.md).');return;}
   if(positionals.length!==1)throw Error('one action required');
   const action=positionals[0];
   if(action==='protect'){assert(v.operator,'operator required');if(v.watch)throw Error('watch only supports renew');const result=protectFile(v.config,v.operator);console.log(JSON.stringify(result));console.log('Listing address added or already present. Restart every Kora instance using this key before starting the runner. No transaction sent.');return;}
@@ -38,11 +39,17 @@ export async function main(args: string[]=process.argv.slice(2),env: NodeJS.Proc
   }
   if(!isAction(action)||!v.operator||!v['state-dir']||(action!=='close'&&!v.url))throw Error('missing or invalid command options');
   if(v.watch&&action!=='renew')throw Error('watch only supports renew');
+  let legacyRecovery;
+  if(v['recover-legacy-signature']||v['recover-legacy-before-slot']){
+    assert(action==='renew'&&v['recover-legacy-signature']&&v['recover-legacy-before-slot'],'legacy recovery requires renew, signature and cutoff slot');
+    const beforeSlot=Number(v['recover-legacy-before-slot']);assert(Number.isSafeInteger(beforeSlot)&&beforeSlot>=0,'invalid legacy cutoff');
+    legacyRecovery={signature:v['recover-legacy-signature'],beforeSlot};
+  }
   const stop=new AbortController();let stopping=false;
   const onStop=()=>{stopping=true;stop.abort();};process.on('SIGTERM',onStop);process.on('SIGINT',onStop);
   try {
     do {
-      let stage='configuration';
+      let stage='configuration',retryMs=3600000;
       try {
         let terms;
         if(action!=='close'){
@@ -54,11 +61,16 @@ export async function main(args: string[]=process.argv.slice(2),env: NodeJS.Proc
         }
         stage='chain validation, signing or reconciliation';
         const result=await publish({rpc,operator:v.operator,genesis:v.genesis,terms,stateDir:path.resolve(v['state-dir']),action,
-          loadSigner:()=>loadSigner(fs.readFileSync(v['signers-config'],'utf8'),v['signer-name'],env),notify:x=>console.log(JSON.stringify(x))});
+          legacyRecovery,loadSigner:()=>loadSigner(fs.readFileSync(v['signers-config'],'utf8'),v['signer-name'],env),notify:x=>console.log(JSON.stringify(x))});
         console.log(JSON.stringify(result));
-      }catch{console.error(stage==='live Kora configuration'?'Kora configuration check failed. Check the URL, operator, fees and listing deny entry; restart Kora after editing its config. Nothing submitted.':`Listing check failed during ${stage}. Preserve pending.json and runner.lock; inspect service configuration and finalized chain state before recovery.`);if(!v.watch){process.exitCode=1;return;}}
+      }catch(error){
+        const code=safeErrorCode(error);
+        if(['PENDING_STILL_VALID','PENDING_NOT_FINALIZED','CONFIRMATION_TIMEOUT','LEGACY_EXPIRY_WAIT'].includes(code)||code.startsWith('RPC_sendTransaction_'))retryMs=60000;
+        console.error(JSON.stringify({status:'error',stage,code,retry_seconds:v.watch?retryMs/1000:null,action:'Preserve state; see docs/RENEWAL.md#when-a-check-fails'}));
+        if(!v.watch){process.exitCode=1;return;}
+      }
       if(!v.watch||stopping)break;
-      try{await delay(3600000,undefined,{signal:stop.signal});}catch{break;}
+      try{await delay(retryMs,undefined,{signal:stop.signal});}catch{break;}
     }while(!stopping);
   }finally{process.off('SIGTERM',onStop);process.off('SIGINT',onStop);}
 }
