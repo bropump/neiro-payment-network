@@ -103,3 +103,7 @@ Provision the private parent directory first. This is a conservative single-host
 After Kora responds, verify unchanged message bytes and every required signature; save the transaction ID and fully signed bytes before your broadcast. Use the [reconciliation rules](BUILD-WITH-NEIRO.md#5-submit-and-confirm) for unresolved attempts. A local exception before your own broadcast is still uncertain once Kora has received customer-signed bytes: Kora can broadcast them itself. Keep that operation pending until its outcome is established; a local `NOT_SENT` label is insufficient. An expired blockhash alone does not prove no payment landed. Identical-byte rebroadcast and authorizing a new transaction are different decisions.
 
 The tests exercise a lost response and two competing OS processes, asserting that only one can prepare/release a payment. They do not implement automatic recovery. Real payments still need transaction-local receipt checks and the full client flow.
+
+### Durable journal platform support
+
+The `releasePaymentOnce` filesystem example requires Unix directory `fsync` and private persistent storage. On Windows it fails before preparing or releasing a signature; use a durable transactional store with an exclusive operation claim instead. Do not suppress sync errors to make payments proceed. This restriction belongs to the client journal example, not to the cross-platform operator renewal runner.

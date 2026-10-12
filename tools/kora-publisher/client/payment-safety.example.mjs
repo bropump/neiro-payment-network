@@ -59,7 +59,7 @@ function savePrivate(file, value) {
   syncDirectory(dirname(file));
 }
 
-// Local single-host example: provision a persistent private parent directory.
+// Unix single-host example (directory fsync is required; Windows fails closed): provision a persistent private parent directory.
 // The stable operation directory is an exclusive, permanent claim. An existing
 // directory ALWAYS stops this example, including after timeout, crash or success.
 // No stale-lock deletion, automatic recovery or replacement payment is provided.

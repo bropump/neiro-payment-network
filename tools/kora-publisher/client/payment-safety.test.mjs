@@ -72,7 +72,7 @@ test('captured swap quoted-output or signer mutation is rejected by the instruct
 });
 const attempt={approvedMessageBase64:'AQ==',customerSignedTransactionBase64:'Ag==',operator,
   blockhash:wallet,lastValidBlockHeight:123,maxFeeRaw:'5000000',operation:{transferRaw:'1'}};
-test('lost operator response preserves journal and prevents new signing on restart', async t => {
+test('lost operator response preserves journal and prevents new signing on restart', {skip:process.platform==='win32'?'Unix directory fsync example; Windows rejection tested separately':false}, async t => {
   const dir=mkdtempSync(join(tmpdir(),'npn-once-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
   const op=join(dir,'payment-1');let preparations=0, releases=0;
   await assert.rejects(releasePaymentOnce(op, async()=>{preparations++;return attempt}, async x=>{
@@ -83,14 +83,14 @@ test('lost operator response preserves journal and prevents new signing on resta
   assert.equal(preparations,1);assert.equal(releases,1);
   assert.deepEqual(JSON.parse(readFileSync(join(op,'pending.json'),'utf8')),attempt);
 });
-test('preparation failure leaves operation reserved; no signature is released', async t => {
+test('preparation failure leaves operation reserved; no signature is released', {skip:process.platform==='win32'?'Unix directory fsync example; Windows rejection tested separately':false}, async t => {
   const dir=mkdtempSync(join(tmpdir(),'npn-prepare-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
-  const op=join(dir,'payment');let sent=false;
-  await assert.rejects(releasePaymentOnce(op,async()=>{throw Error('simulation rejected')},async()=>{sent=true}));
-  assert.equal(sent,false);assert.equal(existsSync(join(op,'pending.json')),false);
+  const op=join(dir,'payment');let sent=false,prepared=false;
+  await assert.rejects(releasePaymentOnce(op,async()=>{prepared=true;throw Error('simulation rejected')},async()=>{sent=true}));
+  assert.equal(prepared,true);assert.equal(sent,false);assert.equal(existsSync(join(op,'pending.json')),false);
   await assert.rejects(releasePaymentOnce(op,async()=>attempt,async()=>{}),/EEXIST/);
 });
-test('two processes competing for one operation permit at most one prepare/release', async t => {
+test('two processes competing for one operation permit at most one prepare/release', {skip:process.platform==='win32'?'Unix directory fsync example; Windows rejection tested separately':false}, async t => {
   const dir=mkdtempSync(join(tmpdir(),'npn-concurrent-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
   const file=join(dir,'worker.mjs');
   writeFileSync(file,`import {releasePaymentOnce} from ${JSON.stringify(new URL('./payment-safety.example.mjs',import.meta.url).href)};
@@ -100,4 +100,11 @@ test('two processes competing for one operation permit at most one prepare/relea
   const run=()=>new Promise((resolve,reject)=>{const p=spawn(process.execPath,[file,join(dir,'payment'),join(dir,'calls')],{stdio:'pipe'});let error='';p.stderr.on('data',x=>error+=x);p.on('error',reject);p.on('exit',code=>code===0?resolve():reject(Error(error)));});
   await Promise.all([run(),run()]);
   assert.equal(readFileSync(join(dir,'calls'),'utf8'),'prepare\nrelease\n');
+});
+
+test('Windows rejects unsupported durable directory sync before preparing or releasing signatures', {skip:process.platform!=='win32'}, async t=>{
+ const dir=mkdtempSync(join(tmpdir(),'npn-windows-durability-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
+ let prepared=false,released=false;
+ await assert.rejects(releasePaymentOnce(join(dir,'operation'),async()=>{prepared=true;return attempt},async()=>{released=true}),e=>['EPERM','EINVAL','EISDIR','EACCES'].includes(e.code));
+ assert.equal(prepared,false);assert.equal(released,false);
 });
