@@ -4,13 +4,13 @@
   "upstream": "https://github.com/solana-foundation/kora",
   "tag": "edge",
   "version": "2.2.0-beta.8",
-  "upstream_commit": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
-  "image": "ghcr.io/solana-foundation/kora@sha256:fc465ca4fc97f317f1cdb857dde382ff0ad306af81d287d7805bba67ca35c247",
+  "upstream_commit": "1844c14741866bd654f7e426c418c769cfda67ab",
+  "image": "ghcr.io/solana-foundation/kora@sha256:b3337ff3018e826221c9341b1578a5b68f2ddcd3e3a872eda0fde5e75fc03d47",
   "published_image_platforms": [
     "linux/amd64"
   ],
   "config_sha256": {
-    "kora.toml": "b786fdfc7bfa80ada86373e1ccca79cff0151b5d206a33f8eeed6d551d268637",
+    "kora.toml": "4df8fe35f98bffef45bb27524a9f6b8a689e9f3e61de9e262c6220f695f5a22b",
     "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
   },
   "verification_scope": "Official main image startup and canonical config/signers validation. Historical payment results retain their original image/config scope.",
@@ -30,8 +30,14 @@
     "upstream_issue": "https://github.com/solana-foundation/kora/issues/683"
   },
   "channel": "main",
-  "upstream_main_head": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
-  "image_tag": "d5a7e64",
+  "upstream_main_head": "1844c14741866bd654f7e426c418c769cfda67ab",
+  "image_tag": "1844c14",
   "metadata_minimum_commit": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
-  "runtime_image_digest": "sha256:81e8208694de112163ac67a9987be9f3dca4c83149e805d56619fc38d3911f32"
+  "runtime_image_digest": "sha256:650dea39411d1f5451c0e35f41348f15b5144eb1e30d5d668db2c474a98c8b54",
+  "reviewed_at": "2026-11-10",
+  "request_limits": {
+    "global_per_process_rps": 10,
+    "global_burst_capacity": 10,
+    "per_connection_rps": 10
+  }
 }

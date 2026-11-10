@@ -11,6 +11,8 @@ on:
       - 'scripts/update-bunny-kora.mjs'
       - 'scripts/test-update-bunny-kora.mjs'
       - 'scripts/bunny-metadata-entrypoint.sh'
+      - 'scripts/bunny-rate-limit-entrypoint.sh'
+      - 'scripts/test-rate-limit.mjs'
       - 'scripts/bunny-previous-entrypoint.json'
       - '.github/workflows/kora-main.yml'
       - '.github/workflows/operator-preset.yml'
@@ -25,6 +27,8 @@ on:
       - 'scripts/update-bunny-kora.mjs'
       - 'scripts/test-update-bunny-kora.mjs'
       - 'scripts/bunny-metadata-entrypoint.sh'
+      - 'scripts/bunny-rate-limit-entrypoint.sh'
+      - 'scripts/test-rate-limit.mjs'
       - 'scripts/bunny-previous-entrypoint.json'
       - '.github/workflows/kora-main.yml'
       - '.github/workflows/operator-preset.yml'
@@ -48,6 +52,8 @@ jobs:
           done
       - name: Check Bunny rollout and rollback contracts without network access
         run: node scripts/test-update-bunny-kora.mjs
+      - name: Verify real rate limiting and startup preservation with fixture credentials
+        run: node scripts/test-rate-limit.mjs
       - name: Validate with the pinned official Kora image
         run: node scripts/verify-stock-kora.mjs
 

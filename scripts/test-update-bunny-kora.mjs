@@ -6,8 +6,12 @@ const lock=JSON.parse(readFileSync(new URL('../examples/operator/kora-release.js
 const old='sha256:'+'1'.repeat(64);
 const initial={getConfig:{fee_payers:['public-fixture-payer'],enabled_methods:{sign_transaction:true},validation_config:{price:{type:'margin',margin:0.05},token_2022:{allow_token_metadata_instructions:false}}},getPayerSigner:{signer_pubkey:'public-fixture-payer',payment_address:'public-fixture-payer'}};
 const results=[];
-for(const scenario of ['update-child','update-index','no-op-child','no-op-index','policy-mismatch','patch-error','readiness-timeout','version-mismatch','missing-original-region','container-unready','update-propagation-lag','rollback-propagation-lag']){
-  let clock=0,phase=scenario.startsWith('no-op')?'new':'old',patches=[],cancelled=0,reads=[],publicCalls=0,resolutions=0;
+for(const scenario of ['update-child','update-index','no-op-child','no-op-index','policy-mismatch','patch-error','readiness-timeout','version-mismatch','missing-original-region','container-unready','update-propagation-lag','rollback-propagation-lag','rate-update','rate-policy-mismatch','rate-same-image']){
+  const rate=scenario.startsWith('rate-');
+  const baseline=structuredClone(initial);
+  baseline.getConfig.validation_config.fee_payer_policy={token_2022:{allow_transfer:false}};
+  if(rate)baseline.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;
+  let clock=0,phase=scenario.startsWith('no-op')||scenario==='rate-same-image'?'new':'old',patches=[],cancelled=0,reads=[],publicCalls=0,resolutions=0;
   async function mock(url,options={}){
     const method=options.method??'GET';
     if(url.startsWith('https://api.bunny.net/')){
@@ -29,26 +33,27 @@ for(const scenario of ['update-child','update-index','no-op-child','no-op-index'
     }
     assert.equal(url,'https://public-test.invalid');assert.equal(method,'POST');publicCalls++;
     const m=JSON.parse(options.body).method;assert(['getConfig','getPayerSigner'].includes(m));
-    const s=structuredClone(initial);
-    if(phase==='new'){s.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;s.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];}
-    if(['policy-mismatch','rollback-propagation-lag'].includes(scenario)&&phase==='new')s.getConfig.validation_config.price.margin=99;
+    const s=structuredClone(baseline);
+    if(phase==='new'){s.getConfig.validation_config.fee_payer_policy.token_2022.allow_reallocate=false;s.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;s.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];}
+    if(['policy-mismatch','rollback-propagation-lag','rate-policy-mismatch'].includes(scenario)&&phase==='new')s.getConfig.validation_config.price.margin=99;
     if(scenario==='version-mismatch'&&phase==='new')s.getConfig.validation_config.allowed_transaction_versions=['legacy'];
     if(scenario==='readiness-timeout'&&phase==='new')throw Error('Fixture unavailable');
-    if(scenario==='update-propagation-lag'&&phase==='new'&&clock<10000)return {ok:true,json:async()=>({jsonrpc:'2.0',result:structuredClone(initial[m]),id:1})};
-    if(scenario==='rollback-propagation-lag'&&phase==='old'&&patches.length===2&&clock<15000){s.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;s.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];}
+    if(scenario==='update-propagation-lag'&&phase==='new'&&clock<10000)return {ok:true,json:async()=>({jsonrpc:'2.0',result:structuredClone(baseline[m]),id:1})};
+    if(scenario==='rollback-propagation-lag'&&phase==='old'&&patches.length===2&&clock<15000){s.getConfig.validation_config.fee_payer_policy.token_2022.allow_reallocate=false;s.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;s.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];}
     return {ok:true,json:async()=>({jsonrpc:'2.0',result:s[m],id:1})};
   }
   let value,error;
-  try{value=await updateBunny({app:'public-test-app',key:'public-fixture-token',lock,enableMetadata:true,fetchFn:mock,pause:async ms=>{clock+=ms;},now:()=>clock,timeout:15000,resolveImageTag:async digest=>{assert.equal(digest,old);resolutions++;return 'fixture-old';}});}catch(e){error=e.message;}
-  if(scenario.startsWith('update')){
+  try{value=await updateBunny({app:'public-test-app',key:'public-fixture-token',lock,enableMetadata:true,setRateLimit:rate,fetchFn:mock,pause:async ms=>{clock+=ms;},now:()=>clock,timeout:15000,resolveImageTag:async digest=>{assert.equal(digest,scenario==='rate-same-image'?lock.runtime_image_digest:old);resolutions++;return 'fixture-old';}});}catch(e){error=e.message;}
+  if(scenario.startsWith('update')||['rate-update','rate-same-image'].includes(scenario)){
     assert.equal(value.status,'updated');assert.equal(value.metadata,true);assert.equal(patches.length,1);assert(patches[0].entryPoint.argumentsArray[0].includes('allow_token_metadata_instructions = true'));
   }else if(scenario.startsWith('no-op')){
     assert.equal(value.status,'current');assert.equal(patches.length,0);
   }else{
     assert.equal(error,'Rollout failed; previous image and public settings verified restored');assert.equal(patches.length,2);assert.equal(phase,'old');assert.equal(patches[1].imageDigest,old);assert.equal(patches[1].imageTag,'fixture-old');
-    const original=JSON.parse(readFileSync(new URL('./bunny-previous-entrypoint.json',import.meta.url)));
+    const original=rate?{commandArray:['/bin/sh','-c'],argumentsArray:[readFileSync(new URL('./bunny-metadata-entrypoint.sh',import.meta.url),'utf8')]}:JSON.parse(readFileSync(new URL('./bunny-previous-entrypoint.json',import.meta.url)));
     assert.deepEqual(patches[1].entryPoint,original);
   }
+  if(rate && !error){assert.equal(value.globalRateLimit,10);assert.equal(value.perConnectionRateLimit,10);assert(patches[0].entryPoint.argumentsArray[0].includes('global_rate_limit = 10'));}
   assert.equal(cancelled,patches.length);assert.equal(resolutions,scenario.startsWith('no-op')?0:1);
   results.push({scenario,pass:true,patchCount:patches.length,patchBodiesCancelled:cancelled,platformReads:reads,publicCalls});
 }

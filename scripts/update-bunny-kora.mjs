@@ -14,7 +14,7 @@ function officialImageTag(digest){
 }
 
 
-export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata=false,fetchFn=fetch,pause=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now,timeout=300000,resolveImageTag=officialImageTag}) {
+export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata=false,setRateLimit=false,fetchFn=fetch,pause=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now,timeout=300000,resolveImageTag=officialImageTag}) {
   if(!app || !key)throw Error('Missing Bunny deployment credential/reference');
   if(lock.channel!=='main'||!/^ghcr\.io\/solana-foundation\/kora@sha256:[a-f0-9]{64}$/.test(lock.image)||!/^sha256:[a-f0-9]{64}$/.test(lock.runtime_image_digest)||!/^[a-f0-9]{40}$/.test(lock.upstream_commit))throw Error('Invalid verified main image pin');
   const apiBase=`https://api.bunny.net/mc/apps/${encodeURIComponent(app)}`;
@@ -49,6 +49,9 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   // d5a7 adds this public field with the upstream default; no prior setting is overridden.
   if(!Object.hasOwn(expected.getConfig.validation_config,'allowed_transaction_versions'))
     expected.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];
+  // New upstream default denies sponsor-funded Token-2022 reallocation.
+  const tokenPolicy=expected.getConfig.validation_config.fee_payer_policy?.token_2022;
+  if(tokenPolicy && !Object.hasOwn(tokenPolicy,'allow_reallocate'))tokenPolicy.allow_reallocate=false;
   const needsMetadata=enableMetadata&&!before.getConfig.validation_config.token_2022.allow_token_metadata_instructions;
   const next={imageTag:lock.image_tag,imageDigest:lock.image.split('@')[1]};
   const rollback={imageDigest:previous[0]};
@@ -59,7 +62,13 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
     rollback.entryPoint=JSON.parse(readFileSync(new URL('./bunny-previous-entrypoint.json',import.meta.url),'utf8'));
     expected.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;
   }
-  if([lock.runtime_image_digest,lock.image.split('@')[1]].includes(previous[0])&&!needsMetadata)return {status:'current',commit:lock.upstream_commit,payer:before.getConfig.fee_payers};
+  if(setRateLimit){
+    if(before.getConfig.enabled_methods.sign_transaction!==true || before.getConfig.validation_config.token_2022.allow_token_metadata_instructions!==true)
+      throw Error('Rate-limit rollout requires the established metadata-enabled startup lineage');
+    next.entryPoint={commandArray:['/bin/sh','-c'],argumentsArray:[readFileSync(new URL('./bunny-rate-limit-entrypoint.sh',import.meta.url),'utf8')]};
+    rollback.entryPoint={commandArray:['/bin/sh','-c'],argumentsArray:[readFileSync(new URL('./bunny-metadata-entrypoint.sh',import.meta.url),'utf8')]};
+  }
+  if([lock.runtime_image_digest,lock.image.split('@')[1]].includes(previous[0])&&!needsMetadata&&!setRateLimit)return {status:'current',commit:lock.upstream_commit,payer:before.getConfig.fee_payers};
   rollback.imageTag=await resolveImageTag(previous[0]);
   async function waitFor(digests,expectedState,transientState){
     const accepted=Array.isArray(digests)?digests:[digests];
@@ -71,7 +80,7 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
       let after;try{after=await publicState();}catch{continue;}
       if(!isDeepStrictEqual(after,expectedState)){
         if(isDeepStrictEqual(after,transientState))continue; // Known pre-transition state can lag a ready overview.
-        throw Error('Public payer/settings changed beyond the approved metadata flag');
+        throw Error('Public payer/settings changed beyond the reviewed upstream defaults');
       }
       return {overview,after};
     }
@@ -80,7 +89,7 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   try{
     await patch(ep.containerId,next);
     const {overview,after}=await waitFor([lock.runtime_image_digest,lock.image.split('@')[1]],expected,before);
-    return {status:'updated',commit:lock.upstream_commit,image:lock.image,previousRuntimeDigest:previous[0],payer:after.getConfig.fee_payers,price:after.getConfig.validation_config.price,metadata:after.getConfig.validation_config.token_2022.allow_token_metadata_instructions,regions:overview.regions.map(r=>({region:r.region,status:r.status,instances:r.instances}))};
+    return {status:'updated',commit:lock.upstream_commit,image:lock.image,previousRuntimeDigest:previous[0],payer:after.getConfig.fee_payers,price:after.getConfig.validation_config.price,metadata:after.getConfig.validation_config.token_2022.allow_token_metadata_instructions,...(setRateLimit?{globalRateLimit:10,perConnectionRateLimit:10,rateLimitScope:'per-process'}:{}),regions:overview.regions.map(r=>({region:r.region,status:r.status,instances:r.instances}))};
   }catch{
     console.log(JSON.stringify({stage:'rollback',previousRuntimeDigest:previous[0]}));
     await patch(ep.containerId,rollback);
@@ -91,8 +100,8 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const args=process.argv.slice(2);
-  if(args.some(a=>a!=='--enable-metadata'))throw Error('Usage: update-bunny-kora.mjs [--enable-metadata]');
+  if(args.some(a=>!['--enable-metadata','--set-rate-limit-10'].includes(a)))throw Error('Usage: update-bunny-kora.mjs [--enable-metadata] [--set-rate-limit-10]');
   const lock=JSON.parse(readFileSync(new URL('../examples/operator/kora-release.json',import.meta.url),'utf8'));
-  updateBunny({app:process.env.BUNNY_KORA_APP_ID,key:process.env.BUNNY_KORA_API_KEY,name:process.env.BUNNY_KORA_CONTAINER_NAME||'stock-kora',lock,enableMetadata:args.includes('--enable-metadata')})
+  updateBunny({app:process.env.BUNNY_KORA_APP_ID,key:process.env.BUNNY_KORA_API_KEY,name:process.env.BUNNY_KORA_CONTAINER_NAME||'stock-kora',lock,enableMetadata:args.includes('--enable-metadata'),setRateLimit:args.includes('--set-rate-limit-10')})
     .then(result=>console.log(JSON.stringify(result))).catch(error=>{console.error(error.message);process.exitCode=1;});
 }

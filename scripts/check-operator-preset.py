@@ -22,7 +22,12 @@ for name, expected in lock["config_sha256"].items():
 
 config = tomllib.loads((base / "kora.toml").read_text())
 signers = tomllib.loads((base / "signers.toml").read_text())
+assert config["kora"]["rate_limit"] == 10
+assert config["kora"]["global_rate_limit"] == 10
+assert config["kora"]["plugins"]["enabled"] == []
 v = config["validation"]
+assert v["max_priority_fee_lamports"] == 100000
+assert v["token_2022"]["transfer_hook_policy"] == "deny_all"
 neiro = "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"
 assert v["allowed_tokens"] == [neiro]
 assert v["allowed_spl_paid_tokens"] == [neiro]

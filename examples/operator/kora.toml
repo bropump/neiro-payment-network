@@ -35,18 +35,21 @@ margin = 0.5 # Editable example: sponsored cost plus 50%, paid in NEIRO.
 # included in the transaction quoted/signed by Kora. Separate setup payments
 # made outside Kora are not reimbursed retroactively.
 # Your fee is separate from the SOL spending allowance in [validation].
-# After editing: validate the config, restart Kora, verify with the router
+# After editing: validate the config, restart Kora, verify the live configuration
 # and check a fresh quote. More examples: TUTORIAL.md, section 3.
 
 [kora]
-# Kora request-rate limit (requests per second), separate from router limits.
+# Kora request-rate limit (requests per second), separate from client request limits.
 # Raising it allows more load; it does not increase your RPC provider quota.
-rate_limit = 100
+rate_limit = 10
+# Per-process global token bucket: 10 requests/second, burst capacity 10.
+# Reject excess RPC requests before body reads/authentication with HTTP 429.
+global_rate_limit = 10
 
 [kora.auth]
-# Access controls for private deployments. The public NEIRO router does not
+# Access controls for private deployments. The listing runner does not
 # supply API keys, HMAC signatures or CAPTCHA tokens to operators. Enabling
-# these requirements can prevent router access; keep secrets out of this file.
+# these requirements can prevent runner/client access; keep secrets out of this file.
 # Optional: API key for simple authentication
 # api_key = "your-api-key"
 
@@ -84,7 +87,7 @@ account_ttl = 60                   # Account data TTL in seconds (1 minute)
 price_ttl = 0                     # Token price TTL in seconds (set to 0 to disable price caching while keeping account caching on)
 
 # Which Kora API operations callers can use. Keep the discovery and quote
-# methods enabled for router access. These switches do not grant permissions
+# methods enabled for direct client access. These switches do not grant permissions
 # to spend the payer wallet; transaction policy checks still apply.
 [kora.enabled_methods]
 liveness = true # Health check for the Kora service.
@@ -94,7 +97,7 @@ sign_transaction = true # NEIRO default: validate, sign and return a transaction
 sign_and_send_transaction = true # Validate, sign and submit an approved transaction.
 transfer_transaction = false # Convenience API for building a transfer; disabled here.
 get_blockhash = true # Fetch a recent blockhash needed to prepare a transaction.
-get_config = true # Expose supported methods and policy settings for clients/router.
+get_config = true # Expose supported methods and policy settings for clients.
 get_payer_signer = true # Return the sponsor and payment identities used in preparation.
 get_version = true # Return the Kora version string; not proof of the exact main commit.
 
@@ -103,8 +106,13 @@ get_version = true # Return the Kora version string; not proof of the exact main
 # from what you charge. The SOL allowance is per transaction, not per day,
 # and is not a guarantee that every possible loss is capped at that amount.
 max_allowed_lamports = 250000000 # 0.25 SOL per transaction; operator may choose another allowance
+max_priority_fee_lamports = 100000 # 0.0001 SOL maximum priority fee per transaction
 max_signatures = 10 # Maximum transaction signatures, including the sponsor.
 price_source = "Jupiter" # Converts sponsored costs to token prices; needs your Jupiter key.
+max_price_staleness_slots = 0 # Use Jupiter pricing without an oracle-age cutoff.
+# NEIRO can have an old reference price even when swap quotes are available.
+# This accepts that risk; it does not guarantee current prices or set quote expiry.
+# Choose a positive slot limit if you prefer rejecting older prices.
 allow_durable_transactions = false # Reject durable-nonce transactions (which can remain valid longer).
 cross_cluster_check = false # Optional cross-network check; adds RPC calls when enabled.
 # Other Solana cluster RPCs used by the cross-cluster check; this list does
@@ -126,7 +134,11 @@ allowed_tokens = [
 # Tokens accepted to reimburse the operator: NEIRO for this network.
 allowed_spl_paid_tokens = ["CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"]
 #allowed_spl_paid_tokens = "All"  # Allow any token to be used for payment,
-disallowed_accounts = [] # Explicitly blocked account addresses; none listed here.
+# Before publishing an SPL Record listing, add YOUR derived listing account here.
+# Add it with: node runner.ts protect --operator YOUR_PUBLIC_KEY --config /PRIVATE/kora.toml
+# Keep existing deny entries, then restart every Kora instance using that signer.
+# See docs/SPL-RECORD-LISTINGS.md. Do not deny the whole Record program.
+disallowed_accounts = [] # Operator-specific; an empty list does not protect a listing.
 # require_one_of_programs = []  # At least one of these programs must be called. Each must also appear in allowed_programs.
 
 # Permissions over YOUR sponsor wallet, not general user-wallet permissions.
@@ -174,6 +186,7 @@ allow_unwrap_lamports = false    # Allow fee payer to be authority in SPL Unwrap
 
 # The same payer restrictions for Token-2022, Solana's extended token program.
 [validation.fee_payer_policy.token_2022]
+allow_reallocate = false        # Do not sponsor Token-2022 account reallocation
 allow_transfer = false           # Allow fee payer to be source in Token2022 transfers
 allow_burn = false               # Allow fee payer to burn Token2022 tokens
 allow_close_account = false      # Allow fee payer to close Token2022 accounts
