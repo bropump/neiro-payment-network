@@ -46,6 +46,8 @@ The agent must install and supervise a private adapter that adds the Bearer toke
 
 ## Install Kora and the listing runner
 
+The [reviewed image manifest](../examples/operator/kora-release.json) records the 10 November 2026 main-build pin. Compare it with current upstream main before installing. The [request-limit guidance](../CONFIGURATION.md#request-limits-and-reviewed-kora-build) explains the template’s 10 requests/second per-process limit and HTTP 429 handling.
+
 Use the container installation and Node runner commands in [AGENTS.md step 1](../AGENTS.md#1-install-latest-upstream-kora-and-the-runner). The native alternative follows.
 
 **Native installation:** when a container is unsuitable, install Rust and upstream's build prerequisites, then build the exact current-main revision into a dedicated installation directory. This is a Kora build; the Node listing runner needs no compilation:

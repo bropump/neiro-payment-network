@@ -45,6 +45,24 @@ Resolve current official upstream main on installation and during the host's fiv
 
 Fees and spending allowances belong to the operator. The example 50% and recommended 0.25 SOL are not network requirements. Edit a private copy for your settings and check admission after deployment. Raising the allowance alone does not guarantee launches will pass Kora validation.
 
+## Request limits and reviewed Kora build
+
+The [reviewed image pin](examples/operator/kora-release.json) records official Kora main commit `1844c14741866bd654f7e426c418c769cfda67ab`, reviewed on **10 November 2026**, with its immutable image digest and configuration hashes. The binary still reports `2.2.0-beta.8`; use the source SHA and digest to distinguish main builds. Continue checking current upstream main during installation and updates.
+
+The canonical template uses:
+
+```toml
+[kora]
+rate_limit = 10
+global_rate_limit = 10
+```
+
+`global_rate_limit` is a token bucket **per Kora process**: capacity 10, refill 10 requests per second. It rejects excess requests with HTTP 429 before reading bodies or authenticating. The older `rate_limit` controls each connection. These count RPC calls, including config reads, quotes and signing, **not completed payments**. GET `/liveness` and the metrics endpoint bypass the global bucket. Separate processes/regions have separate buckets; this is not a network-wide 10-request cap. Clients should back off on 429 and reconcile uncertain signed submissions before retrying.
+
+The November update includes global limiting, corrected nonce-withdrawal accounting, Token-2022 reallocation gating and transfer-hook validation fixes. The template explicitly keeps `allow_reallocate = false` and `transfer_hook_policy = "deny_all"`. The new `create_account_only_via` plugin remains disabled in the broad-program profile: enabling it rejects top-level sponsor-funded account/ATA creation, including existing setup patterns. A restricted operator can evaluate it separately with an explicit trusted-program list and suitable transfer permissions. It does not replace the still-unmerged `sponsor_only_programs` proposal.
+
+Source: [upstream changes since the previous pin](https://github.com/solana-foundation/kora/compare/d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e...1844c14741866bd654f7e426c418c769cfda67ab).
+
 ## Protect the listing and apply changes
 
 Before serving requests, run `node runner.ts protect --operator YOUR_OPERATOR_PUBLIC_KEY --config /PRIVATE/kora.toml` from `tools/kora-publisher/script`. It derives the operator's listing address and adds it to `validation.disallowed_accounts`. Restart every Kora instance sharing that signer and verify an unsigned, non-asset-moving request touching the listing reaches validation and is rejected specifically for that account. Do not customer-sign an asset-moving diagnostic probe; a sign-only endpoint can still broadcast it. If an earlier validation error prevents this check, report it untested. A file edit alone does not prove protection. The [setup procedure](AGENTS.md#3-protect-the-listing-then-start-kora) includes the checks.

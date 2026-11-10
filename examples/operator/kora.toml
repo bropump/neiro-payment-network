@@ -41,7 +41,10 @@ margin = 0.5 # Editable example: sponsored cost plus 50%, paid in NEIRO.
 [kora]
 # Kora request-rate limit (requests per second), separate from client request limits.
 # Raising it allows more load; it does not increase your RPC provider quota.
-rate_limit = 100
+rate_limit = 10
+# Per-process global token bucket: 10 requests/second, burst capacity 10.
+# Reject excess RPC requests before body reads/authentication with HTTP 429.
+global_rate_limit = 10
 
 [kora.auth]
 # Access controls for private deployments. The listing runner does not
@@ -183,6 +186,7 @@ allow_unwrap_lamports = false    # Allow fee payer to be authority in SPL Unwrap
 
 # The same payer restrictions for Token-2022, Solana's extended token program.
 [validation.fee_payer_policy.token_2022]
+allow_reallocate = false        # Do not sponsor Token-2022 account reallocation
 allow_transfer = false           # Allow fee payer to be source in Token2022 transfers
 allow_burn = false               # Allow fee payer to burn Token2022 tokens
 allow_close_account = false      # Allow fee payer to close Token2022 accounts

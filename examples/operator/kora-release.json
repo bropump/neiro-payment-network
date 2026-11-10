@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "profile": "neiro-broad-programs",
+  "upstream": "https://github.com/solana-foundation/kora",
+  "tag": "edge",
+  "version": "2.2.0-beta.8",
+  "upstream_commit": "1844c14741866bd654f7e426c418c769cfda67ab",
+  "image": "ghcr.io/solana-foundation/kora@sha256:b3337ff3018e826221c9341b1578a5b68f2ddcd3e3a872eda0fde5e75fc03d47",
+  "published_image_platforms": [
+    "linux/amd64"
+  ],
+  "config_sha256": {
+    "kora.toml": "4df8fe35f98bffef45bb27524a9f6b8a689e9f3e61de9e262c6220f695f5a22b",
+    "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
+  },
+  "verification_scope": "Official main image startup and canonical config/signers validation. Historical payment results retain their original image/config scope.",
+  "update_policy": "Track the latest successfully published upstream main image. Resolve edge at every installation/update, verify its merged revision, and pin that digest for the running process. Check for updates every five minutes; validate before replacement and retain rollback on failure.",
+  "operator_settings": "Fee mode/price and per-transaction allowance are operator choices. CI checks the canonical example template, not customized operator files.",
+  "planned_program_policy": {
+    "status": "pending_upstream_main_merge_and_validation",
+    "upstream_pr": "https://github.com/solana-foundation/kora/pull/692",
+    "sponsor_only_programs": "All",
+    "allowed_programs": "Explicit sponsor-participation list; never All for this policy",
+    "activation_requirements": [
+      "Resolve an official merged main image supporting the setting and update canonical config hashes",
+      "Verify router admission and health policy support",
+      "Validate representative payments, swaps, launches and prohibited sponsor participation"
+    ],
+    "enabled_in_current_template": false,
+    "upstream_issue": "https://github.com/solana-foundation/kora/issues/683"
+  },
+  "channel": "main",
+  "upstream_main_head": "1844c14741866bd654f7e426c418c769cfda67ab",
+  "image_tag": "1844c14",
+  "metadata_minimum_commit": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
+  "runtime_image_digest": "sha256:650dea39411d1f5451c0e35f41348f15b5144eb1e30d5d668db2c474a98c8b54",
+  "reviewed_at": "2026-11-10",
+  "request_limits": {
+    "global_per_process_rps": 10,
+    "global_burst_capacity": 10,
+    "per_connection_rps": 10
+  }
+}

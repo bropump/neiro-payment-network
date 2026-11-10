@@ -56,6 +56,8 @@ Reusing the existing authorized PayBox wallet was straightforward: load its prof
 
 ## Set up your operator
 
+[Reviewed Kora build and request limits (10 November 2026)](CONFIGURATION.md#request-limits-and-reviewed-kora-build): immutable main-build pin, 10 RPC requests/second per process, and the upgrade’s compatibility boundaries.
+
 **You choose where it runs, which wallet it uses and what you charge. Your agent does the technical setup.** An operator spends SOL to sponsor customers’ transactions and receives NEIRO in return.
 
 1. **Pick a computer or cloud host.** Tell your agent “use this Mac”, “use my Linux server” or “help me choose hosting”. PCs and Raspberry Pis need a supported Kora setup; your agent checks compatibility. The machine must stay online to serve customers.

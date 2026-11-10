@@ -34,6 +34,10 @@ jobs:
           git fetch origin main --depth=1
           git show FETCH_HEAD:examples/operator/kora.toml > examples/operator/kora.toml
           git show FETCH_HEAD:examples/operator/signers.toml > examples/operator/signers.toml
+          # Keep reviewed hashes with their matching public templates.
+          git show FETCH_HEAD:examples/operator/kora-release.json > examples/operator/kora-release.json
+      - name: Test rollout and rollback contracts
+        run: node scripts/test-update-bunny-kora.mjs
       - name: Resolve the latest successfully published upstream main image
         if: ${{ !inputs.enable_metadata }}
         env:
