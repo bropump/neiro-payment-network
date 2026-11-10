@@ -5,6 +5,13 @@ import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
 
+function changedFields(a,b,path=''){
+  if(isDeepStrictEqual(a,b))return [];
+  if(a&&b&&typeof a==='object'&&typeof b==='object'&&!Array.isArray(a)&&!Array.isArray(b))
+    return [...new Set([...Object.keys(a),...Object.keys(b)])].flatMap(k=>changedFields(a[k],b[k],path?path+'.'+k:k));
+  return [path];
+}
+
 function officialImageTag(digest){
   // Public registry metadata only, never platform/container configuration.
   const metadata=JSON.parse(execFileSync('docker',['buildx','imagetools','inspect','--format','{{json .Image}}',`ghcr.io/solana-foundation/kora@${digest}`],{encoding:'utf8',timeout:120000}));
@@ -80,6 +87,7 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
       let after;try{after=await publicState();}catch{continue;}
       if(!isDeepStrictEqual(after,expectedState)){
         if(isDeepStrictEqual(after,transientState))continue; // Known pre-transition state can lag a ready overview.
+        console.log(JSON.stringify({stage:'unexpected-public-fields',fields:changedFields(expectedState,after)}));
         throw Error('Public payer/settings changed beyond the reviewed upstream defaults');
       }
       return {overview,after};
@@ -90,8 +98,8 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
     await patch(ep.containerId,next);
     const {overview,after}=await waitFor([lock.runtime_image_digest,lock.image.split('@')[1]],expected,before);
     return {status:'updated',commit:lock.upstream_commit,image:lock.image,previousRuntimeDigest:previous[0],payer:after.getConfig.fee_payers,price:after.getConfig.validation_config.price,metadata:after.getConfig.validation_config.token_2022.allow_token_metadata_instructions,...(setRateLimit?{globalRateLimit:10,perConnectionRateLimit:10,rateLimitScope:'per-process'}:{}),regions:overview.regions.map(r=>({region:r.region,status:r.status,instances:r.instances}))};
-  }catch{
-    console.log(JSON.stringify({stage:'rollback',previousRuntimeDigest:previous[0]}));
+  }catch(error){
+    console.log(JSON.stringify({stage:'rollback',previousRuntimeDigest:previous[0],reason:error.message}));
     await patch(ep.containerId,rollback);
     try{await waitFor(previous[0],before,expected);}catch{throw Error('Rollout failed; rollback requested but health not confirmed');}
     throw Error('Rollout failed; previous image and public settings verified restored');
