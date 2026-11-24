@@ -3,9 +3,9 @@
   "profile": "neiro-broad-programs",
   "upstream": "https://github.com/solana-foundation/kora",
   "tag": "edge",
-  "version": "2.2.0-beta.8",
-  "upstream_commit": "db7bca1bc4aa5dd0afd9aa442069f98e841320d6",
-  "image": "ghcr.io/solana-foundation/kora@sha256:44296ae1fc7e16ca8d28c513790d82ff36254cdeddf1d9264fc962e156612c9b",
+  "version": "3.0.0",
+  "upstream_commit": "04ce15151238afdcf0e46e55d53f5de43b4cd320",
+  "image": "ghcr.io/solana-foundation/kora@sha256:248967356e06a046def79d20aabf62f2d8a6fbba1ca9cd3e7b84807683302f0c",
   "published_image_platforms": [
     "linux/amd64"
   ],
@@ -30,10 +30,10 @@
     "upstream_issue": "https://github.com/solana-foundation/kora/issues/683"
   },
   "channel": "main",
-  "upstream_main_head": "db7bca1bc4aa5dd0afd9aa442069f98e841320d6",
-  "image_tag": "db7bca1",
+  "upstream_main_head": "04ce15151238afdcf0e46e55d53f5de43b4cd320",
+  "image_tag": "04ce151",
   "metadata_minimum_commit": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
-  "runtime_image_digest": "sha256:467304c7284ae29ebbcef0468f5a053d8854fdf1a7cd62c1b9139ec849fe28d9",
+  "runtime_image_digest": "sha256:19b87202e04bbcdd34c9246748f587093a2f9050e48ab7cc4b7d90d1be22da52",
   "reviewed_at": "2026-11-10",
   "request_limits": {
     "global_per_process_rps": 10,
