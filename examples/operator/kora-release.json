@@ -4,8 +4,8 @@
   "upstream": "https://github.com/solana-foundation/kora",
   "tag": "edge",
   "version": "2.2.0-beta.8",
-  "upstream_commit": "938b9b26be9a991b0ca591d9b20a8a945843915f",
-  "image": "ghcr.io/solana-foundation/kora@sha256:c4e19fe9f480cef1e2b54039fe76aba5ea287241817d6fe9a5ddaaf4ac01b55d",
+  "upstream_commit": "db7bca1bc4aa5dd0afd9aa442069f98e841320d6",
+  "image": "ghcr.io/solana-foundation/kora@sha256:44296ae1fc7e16ca8d28c513790d82ff36254cdeddf1d9264fc962e156612c9b",
   "published_image_platforms": [
     "linux/amd64"
   ],
@@ -30,10 +30,10 @@
     "upstream_issue": "https://github.com/solana-foundation/kora/issues/683"
   },
   "channel": "main",
-  "upstream_main_head": "938b9b26be9a991b0ca591d9b20a8a945843915f",
-  "image_tag": "938b9b2",
+  "upstream_main_head": "db7bca1bc4aa5dd0afd9aa442069f98e841320d6",
+  "image_tag": "db7bca1",
   "metadata_minimum_commit": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
-  "runtime_image_digest": "sha256:ccaa8230252091bd86835d8aff880f482c287008df742a6a6053a2279b31fd96",
+  "runtime_image_digest": "sha256:467304c7284ae29ebbcef0468f5a053d8854fdf1a7cd62c1b9139ec849fe28d9",
   "reviewed_at": "2026-11-10",
   "request_limits": {
     "global_per_process_rps": 10,
