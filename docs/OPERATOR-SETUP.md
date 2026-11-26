@@ -46,7 +46,7 @@ The agent must install and supervise a private adapter that adds the Bearer toke
 
 ## Install Kora and the listing runner
 
-The [reviewed image manifest](../examples/operator/kora-release.json) records the 10 November 2026 main-build pin. Compare it with current upstream main before installing. The [request-limit guidance](../CONFIGURATION.md#request-limits-and-reviewed-kora-build) explains the template’s 10 requests/second per-process limit and HTTP 429 handling.
+The [reviewed image manifest](../examples/operator/kora-release.json) records the image digest and source revision from the latest verified Bunny rollout. Compare it with current upstream main before installing. The [operator guidance](../CONFIGURATION.md#request-limits-and-reviewed-kora-build) covers Kora 3.0 payment and signing checks, the 10 requests/second per-process limit, and HTTP 429 handling.
 
 Use the container installation and Node runner commands in [AGENTS.md step 1](../AGENTS.md#1-install-latest-upstream-kora-and-the-runner). The native alternative follows.
 
