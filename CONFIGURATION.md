@@ -47,7 +47,17 @@ Fees and spending allowances belong to the operator. The example 50% and recomme
 
 ## Request limits and reviewed Kora build
 
-The [reviewed image pin](examples/operator/kora-release.json) records official Kora main commit `1844c14741866bd654f7e426c418c769cfda67ab`, reviewed on **10 November 2026**, with its immutable image digest and configuration hashes. The binary still reports `2.2.0-beta.8`; use the source SHA and digest to distinguish main builds. Continue checking current upstream main during installation and updates.
+The [operator release manifest](examples/operator/kora-release.json) identifies the official image, source revision and reviewed configuration hashes. On 26 November 2026, the [guarded Bunny rollout](https://github.com/bropump/neiro-payment-network/actions/runs/45794145442) deployed upstream commit `2264897` (Kora 3.0.0) in Germany, New York and Sydney. Other operators manage their own upgrades.
+
+**Kora 3.0 payment and signing rules**
+
+- Keep NEIRO in both the sponsor token allowlist and the accepted payment mints. Use a checked transfer into the payment address’s NEIRO associated token account (ATA). Its explicit close authority must be absent, or equal to a separate payment address distinct from the fee payer. If payment and fee payer coincide and token close or authority changes are allowed, only the fee payer’s ATA qualifies.
+- Kora now counts additional sponsor outflows when enforcing spending limits and margin pricing. A bundle shares one outflow allowance across its transactions. Re-quote the complete operation after account setup, priority fees or token transfer fees change. The default profile has bundles and Lighthouse disabled.
+- For direct submission, every required co-signer must supply a valid signature before calling `signAndSendTransaction` or `signAndSendBundle`. Clients using a Lighthouse-enabled operator must inspect any assertions added by Kora and obtain signatures for the final message. With the standard exact-message client, reject changes and stop.
+- Fee-payer authority for Token-2022 metadata/group initialization and withheld-fee withdrawals is disabled in the template. Enabling ordinary metadata instructions does not grant the sponsor either authority. Recheck any launch that uses the operator as an authority. Standard NEIRO reimbursement uses classic SPL Token.
+- Construct transfers in the client. Kora 3.0 removed the `transferTransaction` RPC. `cross_cluster_endpoints` is still a private configuration option and is omitted from `getConfig`.
+
+[Upstream Kora 3.0 release notes](https://github.com/solana-foundation/kora/releases/tag/v3.0.0) cover additional signer, Redis, pricing and deployment changes.
 
 The canonical template uses:
 
@@ -59,9 +69,15 @@ global_rate_limit = 10
 
 `global_rate_limit` is a token bucket **per Kora process**: capacity 10, refill 10 requests per second. It rejects excess requests with HTTP 429 before reading bodies or authenticating. The older `rate_limit` controls each connection. These count RPC calls, including config reads, quotes and signing, **not completed payments**. GET `/liveness` and the metrics endpoint bypass the global bucket. Separate processes/regions have separate buckets; this is not a network-wide 10-request cap. Clients should back off on 429 and reconcile uncertain signed submissions before retrying.
 
-The November update includes global limiting, corrected nonce-withdrawal accounting, Token-2022 reallocation gating and transfer-hook validation fixes. The template explicitly keeps `allow_reallocate = false` and `transfer_hook_policy = "deny_all"`. The new `create_account_only_via` plugin remains disabled in the broad-program profile: enabling it rejects top-level sponsor-funded account/ATA creation, including existing setup patterns. A restricted operator can evaluate it separately with an explicit trusted-program list and suitable transfer permissions. It does not replace the still-unmerged `sponsor_only_programs` proposal.
+The profile retains global request limits, nonce-withdrawal accounting, limits on Token-2022 reallocation, and transfer-hook checks. The template explicitly keeps `allow_reallocate = false` and `transfer_hook_policy = "deny_all"`. The new `create_account_only_via` plugin remains disabled in the broad-program profile: enabling it rejects top-level sponsor-funded account/ATA creation, including existing setup patterns. A restricted operator can evaluate it separately with an explicit trusted-program list and suitable transfer permissions. It does not replace the still-unmerged `sponsor_only_programs` proposal.
 
-Source: [upstream changes since the previous pin](https://github.com/solana-foundation/kora/compare/d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e...1844c14741866bd654f7e426c418c769cfda67ab).
+Historical reference: [upstream changes in the November 10 review](https://github.com/solana-foundation/kora/compare/d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e...1844c14741866bd654f7e426c418c769cfda67ab).
+
+### Payment checks on the 3.0.0 image
+
+On 26 November, two paid NEIRO transfers settled on an isolated Surfpool ledger using the exact Bunny image, synthetic balances and a Mock price oracle. Both used a checked reimbursement transfer, an invoice memo and a merchant transfer with a reference. In the operator-first case the client verified the original message and operator signature before adding the customer's signature and submitting. In the customer-first case Kora verified the co-signer and submitted through `signAndSendTransaction`. Each recipient received 1 NEIRO, each operator reimbursement matched its 0.0202 NEIRO quote, and the customer spent zero SOL. The mock price applies only to the fixture.
+
+On mainnet the live operator returned version 3.0.0 and a routed unsigned quote after the deployment. Mainnet settlement and specialized launch, swap and bundle paths were outside this check. Earlier application reports retain their original version and test dates.
 
 ## Protect the listing and apply changes
 

@@ -72,7 +72,7 @@ kora --config /PRIVATE/kora.toml config validate --signers-config /PRIVATE/signe
 kora --config /PRIVATE/kora.toml rpc initialize-atas --signers-config /PRIVATE/signers.toml --fee-payer-key YOUR_OPERATOR_PUBLIC_KEY
 ```
 
-Inspect multi-signer ATA scope before submitting. Reuse existing ATAs. The operator needs SOL and a NEIRO receiving account, not an initial NEIRO deposit. Prepare a separate customer's NEIRO for the authorized payment test.
+Inspect multi-signer ATA scope before submitting. Reuse existing ATAs. For paid Kora 3.0 operators, verify the NEIRO receipt ATA’s token owner, mint and close authority against the [payment rules](CONFIGURATION.md#request-limits-and-reviewed-kora-build) before accepting traffic. The operator needs SOL and a NEIRO receiving account, not an initial NEIRO deposit. Prepare a separate customer's NEIRO for the authorized payment test.
 
 **PASS:** config/signers validate; the chosen wallet, SOL balance and NEIRO receipt account are independently confirmed on the intended chain.
 

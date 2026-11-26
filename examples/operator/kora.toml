@@ -95,7 +95,6 @@ estimate_transaction_fee = true # Quote the transaction cost and reimbursement b
 get_supported_tokens = true # List tokens advertised by this Kora service.
 sign_transaction = true # NEIRO default: validate, sign and return a transaction without submitting it.
 sign_and_send_transaction = true # Validate, sign and submit an approved transaction.
-transfer_transaction = false # Convenience API for building a transfer; disabled here.
 get_blockhash = true # Fetch a recent blockhash needed to prepare a transaction.
 get_config = true # Expose supported methods and policy settings for clients.
 get_payer_signer = true # Return the sponsor and payment identities used in preparation.
@@ -186,6 +185,8 @@ allow_unwrap_lamports = false    # Allow fee payer to be authority in SPL Unwrap
 
 # The same payer restrictions for Token-2022, Solana's extended token program.
 [validation.fee_payer_policy.token_2022]
+allow_initialize_interface_extension = false # Deny using the sponsor as metadata or group initialization authority.
+allow_withdraw_withheld_tokens = false # Deny using the sponsor as withheld-fee withdrawal authority.
 allow_reallocate = false        # Do not sponsor Token-2022 account reallocation
 allow_transfer = false           # Allow fee payer to be source in Token2022 transfers
 allow_burn = false               # Allow fee payer to burn Token2022 tokens

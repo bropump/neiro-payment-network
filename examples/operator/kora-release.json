@@ -10,7 +10,7 @@
     "linux/amd64"
   ],
   "config_sha256": {
-    "kora.toml": "4df8fe35f98bffef45bb27524a9f6b8a689e9f3e61de9e262c6220f695f5a22b",
+    "kora.toml": "8793ad119d3cc44df9ea430bc5feab83a9b69abaf7c6ff7105b986775f39da25",
     "signers.toml": "40bcb4beb2c35ee51f803e1cb4cdfa31dcb142f5681ded359ba8df99bdebe711"
   },
   "verification_scope": "Official main image startup and canonical config/signers validation. Historical payment results retain their original image/config scope.",
@@ -34,7 +34,7 @@
   "image_tag": "2264897",
   "metadata_minimum_commit": "d5a7e64b9e5603cfea5d4c5196553a60f19f9f7e",
   "runtime_image_digest": "sha256:fd3de7e90f0c6c444933af7c568b5549e579a66397c65b63b0ba0a33833c77ee",
-  "reviewed_at": "2026-11-10",
+  "reviewed_at": "2026-11-26",
   "request_limits": {
     "global_per_process_rps": 10,
     "global_burst_capacity": 10,

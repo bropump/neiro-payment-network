@@ -56,7 +56,7 @@ Reusing the existing authorized PayBox wallet was straightforward: load its prof
 
 ## Set up your operator
 
-[Reviewed Kora build and request limits (10 November 2026)](CONFIGURATION.md#request-limits-and-reviewed-kora-build): immutable main-build pin, 10 RPC requests/second per process, and the upgrade’s compatibility boundaries.
+The [operator release manifest](examples/operator/kora-release.json) identifies the verified Bunny image. See the [Kora 3.0 operator changes and request limits](CONFIGURATION.md#request-limits-and-reviewed-kora-build) before updating another operator.
 
 **You choose where it runs, which wallet it uses and what you charge. Your agent does the technical setup.** An operator spends SOL to sponsor customers’ transactions and receives NEIRO in return.
 

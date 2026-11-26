@@ -57,6 +57,8 @@ The [reference quote checker](../tools/kora-publisher/client/README.md) covers t
 
 Do not infer rent from the presence of a creation instruction. Read and validate the actual account: an existing ATA needs zero new rent, including when the builder emits `CreateIdempotent`. If the quote still charges that rent, reject it; safely omit redundant unsigned setup and re-quote, or stop if the builder cannot be adapted. [Worked check](CLIENT-PAYMENT-CHECKS.md#1-charge-account-rent-only-when-it-is-actually-needed).
 
+For a paid Kora 3.0 transfer, derive the payment address’s NEIRO ATA and read it from Solana RPC. Check the token program, mint, token owner and close authority. An explicit close authority is eligible only when it equals the payment address and that address is separate from the fee payer. Use a checked transfer with the expected mint and decimals. Re-quote the completed message with the actual reimbursement included.
+
 ### 4. Approve and sign
 
 **Keep discovery, quote comparisons and diagnostic probes unsigned.** Releasing a customer-signed payment to Kora authorizes that operator to complete and broadcast it, even when the method is called `signTransaction`. Only release the one approved payment to the selected operator. Normal clients do not need to run operator rejection probes before each payment; use the [isolated integration checks](#test-your-client-before-use) when developing or validating an integration.
@@ -71,7 +73,7 @@ If the blockhash expires before releasing any customer signature, rebuild and re
 
 ### 5. Submit and confirm
 
-With Kora’s `signTransaction`, require the returned message to match the approved bytes and require **every required signature to be present and valid** before broadcasting. An option that permits missing signatures is insufficient. Derive the transaction ID by base58-encoding the first signature after Kora signs; a raw byte buffer, base64 or hex string is not the RPC transaction ID. With `signAndSendTransaction`, Kora broadcasts: reconcile its returned ID and independently check the exact transaction, signatures and effects through RPC.
+With Kora’s `signTransaction`, require the returned message to match the approved bytes and require **every required signature to be present and valid** before broadcasting. An option that permits missing signatures is insufficient. Derive the transaction ID by base58-encoding the first signature after Kora signs; a raw byte buffer, base64 or hex string is not the RPC transaction ID. Kora 3.0 verifies every required external signature before `signAndSendTransaction` and `signAndSendBundle`. If a Lighthouse-enabled operator modifies a message during signing, verify the added assertions and obtain signatures on the final bytes through a client that supports this flow. An exact-message client must reject a modified message. With `signAndSendTransaction`, Kora broadcasts: reconcile its returned ID and independently check the exact transaction, signatures and effects through RPC.
 
 **Save recovery state before sending any customer signature to Kora**, including `signTransaction`, not just before your own RPC broadcast. Durably save the operation ID, exact approved message and customer-signed bytes, selected operator, amounts, fee cap, blockhash and last valid block height. Add the expected transaction signature and fully signed bytes when available, before broadcasting them. Keep signed bytes private; they can authorize execution.
 
