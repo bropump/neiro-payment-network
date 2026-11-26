@@ -59,6 +59,16 @@ export async function updateBunny({app,key,name='stock-kora',lock,enableMetadata
   // New upstream default denies sponsor-funded Token-2022 reallocation.
   const tokenPolicy=expected.getConfig.validation_config.fee_payer_policy?.token_2022;
   if(tokenPolicy && !Object.hasOwn(tokenPolicy,'allow_reallocate'))tokenPolicy.allow_reallocate=false;
+  // Reviewed v3.0.0 transition. Keep the actual baseline intact for rollback.
+  // cross_cluster_endpoints remains a local config setting, omitted from the RPC response.
+  if (lock.upstream_commit === '22648976aa14f8b1284f5fd427d9e17857ae234f') {
+    delete expected.getConfig.validation_config.cross_cluster_endpoints;
+    if (tokenPolicy) {
+      for (const field of ['allow_initialize_interface_extension', 'allow_withdraw_withheld_tokens']) {
+        if (!Object.hasOwn(tokenPolicy, field)) tokenPolicy[field] = false;
+      }
+    }
+  }
   const needsMetadata=enableMetadata&&!before.getConfig.validation_config.token_2022.allow_token_metadata_instructions;
   const next={imageTag:lock.image_tag,imageDigest:lock.image.split('@')[1]};
   const rollback={imageDigest:previous[0]};

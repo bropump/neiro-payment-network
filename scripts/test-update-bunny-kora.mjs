@@ -3,13 +3,22 @@ import {readFileSync} from 'node:fs';
 import {updateBunny} from './update-bunny-kora.mjs';
 
 const lock=JSON.parse(readFileSync(new URL('../examples/operator/kora-release.json',import.meta.url)));
+// The workflow initially checks out the previous public pin. Test both sides
+// of this migration independently of which pin is currently published.
+const release3 = '22648976aa14f8b1284f5fd427d9e17857ae234f';
 const old='sha256:'+'1'.repeat(64);
 const initial={getConfig:{fee_payers:['public-fixture-payer'],enabled_methods:{sign_transaction:true},validation_config:{price:{type:'margin',margin:0.05},token_2022:{allow_token_metadata_instructions:false}}},getPayerSigner:{signer_pubkey:'public-fixture-payer',payment_address:'public-fixture-payer'}};
 const results=[];
-for(const scenario of ['update-child','update-index','no-op-child','no-op-index','policy-mismatch','patch-error','readiness-timeout','version-mismatch','missing-original-region','container-unready','update-propagation-lag','rollback-propagation-lag','rate-update','rate-policy-mismatch','rate-same-image']){
+for(const scenario of ['update-child','update-index','no-op-child','no-op-index','policy-mismatch','patch-error','readiness-timeout','version-mismatch','missing-original-region','container-unready','update-propagation-lag','rollback-propagation-lag','rate-update','rate-policy-mismatch','rate-same-image','v3-image','v3-withheld-enabled','v3-interface-enabled','v3-endpoints-exposed','v3-missing-flag','v3-payer-changed']){
+  const v3 = scenario.startsWith('v3-');
+  const fixtureLock = {...lock, upstream_commit: v3 ? release3 : 'd'.repeat(40)};
   const rate=scenario.startsWith('rate-');
   const baseline=structuredClone(initial);
   baseline.getConfig.validation_config.fee_payer_policy={token_2022:{allow_transfer:false}};
+  if (v3) {
+    baseline.getConfig.validation_config.cross_cluster_endpoints = ['https://example.invalid'];
+    baseline.getConfig.validation_config.token_2022.allow_token_metadata_instructions = true;
+  }
   if(rate)baseline.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;
   let clock=0,phase=scenario.startsWith('no-op')||scenario==='rate-same-image'?'new':'old',patches=[],cancelled=0,reads=[],publicCalls=0,resolutions=0;
   async function mock(url,options={}){
@@ -35,6 +44,14 @@ for(const scenario of ['update-child','update-index','no-op-child','no-op-index'
     const m=JSON.parse(options.body).method;assert(['getConfig','getPayerSigner'].includes(m));
     const s=structuredClone(baseline);
     if(phase==='new'){s.getConfig.validation_config.fee_payer_policy.token_2022.allow_reallocate=false;s.getConfig.validation_config.token_2022.allow_token_metadata_instructions=true;s.getConfig.validation_config.allowed_transaction_versions=['legacy',0,1];}
+    if (v3 && phase === 'new') {
+      const config = s.getConfig.validation_config;
+      if (scenario !== 'v3-endpoints-exposed') delete config.cross_cluster_endpoints;
+      config.fee_payer_policy.token_2022.allow_initialize_interface_extension = scenario === 'v3-interface-enabled';
+      if (scenario !== 'v3-missing-flag')
+        config.fee_payer_policy.token_2022.allow_withdraw_withheld_tokens = scenario === 'v3-withheld-enabled';
+      if (scenario === 'v3-payer-changed') s.getPayerSigner.payment_address = 'changed';
+    }
     if(['policy-mismatch','rollback-propagation-lag','rate-policy-mismatch'].includes(scenario)&&phase==='new')s.getConfig.validation_config.price.margin=99;
     if(scenario==='version-mismatch'&&phase==='new')s.getConfig.validation_config.allowed_transaction_versions=['legacy'];
     if(scenario==='readiness-timeout'&&phase==='new')throw Error('Fixture unavailable');
@@ -43,15 +60,18 @@ for(const scenario of ['update-child','update-index','no-op-child','no-op-index'
     return {ok:true,json:async()=>({jsonrpc:'2.0',result:s[m],id:1})};
   }
   let value,error;
-  try{value=await updateBunny({app:'public-test-app',key:'public-fixture-token',lock,enableMetadata:true,setRateLimit:rate,fetchFn:mock,pause:async ms=>{clock+=ms;},now:()=>clock,timeout:15000,resolveImageTag:async digest=>{assert.equal(digest,scenario==='rate-same-image'?lock.runtime_image_digest:old);resolutions++;return 'fixture-old';}});}catch(e){error=e.message;}
-  if(scenario.startsWith('update')||['rate-update','rate-same-image'].includes(scenario)){
+  try{value=await updateBunny({app:'public-test-app',key:'public-fixture-token',lock:fixtureLock,enableMetadata:!v3,setRateLimit:rate,fetchFn:mock,pause:async ms=>{clock+=ms;},now:()=>clock,timeout:15000,resolveImageTag:async digest=>{assert.equal(digest,scenario==='rate-same-image'?lock.runtime_image_digest:old);resolutions++;return 'fixture-old';}});}catch(e){error=e.message;}
+  if (scenario === 'v3-image') {
+    assert.equal(value.status, 'updated');
+    assert.deepEqual(patches, [{imageTag:lock.image_tag, imageDigest:lock.image.split('@')[1]}]);
+  }else if(scenario.startsWith('update')||['rate-update','rate-same-image'].includes(scenario)){
     assert.equal(value.status,'updated');assert.equal(value.metadata,true);assert.equal(patches.length,1);assert(patches[0].entryPoint.argumentsArray[0].includes('allow_token_metadata_instructions = true'));
   }else if(scenario.startsWith('no-op')){
     assert.equal(value.status,'current');assert.equal(patches.length,0);
   }else{
     assert.equal(error,'Rollout failed; previous image and public settings verified restored');assert.equal(patches.length,2);assert.equal(phase,'old');assert.equal(patches[1].imageDigest,old);assert.equal(patches[1].imageTag,'fixture-old');
     const original=rate?{commandArray:['/bin/sh','-c'],argumentsArray:[readFileSync(new URL('./bunny-metadata-entrypoint.sh',import.meta.url),'utf8')]}:JSON.parse(readFileSync(new URL('./bunny-previous-entrypoint.json',import.meta.url)));
-    assert.deepEqual(patches[1].entryPoint,original);
+    assert.deepEqual(patches[1].entryPoint,v3?undefined:original);
   }
   if(rate && !error){assert.equal(value.globalRateLimit,10);assert.equal(value.perConnectionRateLimit,10);assert(patches[0].entryPoint.argumentsArray[0].includes('global_rate_limit = 10'));}
   assert.equal(cancelled,patches.length);assert.equal(resolutions,scenario.startsWith('no-op')?0:1);
