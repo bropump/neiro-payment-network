@@ -52,6 +52,8 @@ Marinade Native account setup and Unit's source-leg deposit also settled, but th
 
 ## Applications — verified on Surfpool
 
+The [Kora 3.0 launch comparison](../CONFIGURATION.md#token-launches-and-metadata-authority) reran 13 token launches against both Bunny image revisions. It records which program signed Token-2022 metadata initialization and where the operator permission applies.
+
 The flows below completed using an actual official Kora operator connected to a local Surfpool fork. Customer wallets started with NEIRO only and remained at **0 SOL**. The operator supplied SOL and received the customer's NEIRO payment.
 
 | Application | Result | What was tested |

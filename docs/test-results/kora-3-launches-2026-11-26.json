@@ -1,0 +1,484 @@
+{
+  "date": "2026-11-26",
+  "scope": "Isolated local Surfpool mainnet fork. Synthetic SOL and NEIRO, Mock price oracle, fresh mints. No mainnet signatures or submissions.",
+  "localSlotAtStart": 474109491,
+  "forkCompletedAt": "2026-11-26T10:16:17.351Z",
+  "priorBunny": {
+    "version": "2.2.0-beta.8",
+    "revision": "db7bca1bc4aa5dd0afd9aa442069f98e841320d6",
+    "imageIndexDigest": "sha256:44296ae1fc7e16ca8d28c513790d82ff36254cdeddf1d9264fc962e156612c9b"
+  },
+  "currentBunny": {
+    "version": "3.0.0",
+    "revision": "22648976aa14f8b1284f5fd427d9e17857ae234f",
+    "imageIndexDigest": "sha256:7ba27e0537121822d4448666176b0118a594948c34a07f956167758f730fb516"
+  },
+  "sdkVersions": {
+    "@pump-fun/pump-sdk": "4.1.0",
+    "@meteora-ag/dynamic-bonding-curve-sdk": "2.0.0",
+    "@raydium-io/raydium-sdk-v2": "0.2.74-alpha",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.99.0"
+  },
+  "method": "Checked the new fixture operator’s public validation settings against live Bunny with Mock pricing. Checked the previous build for the same settings except the two new authority flags. Both nodes quoted and signed the identical paid message before ledger mutation. Verified signatures and identical signed bytes, submitted the v3 copy to Surfpool, read finalized receipts and checked exact operator NEIRO reimbursement and zero customer SOL. Program authority PDAs were independently derived and compared with the authority in each Token-2022 metadata initialization instruction.",
+  "livePolicy": {
+    "allowed_programs": "All",
+    "allowed_tokens": [
+      "CTg3ZgYx79zrE1MteDVkmkcGniiFrK1hJ6yiabropump"
+    ],
+    "allow_token_metadata_instructions": true,
+    "allow_initialize_interface_extension": false,
+    "allow_withdraw_withheld_tokens": false,
+    "allow_token_group_instructions": false,
+    "transfer_hook_policy": "deny_all",
+    "max_allowed_lamports": 250000000,
+    "max_signatures": 4
+  },
+  "localSponsor": "26gMLYQf4288whKA9bgFhFMSbvnVCgiAAViVZCvQ4LAo",
+  "localCustomer": "CUcHat162R8raebbb4cdWbAzGLDzn3yj6Xxj7gRN66rX",
+  "tests": [
+    {
+      "name": "DBC config 0",
+      "metadataInitializations": [],
+      "quotes": {
+        "old": 16399920,
+        "new": 16399920
+      },
+      "oldCompletedQuote": 16399920,
+      "oldSigned": true,
+      "newCompletedQuote": 16399920,
+      "newSigned": true,
+      "feeReceivedRaw": "16399920",
+      "signature": "3m664w9CsSfpf2qnkB2PNRg7PxccqKvKTfsN8nFPyZGV6FKnYiS9E98uuuSPPWMLmFBbdFYxyzATbcubu3ACg4S9",
+      "slot": 474109550,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 8199960,
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Meteora DBC classic SPL",
+      "mint": "6DKyb372o14x9vtR9RjNza4GW8xgfqzYuX46bqmCCmnC",
+      "metadataInitializations": [],
+      "quotes": {
+        "old": 49025360,
+        "new": 49025360
+      },
+      "oldCompletedQuote": 49025360,
+      "oldSigned": true,
+      "newCompletedQuote": 49025360,
+      "newSigned": true,
+      "feeReceivedRaw": "49025360",
+      "signature": "DrnkdzKYezwi8hsuHNV4o2fJ7yYqwxcpaWrve727p5X8nzDcCLjQHwBbTxGBxCPEm1HUMbDW2HdLHU9XApTKEAU",
+      "slot": 474109589,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 24512680,
+      "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "DBC config 1",
+      "metadataInitializations": [],
+      "quotes": {
+        "old": 16399920,
+        "new": 16399920
+      },
+      "oldCompletedQuote": 16399920,
+      "oldSigned": true,
+      "newCompletedQuote": 16399920,
+      "newSigned": true,
+      "feeReceivedRaw": "16399920",
+      "signature": "YfD7QKH1NAUgeB6q3CJMpFZH8D1b9PmUYtVyx3v87SXFeqxXpZkBthg4BiJEqmebRgNydwjEhsqSAA5defqXEiz",
+      "slot": 474109592,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 8199960,
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Meteora DBC Token2022",
+      "mint": "NLiNJw3vPo2nNRg3MWuHJQVon7s7hmSfuwEed8D8XY8",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "meteora program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 22803120,
+        "new": 22803120
+      },
+      "oldCompletedQuote": 22803120,
+      "oldSigned": true,
+      "newCompletedQuote": 22803120,
+      "newSigned": true,
+      "feeReceivedRaw": "22803120",
+      "signature": "2bGSPKqv2TBHY1wHypCfDzL2YrnDngFRX69ejEdVBYm59cL7iVJ7c5ze2Zpp1xZXR4kWcRTVkAHAUtysMfCLu8L8",
+      "slot": 474109595,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 11401560,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Local DBC 1",
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Raydium LaunchLab SOL",
+      "mint": "DTsZNQEkpFMWbQcVhCUB5DRk9DeghbWwuCfLo4ZQzUg2",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "raydium program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 22928400,
+        "new": 22928400
+      },
+      "oldCompletedQuote": 22928400,
+      "oldSigned": true,
+      "newCompletedQuote": 22928400,
+      "newSigned": true,
+      "feeReceivedRaw": "22928400",
+      "signature": "2QmbirkK8ofZ3QBgv8F2uursG5bkzmQoQS1n2GCGiavHUg3bN1vfyDfm2Em8V4L5DL7y7AqCAeGoh3toDhYLPQSZ",
+      "slot": 474109601,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 11464200,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Local LaunchLab",
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Stonkfun standard NEIRO LaunchLab",
+      "mint": "2RBeCTumz4m6XBWmBTVuTqwqG6CesfWeAfH3BcDHJZaF",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "raydium program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 22914480,
+        "new": 22914480
+      },
+      "oldCompletedQuote": 22914480,
+      "oldSigned": true,
+      "newCompletedQuote": 22914480,
+      "newSigned": true,
+      "feeReceivedRaw": "22914480",
+      "signature": "4Ju46gS6aJSethH1dV6ymZ55B2RpRUvqynu7vFnvoPPoGS9Jrb2pMa4Aeg9kUVnPnQfV9yxmevzSnSQdWXuPxVWD",
+      "slot": 474109613,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 11457240,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Local Stonkfun",
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Stonkfun reward 1% NEIRO LaunchLab",
+      "mint": "J2XtKQQ6ZPm3Ft4vjhew93A8w3CuSRpotrx6MfGMEnGY",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "raydium program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 24751920,
+        "new": 24751920
+      },
+      "oldCompletedQuote": 24751920,
+      "oldSigned": true,
+      "newCompletedQuote": 24751920,
+      "newSigned": true,
+      "feeReceivedRaw": "24751920",
+      "signature": "4hu5186mJThSEWXxLmdXvrSFqMgtKZuhsWszdB7SQgF2QVL3K3Vx9SFi1fqWGUmZcbFuAbkZejrzkZTsweayu6X6",
+      "slot": 474109639,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 12375960,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Local Stonkfun Reward",
+      "rewardBps": 100,
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Stonkfun reward 3% NEIRO LaunchLab",
+      "mint": "GahqasSUupxY8zTuzEgekRiugN6FxtQUkVPmcz37N1qg",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "raydium program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 24751920,
+        "new": 24751920
+      },
+      "oldCompletedQuote": 24751920,
+      "oldSigned": true,
+      "newCompletedQuote": 24751920,
+      "newSigned": true,
+      "feeReceivedRaw": "24751920",
+      "signature": "tkWBHey8AUXFpyQ4vt4mupMybL34Qjn43sYYUF9VN6zcPh7TNKRp6dPHwgvSwr9fN1Nm4T6X89R4LfqMHDHD7Hv",
+      "slot": 474109672,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 12375960,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Local Stonkfun Reward",
+      "rewardBps": 300,
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Pump create_v2",
+      "mint": "HPM7zsDx8qHXrjpDsgqVnwg6GBmTixAQQsGSi2PAXiv",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokwaKt1eokM",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "pump program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 15188880,
+        "new": 15188880
+      },
+      "oldCompletedQuote": 15188880,
+      "oldSigned": true,
+      "newCompletedQuote": 15188880,
+      "newSigned": true,
+      "feeReceivedRaw": "15188880",
+      "signature": "5z7P6BQD9pnFg7vuZ3gqD3pX7Rx1VqWvoxN2oLXFgBRQoEPHNzcCBSYF5DFEPqNstbhZAzVj28ZyYvJSXeKxW4me",
+      "slot": 474109680,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 7594440,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Local Pump",
+      "status": "PASS",
+      "finalized": true,
+      "pumpState": {
+        "creator": "CUcHat162R8raebbb4cdWbAzGLDzn3yj6Xxj7gRN66rX",
+        "isMayhemMode": false,
+        "isHolderReward": false,
+        "curve": "F4tXh1BJNGKofiawDvt7nMyft33oNqY5z2XtHsMXX6Up"
+      }
+    },
+    {
+      "name": "Pump Mayhem",
+      "mint": "BtP7jakS4wpQke9F95G4j2pCWrfm8jJSGCrd56KpweZi",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokwaKt1eokM",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "pump program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 22608240,
+        "new": 22608240
+      },
+      "oldCompletedQuote": 22608240,
+      "oldSigned": true,
+      "newCompletedQuote": 22608240,
+      "newSigned": true,
+      "feeReceivedRaw": "22608240",
+      "signature": "2jgwsKpzgRhamqbhTMJjw337ncDbtx5fDmE7CrTmzu1ndMeb5R6VvTg7QyoDMN6XFNK7uiTXXHcTp3gQsyD8yPZ2",
+      "slot": 474109703,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 11304120,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Pump Mayhem",
+      "status": "PASS",
+      "finalized": true,
+      "pumpState": {
+        "creator": "CUcHat162R8raebbb4cdWbAzGLDzn3yj6Xxj7gRN66rX",
+        "isMayhemMode": true,
+        "isHolderReward": false,
+        "curve": "68ZsLP5T3Y1CAZEpw4PojY5UvM1j4K6nNDvRchGV7kGr"
+      }
+    },
+    {
+      "name": "Pump holder rewards",
+      "mint": "9hoGeRJVQ26A9c1ef4PJtUF43zvKkLwEuz8gX4vcYunf",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokwaKt1eokM",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "pump program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 15314160,
+        "new": 15314160
+      },
+      "oldCompletedQuote": 15314160,
+      "oldSigned": true,
+      "newCompletedQuote": 15314160,
+      "newSigned": true,
+      "feeReceivedRaw": "15314160",
+      "signature": "kvenbN6mL5PsrQ8kPFx4qmw399YPhCNeRWY6ZsV9XhgucZRhiVut6axBiGe7Uz6L7nXgKQk3ERA2a2hKT76EZ9e",
+      "slot": 474109711,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 7657080,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Pump holder rewards",
+      "status": "PASS",
+      "finalized": true,
+      "pumpState": {
+        "creator": "Hfdtso3r8Ft6t4fn7SC5fsjw5adEjkPFr3yprxGAQkMq",
+        "isMayhemMode": false,
+        "isHolderReward": true,
+        "curve": "6hmhPwENdRPhyCjVfZYMb1pZWfAr8LiWb4YF5MiWa7L6"
+      },
+      "pumpRequestedHolderRewards": true
+    },
+    {
+      "name": "Ember DBC",
+      "mint": "3m2555qSBxVn86pMgUQ42qCpPAAqzuqwSBci72ytw9FV",
+      "metadataInitializations": [],
+      "quotes": {
+        "old": 49025360,
+        "new": 49025360
+      },
+      "oldCompletedQuote": 49025360,
+      "oldSigned": true,
+      "newCompletedQuote": 49025360,
+      "newSigned": true,
+      "feeReceivedRaw": "49025360",
+      "signature": "6vgdvquFvXe5Yk8iAoy1ryTfKH4J6VTfip73C3MX3fuiocF1cRiSJunCMJ1S3AyrpXUKaiHr4x4h9VqUrSYJdgh",
+      "slot": 474109726,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 24512680,
+      "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Bangfun 1B",
+      "mint": "6kQ7WWjVnahbFdNqMGoscFZZYm1McBbzf2wkszbshLA7",
+      "metadataInitializations": [],
+      "quotes": {
+        "old": 49025360,
+        "new": 49025360
+      },
+      "oldCompletedQuote": 49025360,
+      "oldSigned": true,
+      "newCompletedQuote": 49025360,
+      "newSigned": true,
+      "feeReceivedRaw": "49025360",
+      "signature": "42sKb17Cd7g6euJn9KQN5K4UHkA5fAB6ozLWNYP8dAe5tSqHqkTNxzHCsTuS5UMGGdVRWd6K51ZsYpvCBcAQaQkH",
+      "slot": 474109756,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 24512680,
+      "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "status": "PASS",
+      "supply": "1000000000000000",
+      "finalized": true
+    },
+    {
+      "name": "Bangfun 500M",
+      "mint": "HDnubtyytmmdKSqsc6vk75bPxxKKNCRKakUyZuE3Q3tn",
+      "metadataInitializations": [],
+      "quotes": {
+        "old": 49025360,
+        "new": 49025360
+      },
+      "oldCompletedQuote": 49025360,
+      "oldSigned": true,
+      "newCompletedQuote": 49025360,
+      "newSigned": true,
+      "feeReceivedRaw": "49025360",
+      "signature": "25B6BWaPpeYWDewu5XFvXNFACqnBo2J88qwAy3zBMJvH5Wvt2TWu1JWv4jEWwk7Gnk2jCSAcs5PUaY4MM18KjB7r",
+      "slot": 474109770,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 24512680,
+      "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "status": "PASS",
+      "supply": "500000000000000",
+      "finalized": true
+    },
+    {
+      "name": "Hooked P2P-only DBC",
+      "mint": "B9MdygCB6AQsNeGz4pYHabrkuiw6ktL4T2oo5jJFon5t",
+      "fixtureLookupTable": true,
+      "metadataInitializations": [
+        {
+          "mintAuthority": "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM",
+          "isSponsor": false,
+          "isCustomer": false,
+          "verifiedAuthority": "meteora program-derived authority"
+        }
+      ],
+      "quotes": {
+        "old": 46324000,
+        "new": 46324000
+      },
+      "oldCompletedQuote": 46324000,
+      "oldSigned": true,
+      "newCompletedQuote": 46324000,
+      "newSigned": true,
+      "feeReceivedRaw": "46324000",
+      "signature": "2e7D3aSUqDveEVrFmhLbn5KT79tfPzJLVfD9EEJL65ubW7L7F2eh3qVxf9nwuiBQDBmPsJs25EDvGSjy8RKPEBig",
+      "slot": 474109897,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 23162000,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "NPN Surfpool Hooked",
+      "status": "PASS",
+      "verifiedHook": "B9HAaxbFnz868uYsVPWBJr1hL2cfZvXqzhssR3V2VQaT",
+      "finalized": true
+    },
+    {
+      "name": "Metadata initialize with customer as mint authority",
+      "mint": "H5npiTo2GC3ZpCaSX2vCmV3kTqLL4akKSKuVi8R9eq3u",
+      "metadataInitializations": [
+        {
+          "mintAuthority": "CUcHat162R8raebbb4cdWbAzGLDzn3yj6Xxj7gRN66rX",
+          "isSponsor": false,
+          "isCustomer": true,
+          "verifiedAuthority": "Customer"
+        }
+      ],
+      "quotes": {
+        "old": 20000,
+        "new": 20000
+      },
+      "oldCompletedQuote": 20000,
+      "oldSigned": true,
+      "newCompletedQuote": 20000,
+      "newSigned": true,
+      "feeReceivedRaw": "20000",
+      "signature": "bX6S1S3CkNfARehqpxd4Y8xVvVbkErg6epX9xeoTgPNooeEQDYMdFH3DWtPFJwkhF7uhNkfKagYQ1i1pG2QkxZ6",
+      "slot": 474109908,
+      "customerSOL": 0,
+      "sponsorOutflowLamports": 10000,
+      "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "metadataName": "Authority control",
+      "status": "PASS",
+      "finalized": true
+    },
+    {
+      "name": "Metadata initialize with sponsor as mint authority",
+      "expected": "v3 policy rejects sponsor as current metadata mint authority",
+      "newError": "Invalid transaction: Fee payer cannot be used as the current Token2022 extension authority for 'Token2022 TokenMetadataInitialize'",
+      "status": "EXPECTED DENIAL"
+    }
+  ]
+}

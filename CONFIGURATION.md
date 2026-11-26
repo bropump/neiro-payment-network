@@ -77,7 +77,23 @@ Historical reference: [upstream changes in the November 10 review](https://githu
 
 On 26 November, two paid NEIRO transfers settled on an isolated Surfpool ledger using the exact Bunny image, synthetic balances and a Mock price oracle. Both used a checked reimbursement transfer, an invoice memo and a merchant transfer with a reference. In the operator-first case the client verified the original message and operator signature before adding the customer's signature and submitting. In the customer-first case Kora verified the co-signer and submitted through `signAndSendTransaction`. Each recipient received 1 NEIRO, each operator reimbursement matched its 0.0202 NEIRO quote, and the customer spent zero SOL. The mock price applies only to the fixture.
 
-On mainnet the live operator returned version 3.0.0 and a routed unsigned quote after the deployment. Mainnet settlement and specialized launch, swap and bundle paths were outside this check. Earlier application reports retain their original version and test dates.
+On mainnet the live operator returned version 3.0.0 and a routed unsigned quote after the deployment. The [launch comparison](#token-launches-and-metadata-authority) below extends this check to token creation on Surfpool. The payment checks covered local settlement and a read-only mainnet quote.
+
+### Token launches and metadata authority
+
+On 26 November 2026, Bunny reported `allowed_programs = "All"` and `allow_token_metadata_instructions = true`. It also reported `allow_initialize_interface_extension = false`. A sponsor can pay transaction fees and account rent while the launch program signs the metadata initialization with its own program-derived mint authority. The operator's own signature as the current metadata mint authority is restricted. NEIRO remains the configured reimbursement mint.
+
+We compared the previous Bunny image (`db7bca1`) with Kora 3.0.0 (`2264897`) on an isolated Surfpool mainnet fork. Both quoted the same fee and signed identical bytes for 13 token launches, two DBC configurations and a direct customer-authorized metadata initialization. Each 3.0 transaction finalized, paid the exact NEIRO reimbursement and left the customer at zero SOL. A separate valid metadata initialization with the operator as mint authority was rejected by the 3.0 policy.
+
+| Launch path | Verified outcome |
+| --- | --- |
+| Pump `create_v2`, Mayhem and holder rewards | All three mints and their metadata were created. The decoded curves confirmed the requested modes. Pump’s mint-authority PDA signed metadata initialization in all three. |
+| Meteora DBC classic SPL and Token-2022 | Both configuration and pool creation paths settled. The Token-2022 path used Meteora’s pool authority for metadata. |
+| Raydium LaunchLab and Stonkfun standard, 1% reward and 3% reward | All four launches used Raydium’s launch authority for metadata. The reward mints stored the expected transfer-fee rates. Withdrawing accrued fees is a separate operation. |
+| Ember and Bangfun | Ember’s DBC config and memo settled. Bangfun’s two DBC configurations produced the expected 1 billion and 500 million supplies. |
+| Hooked P2P-only | The DBC launch and hook initialization settled using a prebuilt address lookup table. The resulting mint referenced the expected hook program and the rule account referenced the customer. Later transfers through the hook were outside this run. |
+
+Tests used local balances and a Mock oracle. They covered creation and initialization. First buys, graduation, trading, reward withdrawal and hosted launch interfaces require their own evidence. The [machine-readable results](docs/test-results/kora-3-launches-2026-11-26.json) include image digests, SDK versions, per-path quotes, mint authorities and finalized local signatures.
 
 ## Protect the listing and apply changes
 
